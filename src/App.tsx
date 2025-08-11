@@ -33,6 +33,7 @@ import EmployerApp from './Components/Employer/EmployerApp';
 import NetworkStatusModal from './Components/NetworkStatusModal';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import ConnectionTest from './Components/ConnectionTest';
+import { getBackendEndpoint } from './utils/backendUrl';
 
 
 function App() {
@@ -147,7 +148,7 @@ function App() {
     if (!userId) return;
     
     // Check if session is active first
-    const sessionResponse = await fetch(`http://localhost:3001/api/session/status/${userId}`);
+            const sessionResponse = await fetch(getBackendEndpoint(`/api/session/status/${userId}`));
     const sessionStatus = await sessionResponse.json();
     
     if (!sessionStatus.sessionActive || !sessionStatus.browserRunning) {
@@ -194,7 +195,7 @@ function App() {
       
       // Navigate the existing browser to the job page and apply
       try {
-        const response = await fetch('http://localhost:3001/api/apply-job', {
+        const response = await fetch(getBackendEndpoint('/api/apply-job'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -318,7 +319,7 @@ function App() {
     const userId = userData?.user?.id;
     if (userId) {
       try {
-        const sessionResponse = await fetch(`http://localhost:3001/api/session/status/${userId}`);
+        const sessionResponse = await fetch(getBackendEndpoint(`/api/session/status/${userId}`));
         const sessionStatus = await sessionResponse.json();
         
         if (!sessionStatus.sessionActive || !sessionStatus.browserRunning) {
@@ -1224,7 +1225,7 @@ function App() {
               
               // Simple apply function that uses the proven test-simple-click.js logic
               try {
-                const response = await fetch('http://localhost:3001/api/simple-apply', {
+                const response = await fetch(getBackendEndpoint('/api/simple-apply'), {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -1252,7 +1253,7 @@ function App() {
               console.log('[App] onAnswerQuestion called:', { question, answer });
               
               try {
-                const response = await fetch('http://localhost:3001/api/answer-question', {
+                const response = await fetch(getBackendEndpoint('/api/answer-question'), {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

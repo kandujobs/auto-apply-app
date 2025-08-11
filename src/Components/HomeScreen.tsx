@@ -15,6 +15,7 @@ import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import NetworkStatusBanner from './NetworkStatusBanner';
 import NetworkStatusModal from './NetworkStatusModal';
 import SessionManager from './SessionManager';
+import { getBackendEndpoint } from '../utils/backendUrl';
 
 
 interface UserAnswer {
@@ -483,7 +484,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       } : undefined;
 
       // Trigger job fetching on backend
-      const response = await fetch('http://localhost:3001/api/fetch-jobs', {
+      const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -826,7 +827,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               } : undefined;
 
               // Trigger job fetching on backend
-              const response = await fetch('http://localhost:3001/api/fetch-jobs', {
+              const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

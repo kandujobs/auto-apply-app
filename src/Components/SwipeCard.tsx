@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Job } from '../types/Job';
 import { supabase } from '../supabaseClient';
+import { getBackendEndpoint } from '../utils/backendUrl';
 import { STANDARD_TAGS } from '../data/tags';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import Notification from './Notification';
@@ -335,7 +336,7 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       }
       
       // Start the application process with session
-      const response = await fetch('http://localhost:3001/api/simple-apply', {
+      const response = await fetch(getBackendEndpoint('/api/simple-apply'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
