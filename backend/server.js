@@ -3217,7 +3217,7 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
 }
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Health check available at http://localhost:${PORT}/api/health`);
   console.log(`🔌 WebSocket server running on port 3002`);
