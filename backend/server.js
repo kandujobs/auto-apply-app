@@ -3,7 +3,17 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const path = require('path');
 const WebSocket = require('ws');
-const { chromium } = require('playwright');
+
+// Load Playwright conditionally
+let chromium;
+try {
+  const playwright = require('playwright');
+  chromium = playwright.chromium;
+  console.log('✅ Playwright loaded successfully');
+} catch (error) {
+  console.warn('⚠️ Playwright not available:', error.message);
+  console.log('🔧 Auto-apply features will be disabled');
+}
 
 // Load environment variables
 try {
@@ -2479,6 +2489,10 @@ async function initializeBrowserSession(userId, credentials) {
     let page = null;
     
     try {
+      if (!chromium) {
+        throw new Error('Playwright not available');
+      }
+      
       console.log('🚀 Starting browser...');
       
       browser = await chromium.launch({
