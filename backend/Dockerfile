@@ -22,7 +22,7 @@ RUN npx playwright install chromium --with-deps
 # Copy application code
 COPY . .
 
-# Expose port
+# Expose port (Railway will override this)
 EXPOSE 3001
 
 # Start the application

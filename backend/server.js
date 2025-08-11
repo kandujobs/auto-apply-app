@@ -492,10 +492,13 @@ app.use(express.json());
 
 // Simple test endpoint
 app.get('/', (req, res) => {
-  res.json({ 
+  console.log('✅ Health check received at /');
+  res.json({
     message: 'Backend server is running',
     timestamp: new Date().toISOString(),
-    port: PORT
+    port: PORT,
+    environment: process.env.NODE_ENV || 'development',
+    playwright: chromium ? 'available' : 'not available'
   });
 });
 
@@ -3246,9 +3249,11 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
 // Start the server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 Health check available at http://localhost:${PORT}/api/health`);
+  console.log(`🌐 Health check available at http://localhost:${PORT}/`);
   console.log(`🔌 WebSocket server running on port 3002`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 Supabase URL: ${process.env.SUPABASE_URL ? 'Set' : 'Not set'}`);
   console.log(`🔑 CORS Origin: ${process.env.CORS_ORIGIN || 'Not set'}`);
+  console.log(`🎭 Playwright: ${chromium ? 'Available' : 'Not available'}`);
+  console.log(`✅ Server ready for health checks!`);
 });
