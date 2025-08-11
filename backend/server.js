@@ -6,7 +6,11 @@ const WebSocket = require('ws');
 const { chromium } = require('playwright');
 
 // Load environment variables
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+try {
+  require('dotenv').config({ path: path.join(__dirname, '.env') });
+} catch (error) {
+  console.log('No .env file found, using environment variables');
+}
 
 // Set Supabase environment variables for imported modules
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://xipjxcktpzanmhfrkbrm.supabase.co';
@@ -475,6 +479,15 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Simple test endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Backend server is running',
+    timestamp: new Date().toISOString(),
+    port: PORT
+  });
+});
 
 // Direct job processing (no queue)
 async function processJobDirectly(userId, jobId, jobUrl, credentials) {
@@ -3221,4 +3234,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Health check available at http://localhost:${PORT}/api/health`);
   console.log(`🔌 WebSocket server running on port 3002`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 Supabase URL: ${process.env.SUPABASE_URL ? 'Set' : 'Not set'}`);
+  console.log(`🔑 CORS Origin: ${process.env.CORS_ORIGIN || 'Not set'}`);
 });
