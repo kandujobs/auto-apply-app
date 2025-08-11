@@ -32,7 +32,8 @@ export async function checkHealth(): Promise<HealthStatus> {
 
   // Check backend server
   try {
-    const response = await fetch('http://localhost:3001/api/health', {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const response = await fetch(`${backendUrl}/`, {
       signal: AbortSignal.timeout(5000)
     });
     status.backend = response.ok;

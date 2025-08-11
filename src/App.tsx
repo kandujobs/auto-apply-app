@@ -32,6 +32,7 @@ import EmployerHomeScreen from './Components/Employer/EmployerHomeScreen';
 import EmployerApp from './Components/Employer/EmployerApp';
 import NetworkStatusModal from './Components/NetworkStatusModal';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
+import ConnectionTest from './Components/ConnectionTest';
 
 
 function App() {
@@ -1198,6 +1199,11 @@ function App() {
 
   return (
     <>
+      {/* Temporary connection test - remove after testing */}
+      <div className="fixed top-4 right-4 z-50">
+        <ConnectionTest />
+      </div>
+      
       {screen === "home" && (
         <>
           <HomeScreen
