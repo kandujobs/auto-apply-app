@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
     message: 'Backend server is running',
     timestamp: new Date().toISOString(),
     port: PORT,
-    version: 'simple'
+    status: 'healthy'
   });
 });
 
@@ -39,13 +39,11 @@ app.get('/api/health', (req, res) => {
     backend: {
       status: 'running',
       port: PORT,
-      uptime: process.uptime(),
-      version: 'simple'
+      uptime: process.uptime()
     },
-    features: {
-      autoApply: 'disabled',
-      browserAutomation: 'disabled',
-      reason: 'Playwright not available in production'
+    services: {
+      express: 'running',
+      cors: 'enabled'
     }
   };
   
@@ -56,7 +54,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/test-connectivity', (req, res) => {
   res.json({
     success: true,
-    message: 'Backend is accessible (simple mode)',
+    message: 'Backend is accessible',
     timestamp: new Date().toISOString(),
     endpoints: {
       health: '/api/health',
@@ -72,5 +70,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 Supabase URL: ${process.env.SUPABASE_URL ? 'Set' : 'Not set'}`);
   console.log(`🔑 CORS Origin: ${process.env.CORS_ORIGIN || 'Not set'}`);
-  console.log(`⚠️  Running in simple mode - Playwright features disabled`);
 });
