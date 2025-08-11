@@ -1,0 +1,7 @@
+:root {
+  --carousel-width: 1000px;
+}
+
+.interests-carousel {
+  will-change: transform;
+} 
