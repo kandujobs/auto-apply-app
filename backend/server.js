@@ -22,6 +22,11 @@ try {
   console.log('No .env file found, using environment variables');
 }
 
+console.log('🔧 Starting server initialization...');
+console.log(`📁 Current directory: ${__dirname}`);
+console.log(`🔑 PORT environment: ${process.env.PORT}`);
+console.log(`🔑 NODE_ENV: ${process.env.NODE_ENV}`);
+
 // Set Supabase environment variables for imported modules
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://xipjxcktpzanmhfrkbrm.supabase.co';
 process.env.SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcGp4Y2t0cHphbm1oZnJrYnJtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTExODA0MywiZXhwIjoyMDY2Njk0MDQzfQ.Dm73I66zlS1RXYcde6QHdTQt32ARu00K9pXeFuIruJE';
