@@ -25,6 +25,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
   const [hasCredentials, setHasCredentials] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [accountEmail, setAccountEmail] = useState('');
   const [savedCredentials, setSavedCredentials] = useState<{ email: string; password: string } | null>(null);
 
@@ -123,6 +124,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
       if (result.success) {
         setHasCredentials(true);
         setIsEditing(false);
+        setShowModal(false);
         setMessage({ type: 'success', text: 'LinkedIn credentials saved successfully!' });
         
         if (onCredentialsSaved) {
@@ -292,20 +294,17 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
                 <p className="text-gray-600 text-sm mb-6">Securely connect your LinkedIn account to enable automatic job applications</p>
               </div>
 
-              <button
-                onClick={() => setIsEditing(true)}
-                className="w-full bg-[#0077B5] text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-[#006097] transition-all duration-200 flex items-center justify-center space-x-3"
-              >
+                             <button
+                 onClick={() => setShowModal(true)}
+                 className="w-full bg-[#0077B5] text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-[#006097] transition-all duration-200 flex items-center justify-center space-x-3"
+               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
                 <span>Sign in with LinkedIn</span>
               </button>
 
-              <div className="mt-4 text-xs text-gray-500">
-                <p>🔒 Your credentials are encrypted and stored securely</p>
-                <p>📱 Only used for automated job applications</p>
-              </div>
+              
             </div>
           ) : (
             /* Credential Entry Form */
@@ -385,12 +384,84 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
                 </button>
               </div>
 
-              <div className="text-center text-xs text-gray-500">
-                <p>🔒 Your credentials are encrypted and stored securely</p>
-                <p>📱 Only used for automated job applications</p>
-              </div>
+              
             </div>
           )}
+        </div>
+      )}
+
+      {/* LinkedIn Sign-in Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8">
+            {/* LinkedIn Header */}
+            <div className="flex items-center justify-center mb-8">
+              <svg className="w-8 h-8 text-[#0077B5]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">Sign in</h2>
+            <p className="text-gray-600 text-center mb-8">Stay updated on your professional world</p>
+
+            {/* Form */}
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
+              <div>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email or Phone"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077B5] focus:border-[#0077B5]"
+                  disabled={saving}
+                />
+              </div>
+
+              <div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0077B5] focus:border-[#0077B5] pr-12"
+                    disabled={saving}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#0077B5] text-sm font-medium"
+                    disabled={saving}
+                  >
+                    {showPassword ? 'hide' : 'show'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="text-center">
+                <a href="#" className="text-[#0077B5] text-sm font-medium hover:underline">Forgot password?</a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving || !email.trim() || !password.trim()}
+                className="w-full bg-[#0077B5] text-white font-semibold py-3 px-4 rounded-md hover:bg-[#006097] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {saving ? 'Connecting...' : 'Connect'}
+              </button>
+            </form>
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       )}
     </div>
