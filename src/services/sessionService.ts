@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { getBackendEndpoint, getBackendUrl } from '../utils/backendUrl';
 
 export interface SessionStatus {
   isActive: boolean;
@@ -34,7 +35,7 @@ class SessionService {
       const userId = user.id;
 
       // Start session on backend - let the backend handle credential retrieval and decryption
-      const response = await fetch('http://localhost:3001/api/session/start', {
+      const response = await fetch(getBackendEndpoint('/api/session/start'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ class SessionService {
       }
 
       // Stop session on backend
-      const response = await fetch('http://localhost:3001/api/session/stop', {
+      const response = await fetch(getBackendEndpoint('/api/session/stop'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ class SessionService {
         return { isActive: false };
       }
 
-      const response = await fetch(`http://localhost:3001/api/session/status/${user.id}`);
+      const response = await fetch(getBackendEndpoint(`/api/session/status/${user.id}`));
       if (!response.ok) {
         return { isActive: false };
       }
@@ -135,7 +136,10 @@ class SessionService {
         this.websocket = null;
       }
 
-      this.websocket = new WebSocket('ws://localhost:3002');
+      // Use the same host as the backend URL but with ws:// protocol
+      const backendUrl = getBackendUrl();
+      const wsUrl = backendUrl.replace('https://', 'wss://').replace('http://', 'ws://');
+      this.websocket = new WebSocket(wsUrl);
 
       this.websocket.onopen = () => {
         console.log('🔌 WebSocket connected, sending session connect message');

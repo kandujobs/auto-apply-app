@@ -1,6 +1,5 @@
 import { supabase } from '../supabaseClient';
-
-const BACKEND_URL = 'http://localhost:3001';
+import { getBackendEndpoint } from '../utils/backendUrl';
 
 export interface EasyApplyWorkerStatus {
   isRunning: boolean;
@@ -16,7 +15,7 @@ export async function startEasyApplyWorker(userId: string, linkedInCredentials: 
   try {
     console.log('🚀 Starting Easy Apply Worker for user:', userId);
     
-    const response = await fetch(`${BACKEND_URL}/api/start-easy-apply-worker`, {
+    const response = await fetch(getBackendEndpoint('/api/start-easy-apply-worker'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

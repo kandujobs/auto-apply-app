@@ -34,9 +34,8 @@ process.env.SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJ
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Create WebSocket server
-const WS_PORT = process.env.WS_PORT || 3002;
-const wss = new WebSocket.Server({ port: WS_PORT });
+// Create WebSocket server on the same port as HTTP server
+const wss = new WebSocket.Server({ noServer: true });
 
 // Global variables to track application status
 let currentApplicationStatus = 'idle';
@@ -3252,13 +3251,20 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
 }
 
 // Start the server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 Health check available at http://localhost:${PORT}/`);
-  console.log(`🔌 WebSocket server running on port 3002`);
+  console.log(`🔌 WebSocket server running on same port`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 Supabase URL: ${process.env.SUPABASE_URL ? 'Set' : 'Not set'}`);
   console.log(`🔑 CORS Origin: ${process.env.CORS_ORIGIN || 'Not set'}`);
   console.log(`🎭 Playwright: ${chromium ? 'Available' : 'Not available'}`);
   console.log(`✅ Server ready for health checks!`);
+});
+
+// Handle WebSocket upgrade
+server.on('upgrade', (request, socket, head) => {
+  wss.handleUpgrade(request, socket, head, (ws) => {
+    wss.emit('connection', ws, request);
+  });
 });

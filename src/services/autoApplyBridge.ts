@@ -1,5 +1,6 @@
 import { getLinkedInCredentials } from './linkedinCredentials';
 import { supabase } from '../supabaseClient';
+import { getBackendEndpoint } from '../utils/backendUrl';
 
 // Import types from the auto-apply system
 export interface UserProfile {
@@ -57,7 +58,7 @@ export async function applyToLinkedInJob(
     });
 
     // Call the backend API
-    const response = await fetch('http://localhost:3001/api/auto-apply', {
+    const response = await fetch(getBackendEndpoint('/api/auto-apply'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

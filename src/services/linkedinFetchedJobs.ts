@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { getBackendEndpoint } from '../utils/backendUrl';
 
 export interface LinkedInFetchedJob {
   id: string;
@@ -84,7 +85,7 @@ export async function triggerJobFetch(): Promise<{ success: boolean; error?: str
     console.log('🔍 Triggering job fetch for user:', user.id);
 
     // Call the backend API to trigger job fetching
-    const response = await fetch('http://localhost:3001/api/fetch-jobs', {
+    const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
