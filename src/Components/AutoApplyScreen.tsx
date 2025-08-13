@@ -410,41 +410,53 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
           <div className="font-bold text-lg text-gray-700 mb-2">
             {!claimedToday ? 'Daily Reward!' : `Next Reward in ${nextRewardCountdown}`}
           </div>
-          <div className="flex flex-row gap-4 justify-center items-center mt-2 mb-2">
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${i < streak ? 'bg-gradient-to-br from-[#984DE0] to-[#7300FF] border-[#984DE0] text-white' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
-              >
-                {i < streak ? (
-                  i === 6 ? (
-                    // Gift icon for day 7
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                      <path d="M20 12v10H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M2 7h20v5H2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 22V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  )
-                ) : (
-                  i === 6 ? (
-                    // Gift icon for day 7 (unclaimed)
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-                      <path d="M20 12v10H4V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M2 7h20v5H2z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 22V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <span className="font-bold text-lg">{i + 1}</span>
-                  )
-                )}
+          <div className="relative w-full mt-2 mb-2">
+            {/* Scrollable container with fade effects */}
+            <div className="flex flex-row gap-4 justify-center items-center overflow-hidden">
+              {/* Left fade gradient */}
+              <div className="absolute left-0 top-0 w-8 h-10 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
+              
+              {/* Right fade gradient */}
+              <div className="absolute right-0 top-0 w-8 h-10 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none"></div>
+              
+              {/* Scrollable content */}
+              <div className="flex flex-row gap-4 justify-center items-center px-8 overflow-x-auto scrollbar-hide">
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 flex-shrink-0 ${i < streak ? 'bg-gradient-to-br from-[#984DE0] to-[#7300FF] border-[#984DE0] text-white' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
+                  >
+                    {i < streak ? (
+                      i === 6 ? (
+                        // Gift icon for day 7
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                          <path d="M20 12v10H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 7h20v5H2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 22V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      )
+                    ) : (
+                      i === 6 ? (
+                        // Gift icon for day 7 (unclaimed)
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                          <path d="M20 12v10H4V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M2 7h20v5H2z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 22V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      ) : (
+                        <span className="font-bold text-lg">{i + 1}</span>
+                      )
+                    )}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
           <div className="text-xs text-gray-500 mt-2">Log in daily to earn rewards!</div>
           {!loading && !claimedToday && (
