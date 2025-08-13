@@ -11,7 +11,7 @@ export default function ConnectionTest() {
       const health = await checkHealth();
       setStatus(health);
     } catch (error) {
-      setStatus({ error: error.message });
+      setStatus({ error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }
@@ -64,3 +64,4 @@ export default function ConnectionTest() {
     </div>
   );
 }
+
