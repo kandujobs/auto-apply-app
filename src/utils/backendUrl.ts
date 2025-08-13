@@ -3,7 +3,10 @@
  * Falls back to localhost for development
  */
 export function getBackendUrl(): string {
-  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+  console.log('🔧 Backend URL:', backendUrl);
+  console.log('🔧 Environment variable VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
+  return backendUrl;
 }
 
 /**
