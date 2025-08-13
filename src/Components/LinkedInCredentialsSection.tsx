@@ -399,6 +399,16 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
               </svg>
             </div>
 
+            {/* Close button */}
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
             {/* Title */}
             <h2 className="text-2xl font-semibold text-gray-900 text-center mb-2">Sign into LinkedIn</h2>
             <p className="text-gray-600 text-center mb-8">Stay updated on your professional world</p>
@@ -437,9 +447,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
                 </div>
               </div>
 
-              <div className="text-center">
-                <a href="#" className="text-[#0077B5] text-sm font-medium hover:underline">Forgot password?</a>
-              </div>
+
 
               <button
                 type="submit"
@@ -449,16 +457,6 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
                 {saving ? 'Connecting...' : 'Connect'}
               </button>
             </form>
-
-            {/* Close button */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
         </div>
       )}
