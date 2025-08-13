@@ -2554,7 +2554,7 @@ async function initializeBrowserSession(userId, credentials) {
       console.log('🚀 Starting browser...');
       
       browser = await chromium.launch({
-        headless: false,
+        headless: true, // Changed to true for server environment
         slowMo: 1000,
         args: [
           '--no-sandbox',
@@ -2862,7 +2862,13 @@ app.post('/api/session/start', async (req, res) => {
       }
     } catch (error) {
       console.error(`❌ Failed to start session for user ${userId}:`, error);
-      endSession(userId);
+      
+      // Clean up any partial session
+      try {
+        endSession(userId);
+      } catch (cleanupError) {
+        console.error('Error cleaning up session:', cleanupError);
+      }
       
       res.status(500).json({
         success: false,
@@ -2969,9 +2975,13 @@ app.get('/api/session/status/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     
+    console.log(`🔍 Checking session status for user: ${userId}`);
+    
     const sessionActive = isSessionActive(userId);
     const browserRunning = isBrowserRunningForSession(userId);
     const session = getSession(userId);
+    
+    console.log(`Session status - Active: ${sessionActive}, Browser Running: ${browserRunning}`);
     
     res.json({
       success: true,
@@ -2993,7 +3003,54 @@ app.get('/api/session/status/:userId', async (req, res) => {
     console.error('Error in session status endpoint:', error);
     res.status(500).json({
       success: false,
-      error: 'An unexpected error occurred'
+      error: 'An unexpected error occurred',
+      details: error.message
+    });
+  }
+});
+
+// Also support POST for session status (in case frontend uses POST)
+app.post('/api/session/status', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required field: userId'
+      });
+    }
+    
+    console.log(`🔍 Checking session status for user: ${userId}`);
+    
+    const sessionActive = isSessionActive(userId);
+    const browserRunning = isBrowserRunningForSession(userId);
+    const session = getSession(userId);
+    
+    console.log(`Session status - Active: ${sessionActive}, Browser Running: ${browserRunning}`);
+    
+    res.json({
+      success: true,
+      isActive: sessionActive,
+      sessionActive,
+      browserRunning,
+      session: session ? {
+        userId: session.userId,
+        isLoggedIn: session.isLoggedIn,
+        lastActivity: new Date(session.lastActivity).toISOString(),
+        applicationProgress: session.applicationProgress,
+        currentQuestionIndex: session.currentQuestionIndex,
+        totalQuestions: session.totalQuestions
+      } : null,
+      message: sessionActive ? 'Session is active' : 'No active session'
+    });
+    
+  } catch (error) {
+    console.error('Error in session status endpoint:', error);
+    res.status(500).json({
+      success: false,
+      error: 'An unexpected error occurred',
+      details: error.message
     });
   }
 });
