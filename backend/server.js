@@ -2172,10 +2172,10 @@ app.post('/api/simple-apply', async (req, res) => {
       });
     }
     
-    // Check daily application limit
+    // Check daily application limit and reward bonus
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('auto_applies_used_today, auto_apply_usage_date')
+      .select('auto_applies_used_today, auto_apply_usage_date, login_streak, last_reward_claimed_date')
       .eq('id', userId)
       .single();
     
@@ -2199,11 +2199,27 @@ app.post('/api/simple-apply', async (req, res) => {
         .eq('id', userId);
     }
     
-    // Check if user has reached daily limit (15 applications)
-    if (currentUsage >= 15) {
+    // Calculate daily reward bonus
+    const loginStreak = profile?.login_streak || 0;
+    const lastRewardClaimed = profile?.last_reward_claimed_date;
+    let rewardBonus = 0;
+    
+    // Check if reward was claimed today
+    if (lastRewardClaimed === today && loginStreak > 0) {
+      // 7-day reward cycle with specific amounts
+      const rewards = [2, 2, 3, 4, 5, 5, 10]; // Day 1-7 rewards
+      const rewardIndex = ((loginStreak - 1) % 7 + 7) % 7;
+      rewardBonus = rewards[rewardIndex];
+    }
+    
+    // Calculate total daily limit (base 15 + reward bonus)
+    const totalDailyLimit = 15 + rewardBonus;
+    
+    // Check if user has reached daily limit
+    if (currentUsage >= totalDailyLimit) {
       return res.status(429).json({
         success: false,
-        error: 'Daily application limit reached (15 applications). Please try again tomorrow.'
+        error: `Daily application limit reached (${totalDailyLimit} applications). Please try again tomorrow.`
       });
     }
     

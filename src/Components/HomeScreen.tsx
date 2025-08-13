@@ -300,7 +300,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       const userId = userData.user.id;
       const { data: profile, error } = await supabase
         .from('profiles')
-        .select('auto_applies_used_today, auto_apply_usage_date')
+        .select('auto_applies_used_today, auto_apply_usage_date, login_streak, last_reward_claimed_date')
         .eq('id', userId)
         .single();
       if (error || !profile) return;
@@ -317,6 +317,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         setUsageDate(profile.auto_apply_usage_date);
         localStorage.setItem('aa_used', String(profile.auto_applies_used_today || 0));
         localStorage.setItem('aa_usageDate', profile.auto_apply_usage_date);
+        
+        // Calculate daily reward bonus
+        const loginStreak = profile.login_streak || 0;
+        const lastRewardClaimed = profile.last_reward_claimed_date;
+        let rewardBonus = 0;
+        
+        // Check if reward was claimed today
+        if (lastRewardClaimed === today && loginStreak > 0) {
+          // 7-day reward cycle with specific amounts
+          const rewards = [2, 2, 3, 4, 5, 5, 10]; // Day 1-7 rewards
+          const rewardIndex = ((loginStreak - 1) % 7 + 7) % 7;
+          rewardBonus = rewards[rewardIndex];
+        }
+        
+        // Update application limit with reward bonus
+        setApplicationLimit(15 + rewardBonus);
       }
     }
     fetchUsage();

@@ -127,6 +127,9 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
   // Check if user has reached their daily auto-apply limit
   const hasReachedDailyLimit = autoAppliesUsed >= autoApplyLimit;
   
+  // Calculate the actual limit including any reward bonus
+  const actualLimit = autoApplyLimit; // This now includes the reward bonus from HomeScreen
+  
   // Listen for usage count refresh events
   useEffect(() => {
     const handleRefreshUsage = () => {

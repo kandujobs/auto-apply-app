@@ -99,21 +99,23 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
 
-  // Rewards array (doubles each day, cycles every 5 days)
+  // Rewards array (7-day cycle with specific amounts)
   const rewards = [
-    { desc: 'You earned +1 extra application today!', amount: 1 },
-    { desc: 'You earned +2 extra applications today!', amount: 2 },
-    { desc: 'You earned +4 extra applications today!', amount: 4 },
-    { desc: 'You earned +8 extra applications today!', amount: 8 },
-    { desc: 'Big Day! +16 extra applications today!', amount: 16 },
+    { desc: 'Day 1: You earned +2 extra applications today!', amount: 2 },
+    { desc: 'Day 2: You earned +2 extra applications today!', amount: 2 },
+    { desc: 'Day 3: You earned +3 extra applications today!', amount: 3 },
+    { desc: 'Day 4: You earned +4 extra applications today!', amount: 4 },
+    { desc: 'Day 5: You earned +5 extra applications today!', amount: 5 },
+    { desc: 'Day 6: You earned +5 extra applications today!', amount: 5 },
+    { desc: 'Day 7: 🎁 Special Gift! +10 extra applications today!', amount: 10 },
   ];
   // State for reward popup and dynamic limit
   const [showRewardPopup, setShowRewardPopup] = useState(false);
   const [rewardMsg, setRewardMsg] = useState('');
   const [baseLimit] = useState(15); // base daily limit
   const [bonusLimit, setBonusLimit] = useState(0); // bonus from reward
-  // Calculate today's reward index (cycle every 5 days)
-  const rewardIndex = ((streak - 1) % 5 + 5) % 5;
+  // Calculate today's reward index (cycle every 7 days)
+  const rewardIndex = ((streak - 1) % 7 + 7) % 7;
   const todayReward = rewards[rewardIndex];
 
   // Live countdown for next reward
@@ -156,7 +158,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
           newStreak = newStreak + 1;
           needsUpdate = true;
         } else if (diffDays > 1) {
-          // Missed a day, reset streak
+          // Missed a day, reset streak to day 1
           newStreak = 1;
           needsUpdate = true;
         }
@@ -409,15 +411,37 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
             {!claimedToday ? 'Daily Reward!' : `Next Reward in ${nextRewardCountdown}`}
           </div>
           <div className="flex flex-row gap-4 justify-center items-center mt-2 mb-2">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${i < streak ? 'bg-gradient-to-br from-[#984DE0] to-[#7300FF] border-[#984DE0] text-white' : 'bg-gray-100 border-gray-300 text-gray-400'}`}
               >
                 {i < streak ? (
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  i === 6 ? (
+                    // Gift icon for day 7
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                      <path d="M20 12v10H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 7h20v5H2z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 22V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  )
                 ) : (
-                  <span className="font-bold text-lg">{i + 1}</span>
+                  i === 6 ? (
+                    // Gift icon for day 7 (unclaimed)
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                      <path d="M20 12v10H4V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 7h20v5H2z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 22V12" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  ) : (
+                    <span className="font-bold text-lg">{i + 1}</span>
+                  )
                 )}
               </div>
             ))}
