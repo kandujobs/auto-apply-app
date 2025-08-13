@@ -3,8 +3,9 @@
  * Falls back to localhost for development
  */
 export function getBackendUrl(): string {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
-  console.log('🔧 Backend URL:', backendUrl);
+  // Temporarily hardcode for testing - remove this after confirming it works
+  const backendUrl = 'https://auto-apply-app-production.up.railway.app';
+  console.log('🔧 Backend URL (hardcoded for testing):', backendUrl);
   console.log('🔧 Environment variable VITE_BACKEND_URL:', import.meta.env.VITE_BACKEND_URL);
   return backendUrl;
 }
