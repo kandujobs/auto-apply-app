@@ -2172,6 +2172,41 @@ app.post('/api/simple-apply', async (req, res) => {
       });
     }
     
+    // Check daily application limit
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('auto_applies_used_today, auto_apply_usage_date')
+      .eq('id', userId)
+      .single();
+    
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to check application limit'
+      });
+    }
+    
+    const today = new Date().toISOString().slice(0, 10);
+    const currentUsage = profile?.auto_applies_used_today || 0;
+    const usageDate = profile?.auto_apply_usage_date;
+    
+    // Reset usage if it's a new day
+    if (usageDate !== today) {
+      await supabase
+        .from('profiles')
+        .update({ auto_applies_used_today: 0, auto_apply_usage_date: today })
+        .eq('id', userId);
+    }
+    
+    // Check if user has reached daily limit (15 applications)
+    if (currentUsage >= 15) {
+      return res.status(429).json({
+        success: false,
+        error: 'Daily application limit reached (15 applications). Please try again tomorrow.'
+      });
+    }
+    
     // Check if user has an active session
     if (!isSessionActive(userId)) {
       return res.status(400).json({
@@ -3214,6 +3249,33 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
     if (result === true) {
       console.log(`✅ Job ${jobId} application completed successfully`);
       sendProgressToSession(userId, '✅ Application completed successfully!');
+      
+      // Increment daily application limit
+      try {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('auto_applies_used_today, auto_apply_usage_date')
+          .eq('id', userId)
+          .single();
+        
+        if (!profileError && profile) {
+          const today = new Date().toISOString().slice(0, 10);
+          const currentUsage = profile.auto_applies_used_today || 0;
+          const newUsage = currentUsage + 1;
+          
+          await supabase
+            .from('profiles')
+            .update({ 
+              auto_applies_used_today: newUsage,
+              auto_apply_usage_date: today
+            })
+            .eq('id', userId);
+          
+          console.log(`✅ Updated daily application count for user ${userId}: ${newUsage}/15`);
+        }
+      } catch (error) {
+        console.error('❌ Error updating daily application count:', error);
+      }
       
       // Send WebSocket message to notify frontend of completion
       const session = getSession(userId);

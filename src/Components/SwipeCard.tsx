@@ -126,6 +126,20 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
   
   // Check if user has reached their daily auto-apply limit
   const hasReachedDailyLimit = autoAppliesUsed >= autoApplyLimit;
+  
+  // Listen for usage count refresh events
+  useEffect(() => {
+    const handleRefreshUsage = () => {
+      // Trigger a refresh of the usage count in the parent component
+      window.dispatchEvent(new CustomEvent('refreshUsageCount'));
+    };
+    
+    window.addEventListener('refreshUsageCount', handleRefreshUsage);
+    
+    return () => {
+      window.removeEventListener('refreshUsageCount', handleRefreshUsage);
+    };
+  }, []);
 
   // Cleanup on component unmount
   useEffect(() => {
@@ -361,7 +375,15 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       } else {
         const errorData = await response.json();
         console.error('[SwipeCard] Failed to start application:', errorData);
-        setApplicationProgress(errorData.error || 'Failed to start application');
+        
+        // Handle daily limit reached error
+        if (response.status === 429) {
+          setApplicationProgress('Daily application limit reached (15 applications). Please try again tomorrow.');
+          // Trigger a refresh of the usage count
+          window.dispatchEvent(new CustomEvent('refreshUsageCount'));
+        } else {
+          setApplicationProgress(errorData.error || 'Failed to start application');
+        }
         setIsApplying(false);
       }
     } catch (error) {

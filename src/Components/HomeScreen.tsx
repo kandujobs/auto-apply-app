@@ -320,6 +320,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       }
     }
     fetchUsage();
+    
+    // Listen for usage count refresh events
+    const handleRefreshUsage = () => {
+      fetchUsage();
+    };
+    
+    window.addEventListener('refreshUsageCount', handleRefreshUsage);
+    
+    return () => {
+      window.removeEventListener('refreshUsageCount', handleRefreshUsage);
+    };
   }, []);
 
   useEffect(() => {

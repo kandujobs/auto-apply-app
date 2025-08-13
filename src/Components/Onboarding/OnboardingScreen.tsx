@@ -23,7 +23,7 @@ const FEATURES = [
   { icon: "🤖", text: "Auto-apply to jobs" },
   { icon: "📊", text: "Track your applications" },
   { icon: "💡", text: "Smart job recommendations" },
-  { icon: "🔔", text: "Improve your resume" },
+  { icon: "🔔", text: "Search notifications" },
 ];
 
 
