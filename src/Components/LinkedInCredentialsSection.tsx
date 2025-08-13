@@ -252,7 +252,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
               <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
               <span className="text-green-700 font-semibold">LinkedIn Connected</span>
             </div>
-            <p className="text-gray-600 text-sm">Your LinkedIn account is securely connected to Kandu</p>
+            <p className="text-gray-600 text-sm">Your LinkedIn account is connected to Kandu</p>
           </div>
 
                      <div className="bg-gray-50 rounded-xl p-4">
@@ -264,7 +264,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
                </div>
                <span className="text-gray-700 font-medium">{blurEmail(savedCredentials?.email || '')}</span>
              </div>
-             <p className="text-xs text-gray-500">Connected account • Secure connection</p>
+             <p className="text-xs text-gray-500">Connected account • Encrypted connection</p>
            </div>
         </div>
       ) : (
