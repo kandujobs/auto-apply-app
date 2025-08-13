@@ -76,10 +76,10 @@ const GuideSearchSection: React.FC<GuideSearchSectionProps> = ({
         {!isEditing && (
           <button
             onClick={handleEdit}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-purple-100 hover:bg-purple-200 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-100 hover:bg-purple-200 transition-colors"
             type="button"
           >
-            <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
@@ -138,10 +138,10 @@ const GuideSearchSection: React.FC<GuideSearchSectionProps> = ({
                 {jobTitle || 'Intern'}
               </p>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500">Job searches will focus on this title</p>
-            </div>
           </div>
+        </div>
+        <div className="text-center mt-2">
+          <p className="text-xs text-gray-500">Job searches will focus on this title</p>
         </div>
       )}
     </div>

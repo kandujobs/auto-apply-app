@@ -159,7 +159,7 @@ const InterestsSection: React.FC<InterestsSectionProps> = ({ interests: propInte
 
   return (
     <div className="w-full space-y-3" ref={sectionRef}>
-      <div className="w-full overflow-x-auto px-0 relative" style={{height: 48}} ref={containerRef}>
+      <div className="w-full overflow-x-auto px-0 relative scrollbar-hide" style={{height: 48}} ref={containerRef}>
         <div
           className={
             "interests-carousel flex gap-3 whitespace-nowrap min-w-0 justify-center"
