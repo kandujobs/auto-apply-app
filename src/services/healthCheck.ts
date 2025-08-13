@@ -1,4 +1,5 @@
 import { checkSupabaseConnection } from '../supabaseClient';
+import { getBackendUrl } from '../utils/backendUrl';
 
 export interface HealthStatus {
   backend: boolean;
@@ -32,7 +33,7 @@ export async function checkHealth(): Promise<HealthStatus> {
 
   // Check backend server
   try {
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    const backendUrl = getBackendUrl();
     const response = await fetch(`${backendUrl}/`, {
       signal: AbortSignal.timeout(5000)
     });
