@@ -189,26 +189,24 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg border-4 border-[#984DE0] p-6 flex flex-col">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-lg text-gray-800">LinkedIn Credentials</h3>
-        <div className="flex items-center gap-2">
-          {hasCredentials && !isEditing && (
+        <h3 className="font-bold text-lg text-gray-800">LinkedIn Connection</h3>
+        {hasCredentials && (
+          <div className="flex items-center gap-2">
             <button
               onClick={handleEdit}
               className="px-3 py-1 bg-blue-100 text-blue-600 font-semibold rounded-full text-sm hover:bg-blue-200 transition-colors"
             >
-              Edit
+              Reconnect
             </button>
-          )}
-          {hasCredentials && (
             <button
               onClick={handleDelete}
               disabled={deleting}
               className="px-3 py-1 bg-red-100 text-red-600 font-semibold rounded-full text-sm hover:bg-red-200 transition-colors disabled:opacity-50"
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              {deleting ? 'Disconnecting...' : 'Disconnect'}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {message && (
@@ -230,104 +228,169 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
 
       {hasCredentials && !isEditing ? (
         <div className="space-y-4">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            <span className="text-green-700 font-medium">Credentials saved</span>
+          {/* Connected State */}
+          <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-[#0077B5] rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </div>
+              <div className="w-8 h-8 bg-[#984DE0] rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-[#984DE0] to-[#7300FF] rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">K</span>
+              </div>
+            </div>
           </div>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn Email
-            </label>
-            <div className="px-3 py-2 border-2 border-gray-200 rounded-xl bg-gray-50 text-base text-gray-700">
-              {savedCredentials?.email || 'Email not available'}
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span className="text-green-700 font-semibold">LinkedIn Connected</span>
             </div>
+            <p className="text-gray-600 text-sm">Your LinkedIn account is securely connected to Kandu</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn Password
-            </label>
-            <div className="px-3 py-2 border-2 border-gray-200 rounded-xl bg-gray-50 text-base text-gray-700">
-              ••••••••••••••••
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center space-x-3 mb-3">
+              <div className="w-8 h-8 bg-[#0077B5] rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </div>
+              <span className="text-gray-700 font-medium">{savedCredentials?.email || 'Email not available'}</span>
             </div>
+            <p className="text-xs text-gray-500">Connected account • Secure connection</p>
           </div>
-          
-          <p className="text-gray-600 text-sm text-center">Your LinkedIn credentials are configured and ready to use.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="linkedin-email" className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn Email
-            </label>
-            <input
-              id="linkedin-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={accountEmail || "your.email@example.com"}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-xl bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
-              disabled={saving}
-            />
-            {accountEmail && email === accountEmail && (
-              <p className="text-xs text-gray-500 mt-1">
-                Using your account email. Change if your LinkedIn email is different.
-              </p>
-            )}
-          </div>
+        <div className="space-y-6">
+          {/* OAuth-style Connection Flow */}
+          {!isEditing ? (
+            <div className="text-center">
+              <div className="mb-6">
+                <div className="flex items-center justify-center space-x-4 mb-4">
+                  <div className="w-16 h-16 bg-[#0077B5] rounded-full flex items-center justify-center">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </div>
+                  <div className="w-8 h-8 bg-[#984DE0] rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </div>
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#984DE0] to-[#7300FF] rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-2xl">K</span>
+                  </div>
+                </div>
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Connect your LinkedIn to Kandu</h4>
+                <p className="text-gray-600 text-sm mb-6">Securely connect your LinkedIn account to enable automatic job applications</p>
+              </div>
 
-          <div>
-            <label htmlFor="linkedin-password" className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn Password
-            </label>
-            <div className="relative">
-              <input
-                id="linkedin-password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your LinkedIn password"
-                className="w-full px-3 py-2 pr-10 border-2 border-gray-300 rounded-xl bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
-                disabled={saving}
-              />
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                disabled={saving}
+                onClick={() => setIsEditing(true)}
+                className="w-full bg-[#0077B5] text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-[#006097] transition-all duration-200 flex items-center justify-center space-x-3"
               >
-                {showPassword ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                )}
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                <span>Sign in with LinkedIn</span>
               </button>
+
+              <div className="mt-4 text-xs text-gray-500">
+                <p>🔒 Your credentials are encrypted and stored securely</p>
+                <p>📱 Only used for automated job applications</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Credential Entry Form */
+            <div className="space-y-4">
+              <div className="text-center mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">Enter your LinkedIn credentials</h4>
+                <p className="text-gray-600 text-sm">We'll securely connect your account to enable automatic applications</p>
+              </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              onClick={handleSave}
-              disabled={saving || !email.trim() || !password.trim()}
-              className="flex-1 bg-gradient-to-r from-[#984DE0] to-[#7300FF] text-white font-semibold py-2 px-4 rounded-full shadow hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-            >
-              {saving ? 'Saving...' : 'Save Credentials'}
-            </button>
-            {isEditing && (
-              <button
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-100 text-gray-600 font-semibold rounded-full shadow hover:bg-gray-200 transition-all duration-200"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
+              <div>
+                <label htmlFor="linkedin-email" className="block text-sm font-medium text-gray-700 mb-1">
+                  LinkedIn Email
+                </label>
+                <input
+                  id="linkedin-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={accountEmail || "your.email@example.com"}
+                  className="w-full px-3 py-2 border-2 border-gray-300 rounded-xl bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                  disabled={saving}
+                />
+                {accountEmail && email === accountEmail && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Using your account email. Change if your LinkedIn email is different.
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="linkedin-password" className="block text-sm font-medium text-gray-700 mb-1">
+                  LinkedIn Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="linkedin-password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Your LinkedIn password"
+                    className="w-full px-3 py-2 pr-10 border-2 border-gray-300 rounded-xl bg-gray-50 text-base focus:outline-none focus:ring-2 focus:ring-purple-200 focus:border-purple-400"
+                    disabled={saving}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    disabled={saving}
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !email.trim() || !password.trim()}
+                  className="flex-1 bg-gradient-to-r from-[#984DE0] to-[#7300FF] text-white font-semibold py-3 px-4 rounded-xl shadow hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {saving ? 'Connecting...' : 'Connect Account'}
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-4 py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl shadow hover:bg-gray-200 transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+
+              <div className="text-center text-xs text-gray-500">
+                <p>🔒 Your credentials are encrypted and stored securely</p>
+                <p>📱 Only used for automated job applications</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
