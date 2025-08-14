@@ -581,6 +581,7 @@ const ResumeReviewScreen: React.FC<ResumeReviewScreenProps> = ({
         </button>
         </div>
         {error && <div className="w-full bg-red-100 text-red-700 rounded-lg p-3 text-xs mb-2">{error}</div>}
+        </div>
       </div>
     </div>
   );
