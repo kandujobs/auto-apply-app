@@ -54,66 +54,73 @@ const InterestsScreen: React.FC<InterestsScreenProps> = ({ onContinue, onBack, p
   };
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-      <div className="w-full max-w-sm min-h-[65vh] bg-white rounded-3xl shadow-lg border-4 border-gray-300 p-6 flex flex-col items-center mt-6 mb-8 overflow-y-auto">
-        <h2 className="text-2xl font-bold text-black mb-2 text-center w-full">Your Interests</h2>
-        <p className="text-base text-gray-500 mb-6 text-center w-full">What are you passionate about?</p>
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 mb-6">
-          <div>
-            <label className="block text-lg font-bold text-black mb-2">Skills</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={skillInput}
-                onChange={e => setSkillInput(e.target.value)}
-                placeholder="Add a skill..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0 text-base"
-              />
-              <button type="button" onClick={addSkill} className="px-3 py-1 bg-gray-200 rounded-lg font-semibold hover:bg-purple-100 transition-colors text-sm">Add</button>
+    <div className="relative min-h-screen flex flex-col items-center justify-between bg-gradient-to-br from-purple-50 to-blue-50 overflow-hidden">
+      {/* Top gradient bar */}
+      <div className="absolute left-0 top-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-b-[2rem] h-32 transition-all duration-500" />
+      {/* Bottom gradient bar */}
+      <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
+      {/* Main content */}
+      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
+          <h2 className="text-2xl font-bold text-black mb-2 text-center w-full">Your Interests</h2>
+          <p className="text-base text-gray-500 mb-6 text-center w-full">What are you passionate about?</p>
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 mb-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={skillInput}
+                  onChange={e => setSkillInput(e.target.value)}
+                  placeholder="Add a skill..."
+                  className="flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0"
+                />
+                <button type="button" onClick={addSkill} className="px-3 py-1 bg-gray-200 rounded font-semibold hover:bg-purple-100 transition-colors text-sm">Add</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {skills.filter(Boolean).map((skill, i) => (
+                  <span key={skill + i} className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 flex items-center gap-1">
+                    {skill}
+                    <button type="button" onClick={() => removeSkill(skill)} className="ml-1 text-purple-700 hover:text-purple-900">×</button>
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {skills.filter(Boolean).map((skill, i) => (
-                <span key={skill + i} className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 flex items-center gap-1">
-                  {skill}
-                  <button type="button" onClick={() => removeSkill(skill)} className="ml-1 text-purple-700 hover:text-purple-900">×</button>
-                </span>
-              ))}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={interestInput}
+                  onChange={e => setInterestInput(e.target.value)}
+                  placeholder="Add an interest..."
+                  className="flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0"
+                />
+                <button type="button" onClick={addInterest} className="px-3 py-1 bg-gray-200 rounded font-semibold hover:bg-purple-100 transition-colors text-sm">Add</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {interests.filter(Boolean).map((interest, i) => (
+                  <span key={interest + i} className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 flex items-center gap-1">
+                    {interest}
+                    <button type="button" onClick={() => removeInterest(interest)} className="ml-1 text-purple-700 hover:text-purple-900">×</button>
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-          <div>
-            <label className="block text-lg font-bold text-black mb-2">Interests</label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={interestInput}
-                onChange={e => setInterestInput(e.target.value)}
-                placeholder="Add an interest..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-0 text-base"
-              />
-              <button type="button" onClick={addInterest} className="px-3 py-1 bg-gray-200 rounded-lg font-semibold hover:bg-purple-100 transition-colors text-sm">Add</button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {interests.filter(Boolean).map((interest, i) => (
-                <span key={interest + i} className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 flex items-center gap-1">
-                  {interest}
-                  <button type="button" onClick={() => removeInterest(interest)} className="ml-1 text-purple-700 hover:text-purple-900">×</button>
-                </span>
-              ))}
-            </div>
-          </div>
+            <button
+              type="submit"
+              className="w-full py-3 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-bold shadow-lg mt-2 disabled:opacity-60"
+            >
+              Continue
+            </button>
+          </form>
           <button
-            type="submit"
-            className="w-full py-3 rounded-full bg-[#A100FF] text-white text-lg font-semibold shadow-lg hover:bg-[#6C00FF] transition-colors mt-2"
+            className="text-[#7300FF] underline text-base mt-4"
+            onClick={onBack}
           >
-            Continue
+            Back to previous step
           </button>
-        </form>
-        <button
-          className="text-[#6C00FF] underline text-[15px]"
-          onClick={onBack}
-        >
-          Back to previous step
-        </button>
+        </div>
       </div>
     </div>
   );

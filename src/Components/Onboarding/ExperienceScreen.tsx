@@ -28,7 +28,8 @@ const emptyEducation = (): Education => ({
   field: "",
   startDate: "",
   endDate: "",
-  gpa: ""
+  gpa: "",
+  location: ""
 });
 
 const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack, prefill }) => {
@@ -64,11 +65,11 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
       if (eduSection && Array.isArray(eduSection.fields)) {
         // Group fields into Education objects
         const grouped: Education[] = [];
-        let current: any = { id: uuidv4(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '' };
+        let current: any = { id: uuidv4(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '', location: '' };
         for (const field of eduSection.fields) {
           if (/institution|school|university|college/i.test(field.label) && Object.keys(current).length > 0 && (current.institution || current.degree)) {
             grouped.push(current);
-            current = { id: uuidv4(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '' };
+            current = { id: uuidv4(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '', location: '' };
           }
           if (/institution|school|university|college/i.test(field.label)) current.institution = field.value;
           else if (/degree/i.test(field.label)) current.degree = field.value;
@@ -76,6 +77,7 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
           else if (/start/i.test(field.label)) current.startDate = field.value;
           else if (/end/i.test(field.label)) current.endDate = field.value;
           else if (/gpa/i.test(field.label)) current.gpa = field.value;
+          else if (/location/i.test(field.label)) current.location = field.value;
         }
         if (current.institution || current.degree) grouped.push(current);
         setEducation(grouped);
@@ -132,13 +134,13 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
       <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
       {/* Main content */}
       <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8 overflow-y-auto">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
         <h2 className="text-2xl font-bold text-black mb-2 text-center w-full">Your Experience</h2>
         <p className="text-base text-gray-500 mb-6 text-center w-full">Add your work and education history</p>
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 mb-6">
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-lg font-bold text-black">Work Experience</label>
+              <label className="block text-sm font-medium text-gray-700">Work Experience</label>
               <button
                 type="button"
                 onClick={handleAddOrSaveExperience}
@@ -170,7 +172,7 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
           </div>
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-lg font-bold text-black">Education</label>
+              <label className="block text-sm font-medium text-gray-700">Education</label>
               <button
                 type="button"
                 onClick={handleAddOrSaveEducation}

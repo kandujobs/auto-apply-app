@@ -41,14 +41,14 @@ const TutorialScreen: React.FC<TutorialScreenProps> = ({ onContinue }) => {
           <div className="flex gap-2 mt-2">
             {step < steps.length - 1 ? (
               <button
-                className="px-6 py-2 rounded-full bg-[#A100FF] text-white font-semibold shadow hover:bg-[#6C00FF] transition-colors"
+                className="px-6 py-2 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold shadow-lg hover:opacity-90 transition-opacity"
                 onClick={() => setStep(step + 1)}
               >
                 Next
               </button>
             ) : (
               <button
-                className="px-6 py-2 rounded-full bg-[#A100FF] text-white font-semibold shadow hover:bg-[#6C00FF] transition-colors"
+                className="px-6 py-2 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold shadow-lg hover:opacity-90 transition-opacity"
                 onClick={onContinue}
               >
                 Got it

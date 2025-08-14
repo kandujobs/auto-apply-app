@@ -82,7 +82,7 @@ const OnboardingScreen: React.FC<{
           <button
             onClick={handleGetStarted}
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold py-3 px-6 rounded-[1rem] hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold py-3 px-6 rounded-[1rem] hover:from-purple-700 hover:to-blue-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
@@ -97,7 +97,7 @@ const OnboardingScreen: React.FC<{
           <button
             onClick={handleSignIn}
             disabled={isLoading}
-            className="w-full bg-white text-purple-600 font-semibold py-3 px-6 rounded-[1rem] border-2 border-purple-600 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-white text-purple-600 font-bold py-3 px-6 rounded-[1rem] border-2 border-purple-600 hover:bg-purple-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Sign In
           </button>

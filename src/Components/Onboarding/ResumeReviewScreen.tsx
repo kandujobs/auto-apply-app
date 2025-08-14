@@ -488,8 +488,14 @@ const ResumeReviewScreen: React.FC<ResumeReviewScreenProps> = ({
   }
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-      <div className="w-full max-w-sm h-[80vh] bg-white rounded-3xl shadow-lg border-4 border-gray-300 p-6 flex flex-col items-center mt-6 mb-8">
+    <div className="relative min-h-screen flex flex-col items-center justify-between bg-gradient-to-br from-purple-50 to-blue-50 overflow-hidden">
+      {/* Top gradient bar */}
+      <div className="absolute left-0 top-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-b-[2rem] h-32 transition-all duration-500" />
+      {/* Bottom gradient bar */}
+      <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
+      {/* Main content */}
+      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
         <div className="w-full flex flex-col gap-6 overflow-y-auto">
           {parserError && (
             <div className="w-full bg-red-100 text-red-700 rounded-lg p-3 text-xs mb-2">{parserError}</div>
@@ -561,13 +567,13 @@ const ResumeReviewScreen: React.FC<ResumeReviewScreenProps> = ({
         </div>
         <div className="flex w-full gap-2 mt-4">
         <button
-            className="flex-1 py-2 rounded-full bg-gray-100 text-[#A100FF] font-semibold border border-[#A100FF] hover:bg-purple-50 transition-colors"
+            className="flex-1 py-3 rounded-[1rem] bg-gray-100 text-[#7300FF] font-bold border border-[#7300FF] hover:bg-purple-50 transition-colors"
             onClick={onBack}
         >
             Back
         </button>
         <button
-            className="flex-1 py-2 rounded-full bg-[#A100FF] text-white font-semibold shadow-lg hover:bg-[#6C00FF] transition-colors"
+            className="flex-1 py-3 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold shadow-lg disabled:opacity-60"
             onClick={handleSaveAndContinue}
             disabled={loading}
         >

@@ -643,7 +643,8 @@ function App() {
             field: edu.field,
             start_date: edu.startDate,
             end_date: edu.endDate,
-            gpa: edu.gpa
+            gpa: edu.gpa,
+            location: edu.location || null
           }));
           
           const { error: eduError } = await supabase
@@ -667,7 +668,7 @@ function App() {
   const handleInterestsContinue = async (info: { skills: string[]; interests: string[] }) => {
     setInterests(info);
     
-    // Save interests and skills to profiles table
+    // Save interests and skills to profiles table, and mark onboarding as complete
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     
@@ -678,13 +679,14 @@ function App() {
           .upsert({
             id: userId,
             skills: info.skills,
-            interests: info.interests
+            interests: info.interests,
+            onboarding_complete: true
           }, { onConflict: 'id' });
         
         if (error) {
           console.error('[handleInterestsContinue] Error saving interests:', error);
         } else {
-          console.log('[handleInterestsContinue] Interests saved successfully');
+          console.log('[handleInterestsContinue] Interests saved successfully and onboarding marked complete');
         }
       } catch (error) {
         console.error('[handleInterestsContinue] Error saving data:', error);
@@ -763,6 +765,7 @@ function App() {
       startDate: e.start_date,
       endDate: e.end_date,
       gpa: e.gpa,
+      location: e.location,
     }));
     const mappedExperience = (experience || []).map((e: any) => ({
       id: e.id,

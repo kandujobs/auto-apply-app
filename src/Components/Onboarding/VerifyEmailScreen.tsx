@@ -93,7 +93,7 @@ const VerifyEmailScreen: React.FC<VerifyEmailScreenProps> = ({ email, onResend, 
       {/* Main content */}
       <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
         <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
-        <h2 className="text-2xl font-semibold text-black mb-2 text-center">Verify Your Email</h2>
+        <h2 className="text-2xl font-bold text-black mb-2 text-center">Verify Your Email</h2>
         <div className="text-base text-gray-700 text-center mb-2">
           Welcome to the platform!
         </div>
@@ -145,7 +145,7 @@ const VerifyEmailScreen: React.FC<VerifyEmailScreenProps> = ({ email, onResend, 
             />
             <div className="flex gap-2 w-full">
               <button
-                className="flex-1 py-2 rounded-full bg-[#A100FF] text-white text-sm font-semibold shadow hover:bg-[#6C00FF] transition-colors"
+                className="flex-1 py-2 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-bold shadow-lg hover:opacity-90 transition-opacity"
                 onClick={() => {
                   if (onChangeEmail && newEmail) {
                     onChangeEmail(newEmail);

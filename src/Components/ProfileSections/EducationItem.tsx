@@ -116,13 +116,18 @@ const EducationItem: React.FC<EducationItemProps> = ({
         ) : (
           <>
           <span className="text-md text-gray-400">{formatDateForDisplay(education.startDate)}{education.startDate && education.endDate ? ' - ' : ''}{formatDateForDisplay(education.endDate)}</span>
-            {education.gpa && (
-              <div className="flex w-full">
-                <span className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 inline-flex items-center gap-1 mt-1 self-start">
+            <div className="flex flex-wrap gap-2 mt-1">
+              {education.gpa && (
+                <span className="bg-purple-200 text-purple-700 font-bold text-xs rounded-full px-3 py-1 inline-flex items-center gap-1">
                   GPA: {education.gpa}
                 </span>
-              </div>
-            )}
+              )}
+              {education.location && (
+                <span className="bg-blue-200 text-blue-700 font-bold text-xs rounded-full px-3 py-1 inline-flex items-center gap-1">
+                  📍 {education.location}
+                </span>
+              )}
+            </div>
           </>
         )}
         {/* GPA and Location */}
@@ -138,7 +143,16 @@ const EducationItem: React.FC<EducationItemProps> = ({
                 className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500 max-w-[120px]"
               />
             </div>
-            {/* Location field removed */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Location (Optional)</label>
+              <input
+                type="text"
+                value={education.location || ""}
+                onChange={(e) => onUpdate('location', e.target.value)}
+                placeholder="e.g. New York, NY"
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+              />
+            </div>
           </div>
         )}
       </div>
