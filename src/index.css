@@ -35,7 +35,7 @@ html, body {
 /* Phone-sized container for desktop */
 @media (min-width: 768px) {
   body {
-    background: #f5f5f5;
+    background: linear-gradient(135deg, #984DE0 0%, #7300FF 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
