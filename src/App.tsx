@@ -1201,8 +1201,7 @@ function App() {
   }
 
   return (
-    <>
-
+    <div className="phone-container">
       
       {screen === "home" && (
         <>
@@ -1411,7 +1410,7 @@ function App() {
             isOpen={showNetworkModal} 
             onClose={() => setShowNetworkModal(false)} 
           />
-        </>
+        </div>
       );
     }
 
