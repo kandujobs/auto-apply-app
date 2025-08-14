@@ -48,11 +48,68 @@ html, body {
     height: 812px;
     max-width: 375px;
     max-height: 812px;
-    background: white;
-    border-radius: 40px;
+    background: #000;
+    border-radius: 50px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     position: relative;
+    padding: 8px;
+  }
+  
+  /* Phone screen content */
+  .phone-container {
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 42px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  /* Phone frame elements */
+  .phone-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  /* Power button */
+  .phone-frame::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 120px;
+    width: 4px;
+    height: 40px;
+    background: #333;
+    border-radius: 2px;
+  }
+  
+  /* Volume up button */
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 100px;
+    width: 4px;
+    height: 30px;
+    background: #333;
+    border-radius: 2px;
+  }
+  
+  /* Volume down button */
+  .phone-frame .volume-down {
+    position: absolute;
+    left: -2px;
+    top: 140px;
+    width: 4px;
+    height: 30px;
+    background: #333;
+    border-radius: 2px;
   }
   
   /* Ensure all content stays within phone bounds */

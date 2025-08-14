@@ -1202,6 +1202,9 @@ function App() {
 
   return (
     <div className="phone-container">
+      <div className="phone-frame">
+        <div className="volume-down"></div>
+      </div>
       
       {screen === "home" && (
         <>
