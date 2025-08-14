@@ -993,8 +993,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 <text x="16" y="22" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" textAnchor="middle" fill="url(#gradient)">K</text>
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#7C3AED"/>
-                    <stop offset="100%" stopColor="#2563EB"/>
+                    <stop offset="0%" stopColor="#984DE0"/>
+                    <stop offset="100%" stopColor="#7300FF"/>
                   </linearGradient>
                 </defs>
               </svg>
