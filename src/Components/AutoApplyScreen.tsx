@@ -266,6 +266,8 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       localStorage.setItem('aa_used', '0');
       localStorage.setItem('aa_usageDate', todayStr);
     }
+    // Dispatch event to refresh usage count in other components
+    window.dispatchEvent(new CustomEvent('refreshUsageCount'));
   };
 
   // Helper to calculate time until next reward (midnight)

@@ -312,6 +312,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         setUsageDate(today);
         localStorage.setItem('aa_used', '0');
         localStorage.setItem('aa_usageDate', today);
+        setApplicationLimit(15); // Reset to base limit for new day
       } else {
         setAutoAppliesUsed(profile.auto_applies_used_today || 0);
         setUsageDate(profile.auto_apply_usage_date);
