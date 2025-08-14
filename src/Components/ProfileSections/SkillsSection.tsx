@@ -85,7 +85,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({
     <div className="w-full" ref={sectionRef}>
       <div className="w-full overflow-x-auto px-0 relative" style={{height: 48}}>
         <div className="flex gap-3 whitespace-nowrap min-w-0 justify-center">
-          {(isEditing ? localSkills : skills).map((skill, i) => (
+          {((isEditing ? localSkills : skills) || []).map((skill, i) => (
             <div
               key={i}
               className="bg-purple-100 text-purple-700 font-semibold text-[16px] rounded-full px-4 py-1 flex items-center gap-1 min-w-max cursor-pointer"

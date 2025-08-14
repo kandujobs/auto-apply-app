@@ -118,7 +118,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
           
           // Fetch job details for all swipes
           if (swipes && swipes.length > 0) {
-            const jobIds = swipes.map(swipe => swipe.job_id).filter(id => id);
+            const jobIds = (swipes || []).map(swipe => swipe.job_id).filter(id => id);
             if (jobIds.length > 0) {
               const { data: jobs, error: jobsError } = await supabase
                 .from('linkedin_fetched_jobs')
@@ -246,7 +246,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
         if (year) return `${year[1]}-01-01`;
         return null;
       }
-      const educationRows = updatedEducation.map((e) => {
+      const educationRows = (updatedEducation || []).map((e) => {
         const row: any = { profile_id: userData.user.id };
         row.id = e.id;
         row.institution = e.institution;
@@ -298,7 +298,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
         if (year) return `${year[1]}-01-01`;
         return null;
       }
-      const experienceRows = updatedExperience.map((e) => {
+      const experienceRows = (updatedExperience || []).map((e) => {
         const row: any = { profile_id: userData.user.id };
         row.id = e.id;
         row.job_title = e.title;

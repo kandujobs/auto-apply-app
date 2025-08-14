@@ -52,7 +52,7 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   };
 
   const handleUpdate = (id: string, field: keyof Experience, value: any) => {
-    setLocalExperience(localExperience.map(e =>
+    setLocalExperience((localExperience || []).map(e =>
       e.id === id ? { ...e, [field]: value } : e
     ));
   };
@@ -86,7 +86,7 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
       {(isEditing ? localExperience : experience).length === 0 ? (
         <div className="text-gray-400 text-sm mb-2">No experience added yet.</div>
       ) : (
-        (isEditing ? localExperience : experience).map((exp) => (
+        ((isEditing ? localExperience : experience) || []).map((exp) => (
         <ExperienceItem
           key={exp.id}
           experience={exp}

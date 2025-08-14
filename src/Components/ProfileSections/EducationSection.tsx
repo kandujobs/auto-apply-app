@@ -52,7 +52,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({
   };
 
   const handleUpdate = (id: string, field: keyof Education, value: string) => {
-    setLocalEducation(localEducation.map(e =>
+    setLocalEducation((localEducation || []).map(e =>
       e.id === id ? { ...e, [field]: value } : e
     ));
   };
@@ -86,7 +86,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({
       {(isEditing ? localEducation : education).length === 0 ? (
         <div className="text-gray-400 text-sm mb-2">No education added yet.</div>
       ) : (
-        (isEditing ? localEducation : education).map((edu) => (
+        ((isEditing ? localEducation : education) || []).map((edu) => (
         <EducationItem
           key={edu.id}
           education={edu}
