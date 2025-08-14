@@ -71,33 +71,11 @@ html, body {
   }
   
   /* Scale down content to fit the smaller phone frame */
-  .phone-container * {
-    font-size: 0.75em;
-  }
-  
-  .phone-container h1, .phone-container h2, .phone-container h3 {
-    font-size: 0.8em;
-  }
-  
-  .phone-container button {
-    font-size: 0.75em;
-    padding: 0.75em 1.5em;
-  }
-  
-  .phone-container .text-lg {
-    font-size: 0.75em !important;
-  }
-  
-  .phone-container .text-xl {
-    font-size: 0.8em !important;
-  }
-  
-  .phone-container .text-2xl {
-    font-size: 0.85em !important;
-  }
-  
-  .phone-container .text-3xl {
-    font-size: 0.9em !important;
+  .phone-container {
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: 133.33%; /* 100% / 0.75 to compensate for scale */
+    height: 133.33%; /* 100% / 0.75 to compensate for scale */
   }
   
   /* Phone frame elements */
