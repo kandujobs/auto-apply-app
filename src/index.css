@@ -35,7 +35,7 @@ html, body {
 /* Phone-sized container for desktop */
 @media (min-width: 768px) {
   body {
-    background: linear-gradient(135deg, #984DE0 0%, #7300FF 100%);
+    background: #e8e8e8;
     min-height: 100vh;
     height: 100vh;
     display: flex;
@@ -56,7 +56,7 @@ html, body {
     overflow: hidden;
     position: relative;
     padding: 8px;
-    transform: scale(0.9);
+    transform: scale(0.95);
     transform-origin: center center;
   }
   
@@ -72,10 +72,10 @@ html, body {
   
   /* Scale down content to fit the smaller phone frame */
   .phone-container {
-    transform: scale(0.9);
+    transform: scale(0.95);
     transform-origin: top left;
-    width: 111.11%; /* 100% / 0.9 to compensate for scale */
-    height: 111.11%; /* 100% / 0.9 to compensate for scale */
+    width: 105.26%; /* 100% / 0.95 to compensate for scale */
+    height: 105.26%; /* 100% / 0.95 to compensate for scale */
   }
   
   /* Phone frame elements */
