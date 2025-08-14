@@ -130,18 +130,20 @@ const GuideSearchSection: React.FC<GuideSearchSectionProps> = ({
           </div>
         </div>
       ) : (
-        <div className="bg-gray-50 rounded-xl p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <p className="text-sm text-gray-600">Current Target:</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {jobTitle || 'Intern'}
-              </p>
+        <div>
+          <div className="bg-gray-50 rounded-xl p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-gray-600">Current Target:</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {jobTitle || 'Intern'}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-        <div className="text-center mt-2">
-          <p className="text-xs text-gray-500">Job searches will focus on this title</p>
+          <div className="text-center mt-2">
+            <p className="text-xs text-gray-500">Job searches will focus on this title</p>
+          </div>
         </div>
       )}
     </div>
