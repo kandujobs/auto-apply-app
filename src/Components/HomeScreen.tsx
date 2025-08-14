@@ -988,10 +988,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
           </div>
         ) : availableJobs.length === 0 && !linkedInJobsLoading ? (
           <div className="flex flex-col items-center justify-center text-center max-w-md">
-            <div className="w-24 h-24 bg-gradient-to-r from-[#984DE0] to-[#7300FF] rounded-full flex items-center justify-center mb-6">
-              <svg className="w-12 h-12" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="32" height="32" rx="6" fill="url(#gradient)"/>
-                <text x="16" y="22" fontFamily="Arial, sans-serif" fontSize="18" fontWeight="bold" textAnchor="middle" fill="white">K</text>
+            <div className="mb-6">
+              <svg className="w-24 h-24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <text x="16" y="22" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" textAnchor="middle" fill="url(#gradient)">K</text>
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stopColor="#7C3AED"/>
