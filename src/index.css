@@ -143,14 +143,24 @@ html, body {
   position: relative;
 }
 
-/* Constrain gradient bars to phone screen width */
-@media (min-width: 768px) {
-  .phone-container .fixed {
-    width: 375px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+  /* Constrain gradient bars to phone screen width and position them correctly */
+  @media (min-width: 768px) {
+    .phone-container .fixed {
+      width: 359px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      position: absolute !important;
+    }
+    
+    /* Ensure gradient bars are positioned relative to the phone container */
+    .phone-container .fixed.top-0 {
+      top: 0 !important;
+    }
+    
+    .phone-container .fixed.bottom-0 {
+      bottom: 0 !important;
+    }
   }
-}
 
 /* Allow horizontal scrolling for SmartFeed sections */
 .overflow-x-auto {
