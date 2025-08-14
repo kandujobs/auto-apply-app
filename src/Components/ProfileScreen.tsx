@@ -144,7 +144,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   }, [profile]);
 
   const calculateStatistics = () => {
-    // Calculate from all job swipes
+    // Calculate from all job swipes - add null check
+    if (!allJobSwipes || !Array.isArray(allJobSwipes)) {
+      return { left: 0, right: 0, saved: 0 };
+    }
     const left = allJobSwipes.filter(swipe => swipe.swipe_direction === 'left').length;
     const right = allJobSwipes.filter(swipe => swipe.swipe_direction === 'right').length;
     const saved = allJobSwipes.filter(swipe => swipe.swipe_direction === 'saved').length;
@@ -165,7 +168,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
 
   // Helper to get most common job title from swipes with job details
   function getMostCommonTitleFromSwipes(swipes: any[], direction: string) {
-    if (!swipes.length) return "-";
+    if (!swipes || !Array.isArray(swipes) || !swipes.length) return "-";
     const directionSwipes = swipes.filter(swipe => swipe.swipe_direction === direction);
     if (!directionSwipes.length) return "-";
     
@@ -200,7 +203,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   const updateEducation = (id: string, field: keyof Education, value: string) => {
     setEditingProfile(prev => prev ? ({
       ...prev,
-      education: prev.education.map(edu =>
+      education: (prev.education || []).map(edu =>
         edu.id === id ? { ...edu, [field]: value } : edu
       )
     }) : null);
@@ -209,7 +212,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   const updateExperience = (id: string, field: keyof Experience, value: any) => {
     setEditingProfile(prev => prev ? ({
       ...prev,
-      experience: prev.experience.map(exp =>
+      experience: (prev.experience || []).map(exp =>
         exp.id === id ? { ...exp, [field]: value } : exp
       )
     }) : null);
@@ -508,7 +511,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
                 {/* Last Jobs You've Rejected section */}
                 <div className="w-full mt-2">
                   <div className="text-lg font-bold text-[#5C1EE2] mb-2 text-left">The Last Jobs You've Rejected</div>
-                  {allJobSwipes.filter(swipe => swipe.swipe_direction === 'left').length === 0 ? (
+                  {(!allJobSwipes || !Array.isArray(allJobSwipes) || allJobSwipes.filter(swipe => swipe.swipe_direction === 'left').length === 0) ? (
                     <div className="w-full flex flex-col items-center justify-center py-8">
                       <div className="text-gray-500 text-base font-semibold mb-2 text-center">
                         No Rejected Jobs Yet
@@ -520,7 +523,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
                   ) : (
                     <div className="overflow-x-auto scrollbar-hide py-2 smartfeed-scroll" style={{ touchAction: 'pan-x', minHeight: '140px', overflowY: 'hidden' }}>
                       <div className="flex flex-row gap-x-4 whitespace-nowrap pl-2" style={{ minWidth: 'max-content', paddingBottom: '16px' }}>
-                        {allJobSwipes.filter(swipe => swipe.swipe_direction === 'left').slice(0, 8).map((swipe) => {
+                        {(allJobSwipes || []).filter(swipe => swipe.swipe_direction === 'left').slice(0, 8).map((swipe) => {
                           const jobDetail = jobDetails.find(job => job.id === swipe.job_id);
                           return (
                             <div
