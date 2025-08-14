@@ -56,7 +56,7 @@ html, body {
     overflow: hidden;
     position: relative;
     padding: 8px;
-    transform: scale(0.85);
+    transform: scale(0.9);
     transform-origin: center center;
   }
   
@@ -72,10 +72,10 @@ html, body {
   
   /* Scale down content to fit the smaller phone frame */
   .phone-container {
-    transform: scale(0.85);
+    transform: scale(0.9);
     transform-origin: top left;
-    width: 117.65%; /* 100% / 0.85 to compensate for scale */
-    height: 117.65%; /* 100% / 0.85 to compensate for scale */
+    width: 111.11%; /* 100% / 0.9 to compensate for scale */
+    height: 111.11%; /* 100% / 0.9 to compensate for scale */
   }
   
   /* Phone frame elements */
