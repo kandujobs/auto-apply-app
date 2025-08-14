@@ -50,79 +50,24 @@ html, body {
     height: 870px;
     max-width: 430px;
     max-height: 870px;
-    background: #000;
-    border-radius: 50px;
+    background: white;
+    border-radius: 40px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     overflow: hidden;
     position: relative;
-    padding: 8px;
-    transform: scale(0.95);
-    transform-origin: center center;
   }
   
-  /* Phone screen content */
+  /* App container */
   .phone-container {
     width: 100%;
     height: 100%;
     background: white;
-    border-radius: 42px;
+    border-radius: 40px;
     overflow: hidden;
     position: relative;
   }
   
-  /* Scale down content to fit the smaller phone frame */
-  .phone-container {
-    transform: scale(0.95);
-    transform-origin: top left;
-    width: 105.26%; /* 100% / 0.95 to compensate for scale */
-    height: 105.26%; /* 100% / 0.95 to compensate for scale */
-  }
-  
-  /* Phone frame elements */
-  .phone-frame {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    z-index: 10;
-  }
-  
-  /* Power button */
-  .phone-frame::after {
-    content: '';
-    position: absolute;
-    right: -2px;
-    top: 120px;
-    width: 4px;
-    height: 40px;
-    background: #333;
-    border-radius: 2px;
-  }
-  
-  /* Volume up button */
-  .phone-frame::before {
-    content: '';
-    position: absolute;
-    left: -2px;
-    top: 100px;
-    width: 4px;
-    height: 30px;
-    background: #333;
-    border-radius: 2px;
-  }
-  
-  /* Volume down button */
-  .phone-frame .volume-down {
-    position: absolute;
-    left: -2px;
-    top: 140px;
-    width: 4px;
-    height: 30px;
-    background: #333;
-    border-radius: 2px;
-  }
+
   
   /* Ensure all content stays within phone bounds */
   #root > * {
@@ -155,16 +100,16 @@ html, body {
   position: relative;
 }
 
-  /* Constrain gradient bars to phone screen width and position them correctly */
+  /* Constrain gradient bars to app width */
   @media (min-width: 768px) {
     .phone-container .fixed {
-      width: 414px !important;
+      width: 430px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
       position: absolute !important;
     }
     
-    /* Ensure gradient bars are positioned relative to the phone container */
+    /* Ensure gradient bars are positioned correctly */
     .phone-container .fixed.top-0 {
       top: 0 !important;
     }
