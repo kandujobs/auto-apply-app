@@ -142,7 +142,7 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 pt-40 pb-40 px-4">
+    <div className="bg-gray-100 pt-40 pb-40 px-4 h-[calc(100vh-8rem)] overflow-y-auto">
       {/* Top Nav Gradient Bar */}
       <div className="fixed top-0 left-0 w-full h-32 bg-gradient-to-r from-[#984DE0] to-[#7300FF] p-4 rounded-b-[2rem] z-20 flex items-center justify-center shadow-lg">
         <div className="mt-6 bg-white/100 rounded-3xl flex justify-center items-center px-8 py-2 gap-8 w-fit border-2 border-gray-400">
