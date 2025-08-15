@@ -939,7 +939,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
 
       {/* Page Content Wrapper */}
-      <div className="flex-1 flex items-center justify-center px-4 w-full mt-32 mb-40">
+      <div className="flex-1 flex items-center justify-center px-4 w-full mt-32 mb-32">
         {linkedInJobsLoading || isRefetching || isJobFetching ? (
           <div className="flex flex-col items-center justify-center text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#A100FF] mb-4"></div>

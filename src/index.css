@@ -47,9 +47,9 @@ html, body {
   
   #root {
     width: 375px;
-    height: 750px;
+    height: 800px;
     max-width: 375px;
-    max-height: 750px;
+    max-height: 800px;
     background: white;
     border-radius: 40px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
