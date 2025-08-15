@@ -105,7 +105,7 @@ const SmartFeed: React.FC<SmartFeedProps> = ({
   if (!dataToUse) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between pt-40 pb-40 px-6">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between pt-40 pb-40 px-6 overflow-y-auto">
       {/* Top Nav */}
       <div className="fixed top-0 left-0 w-full h-32 bg-gradient-to-r from-[#984DE0] to-[#7300FF] p-4 rounded-b-[2rem] z-10 flex items-center justify-center">
         <div className="mt-6 bg-white/100 rounded-3xl flex justify-center items-center px-8 py-2 gap-8 w-fit border-2 border-gray-400">
@@ -145,7 +145,7 @@ const SmartFeed: React.FC<SmartFeedProps> = ({
         </div>
       </div>
       {/* Main Content */}
-      <div className="w-full max-w-lg mx-auto flex flex-col gap-6 mt-0 mb-4 px-2 pb-32 main-content" style={{ minHeight: 'calc(100vh - 260px)' }}>
+      <div className="w-full max-w-lg mx-auto flex flex-col gap-6 mt-0 mb-4 px-2 pb-32 main-content overflow-y-auto">
         <div className="mb-0 mt-0 flex flex-col items-center justify-center">
           <h1 className="text-3xl font-bold mb-0 text-center">Smart Feed</h1>
           <p className="text-base text-gray-600 text-center mt-0 mb-0">Help us refine your search</p>

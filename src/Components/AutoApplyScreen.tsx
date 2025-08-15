@@ -361,7 +361,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 pt-40 pb-40 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 pt-40 pb-40 px-4 overflow-y-auto">
       {/* Top Nav Gradient Bar */}
       <div className="fixed top-0 left-0 w-full h-32 bg-gradient-to-r from-[#984DE0] to-[#7300FF] p-4 rounded-b-[2rem] z-20 flex items-center justify-center shadow-lg">
         <div className="mt-6 bg-white/100 rounded-3xl flex justify-center items-center px-8 py-2 gap-8 w-fit border-2 border-gray-400">
@@ -401,7 +401,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
         </div>
       </div>
       
-      <div className="w-full max-w-lg mx-auto flex flex-col gap-y-8 items-center justify-center pb-32">
+      <div className="w-full max-w-lg mx-auto flex flex-col gap-y-8 items-center justify-center pb-32 overflow-y-auto">
         {/* Application Session Card */}
         <div className={`w-full ${themeBg} rounded-3xl ${themeShadow} border-4 ${themeBorder} ${electricClass} p-6`}>
           <SessionManager onSessionChange={setIsSessionActive} />
