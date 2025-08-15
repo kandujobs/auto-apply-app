@@ -939,7 +939,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
 
       {/* Page Content Wrapper */}
-      <div className="flex-1 flex items-center justify-center px-4 w-full mt-32 mb-32">
+      <div className="flex-1 flex items-center justify-center px-4 w-full mt-32 mb-40">
         {linkedInJobsLoading || isRefetching || isJobFetching ? (
           <div className="flex flex-col items-center justify-center text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#A100FF] mb-4"></div>
@@ -993,8 +993,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 <text x="16" y="22" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" textAnchor="middle" fill="url(#gradient)">K</text>
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#984DE0"/>
-                    <stop offset="100%" stopColor="#7300FF"/>
+                    <stop offset="0%" stopColor="#7C3AED"/>
+                    <stop offset="100%" stopColor="#2563EB"/>
                   </linearGradient>
                 </defs>
               </svg>
