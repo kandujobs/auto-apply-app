@@ -46,10 +46,10 @@ html, body {
   }
   
   #root {
-    width: 430px;
-    height: 870px;
-    max-width: 430px;
-    max-height: 870px;
+    width: 375px;
+    height: 750px;
+    max-width: 375px;
+    max-height: 750px;
     background: white;
     border-radius: 40px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -103,7 +103,7 @@ html, body {
   /* Constrain gradient bars to app width */
   @media (min-width: 768px) {
     .phone-container .fixed {
-      width: 430px !important;
+      width: 375px !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
       position: absolute !important;
