@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../../supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
 interface VerifyEmailScreenProps {
   email: string;
@@ -74,6 +75,58 @@ const VerifyEmailScreen: React.FC<VerifyEmailScreenProps> = ({ email, onResend, 
             email: userData.user.email,
           }
         ], { onConflict: 'id' });
+        
+        // Create placeholder rows in education and experience tables
+        // This ensures the ProfileScreen can display the sections even if empty
+        try {
+          // Check if user already has education/experience rows
+          const { data: existingEducation } = await supabase
+            .from('education')
+            .select('id')
+            .eq('profile_id', userData.user.id)
+            .limit(1);
+          
+          const { data: existingExperience } = await supabase
+            .from('experience')
+            .select('id')
+            .eq('profile_id', userData.user.id)
+            .limit(1);
+          
+          // Only create placeholder if no rows exist
+          if (!existingEducation || existingEducation.length === 0) {
+            await supabase.from('education').insert([
+              {
+                id: uuidv4(),
+                profile_id: userData.user.id,
+                institution: '',
+                degree: '',
+                field: '',
+                start_date: null,
+                end_date: null,
+                gpa: '',
+                location: ''
+              }
+            ]);
+          }
+          
+          if (!existingExperience || existingExperience.length === 0) {
+            await supabase.from('experience').insert([
+              {
+                id: uuidv4(),
+                profile_id: userData.user.id,
+                job_title: '',
+                company: '',
+                location: '',
+                start_date: null,
+                end_date: null,
+                is_current: false,
+                description: ''
+              }
+            ]);
+          }
+        } catch (error) {
+          console.error('[VerifyEmailScreen] Error creating placeholder rows:', error);
+        }
       }
       setPinStatus('Email verified and onboarding complete! Redirecting...');
       if (onResend) onResend(); // Optionally call onVerified/onResend

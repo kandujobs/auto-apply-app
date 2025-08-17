@@ -88,6 +88,65 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
     loadUserResumes();
   }, [profile?.id]);
 
+  // Ensure placeholder rows exist in education and experience tables
+  useEffect(() => {
+    const ensurePlaceholderRows = async () => {
+      if (!profile?.id) return;
+      
+      try {
+        // Check if user has education/experience rows
+        const { data: existingEducation } = await supabase
+          .from('education')
+          .select('id')
+          .eq('profile_id', profile.id)
+          .limit(1);
+        
+        const { data: existingExperience } = await supabase
+          .from('experience')
+          .select('id')
+          .eq('profile_id', profile.id)
+          .limit(1);
+        
+        // Create placeholder rows if they don't exist
+        if (!existingEducation || existingEducation.length === 0) {
+          await supabase.from('education').insert([
+            {
+              id: crypto.randomUUID(),
+              profile_id: profile.id,
+              institution: '',
+              degree: '',
+              field: '',
+              start_date: null,
+              end_date: null,
+              gpa: '',
+              location: ''
+            }
+          ]);
+        }
+        
+        if (!existingExperience || existingExperience.length === 0) {
+          await supabase.from('experience').insert([
+            {
+              id: crypto.randomUUID(),
+              profile_id: profile.id,
+              job_title: '',
+              company: '',
+              location: '',
+              start_date: null,
+              end_date: null,
+              is_current: false,
+              description: ''
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('[ProfileScreen] Error ensuring placeholder rows:', error);
+      }
+    };
+
+    ensurePlaceholderRows();
+  }, [profile?.id]);
+
   // Calculate statistics from applied jobs
   // State for all job swipes and job details
   const [allJobSwipes, setAllJobSwipes] = useState<any[]>([]);
