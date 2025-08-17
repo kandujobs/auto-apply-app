@@ -49,8 +49,8 @@ const BasicInfoScreen: React.FC<BasicInfoScreenProps> = ({ onContinue, onBack, p
       {/* Bottom gradient bar */}
       <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
+      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4 py-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center">
         <h2 className="text-2xl font-bold text-black mb-2 text-center w-full">Tell us about yourself</h2>
         <p className="text-base text-gray-500 mb-6 text-center w-full">Let's start with some basic information</p>
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 mb-6 relative">

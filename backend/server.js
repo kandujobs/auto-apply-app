@@ -3,6 +3,7 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const path = require('path');
 const WebSocket = require('ws');
+const PaymentService = require('./paymentService');
 
 // Load Playwright conditionally
 let chromium;
@@ -3384,6 +3385,141 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
     throw error;
   }
 }
+
+// Initialize Payment Service
+const paymentService = new PaymentService();
+
+// Payment Routes
+app.post('/api/payment/create-customer', async (req, res) => {
+  try {
+    const { email, name } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+    
+    const customer = await paymentService.createCustomer(email, name);
+    res.json({ customer });
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/payment/create-subscription', async (req, res) => {
+  try {
+    const { customerId, priceId, userId, trialDays = 2 } = req.body;
+    
+    if (!customerId || !priceId || !userId) {
+      return res.status(400).json({ error: 'Customer ID, Price ID, and User ID are required' });
+    }
+    
+    const subscription = await paymentService.createSubscription(customerId, priceId, trialDays);
+    
+    // Save subscription to database
+    await paymentService.saveSubscriptionToDatabase(userId, subscription);
+    
+    res.json({ subscription });
+  } catch (error) {
+    console.error('Error creating subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/payment/create-payment-intent', async (req, res) => {
+  try {
+    const { amount, currency = 'usd', customerId } = req.body;
+    
+    if (!amount) {
+      return res.status(400).json({ error: 'Amount is required' });
+    }
+    
+    const paymentIntent = await paymentService.createPaymentIntent(amount, currency, customerId);
+    res.json({ paymentIntent });
+  } catch (error) {
+    console.error('Error creating payment intent:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/payment/subscription-plans', async (req, res) => {
+  try {
+    const plans = await paymentService.getSubscriptionPlans();
+    res.json({ plans });
+  } catch (error) {
+    console.error('Error getting subscription plans:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/payment/user-access/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const access = await paymentService.checkUserAccess(userId);
+    res.json(access);
+  } catch (error) {
+    console.error('Error checking user access:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/payment/create-free-trial', async (req, res) => {
+  try {
+    const { userId, trialDays = 2 } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    const trial = await paymentService.createFreeTrial(userId, trialDays);
+    res.json({ trial });
+  } catch (error) {
+    console.error('Error creating free trial:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/payment/cancel-subscription', async (req, res) => {
+  try {
+    const { subscriptionId, cancelAtPeriodEnd = true } = req.body;
+    
+    if (!subscriptionId) {
+      return res.status(400).json({ error: 'Subscription ID is required' });
+    }
+    
+    const subscription = await paymentService.cancelSubscription(subscriptionId, cancelAtPeriodEnd);
+    res.json({ subscription });
+  } catch (error) {
+    console.error('Error canceling subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  try {
+    const sig = req.headers['stripe-signature'];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!endpointSecret) {
+      console.error('Stripe webhook secret not configured');
+      return res.status(400).json({ error: 'Webhook secret not configured' });
+    }
+    
+    let event;
+    try {
+      event = paymentService.stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).json({ error: 'Invalid signature' });
+    }
+    
+    await paymentService.handleWebhookEvent(event);
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Error handling webhook:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Start the server
 const server = app.listen(PORT, '0.0.0.0', () => {

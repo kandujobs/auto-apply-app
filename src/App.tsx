@@ -17,8 +17,12 @@ import ExperienceScreen from "./Components/Onboarding/ExperienceScreen";
 import InterestsScreen from "./Components/Onboarding/InterestsScreen";
 import NotificationsPrivacyScreen from "./Components/NotificationsPrivacyScreen";
 import AccountSettingsScreen from "./Components/AccountSettingsScreen";
+import PaywallScreen from "./Components/PaywallScreen";
+import TrialExpiryBanner from "./Components/TrialExpiryBanner";
+import UpgradeModal from "./Components/UpgradeModal";
 import { BadgeAchievementNotification, useBadgeManager } from "./Components/SmartFeedSections/Badges";
 import { Job } from "./types/Job";
+import { paymentService, UserAccess } from "./services/paymentService";
 
 
 import { Experience, Education, UserProfile } from "./types/Profile";
@@ -134,6 +138,12 @@ function App() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   const [globalError, setGlobalError] = useState<string | null>(null);
+
+  // Payment and subscription state
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [userAccess, setUserAccess] = useState<UserAccess | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
 
   // Move these useRef hooks up here
   const homeRef = useRef<HTMLDivElement>(null);
@@ -595,7 +605,32 @@ function App() {
   const handleTutorialContinue = () => {
     setShowOnboarding(false);
     setShowSignIn(false);
-    // Proceed to next step or home
+    
+    // Check if user needs to see paywall
+    if (currentUser && userAccess && !userAccess.hasAccess) {
+      setShowPaywall(true);
+    }
+  };
+
+  // Payment handlers
+  const handlePaywallComplete = () => {
+    setShowPaywall(false);
+    // Refresh user access after successful trial start
+    if (currentUser) {
+      paymentService.checkUserAccess(currentUser.id).then(setUserAccess);
+    }
+  };
+
+  const handleUpgrade = (planId: string) => {
+    setShowUpgradeModal(false);
+    // Refresh user access after successful upgrade
+    if (currentUser) {
+      paymentService.checkUserAccess(currentUser.id).then(setUserAccess);
+    }
+  };
+
+  const handleTrialExpiryUpgrade = () => {
+    setShowUpgradeModal(true);
   };
 
   const handleExperienceContinue = async (info: { experience: Experience[]; education: Education[] }) => {
@@ -608,6 +643,17 @@ function App() {
     
     if (userId) {
       try {
+        // Helper function to convert date strings to proper format
+        const formatDate = (dateString: string) => {
+          if (!dateString) return null;
+          // If it's already in YYYY-MM-DD format, return as is
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString;
+          // Try to parse and format the date
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return null;
+          return date.toISOString().split('T')[0];
+        };
+        
         // Save experience data
         if (info.experience.length > 0) {
           const experienceData = info.experience.map(exp => ({
@@ -616,8 +662,8 @@ function App() {
             job_title: exp.title,
             company: exp.company,
             location: exp.location,
-            start_date: exp.startDate,
-            end_date: exp.endDate,
+            start_date: formatDate(exp.startDate),
+            end_date: formatDate(exp.endDate),
             is_current: exp.current,
             description: exp.description
           }));
@@ -641,8 +687,8 @@ function App() {
             institution: edu.institution,
             degree: edu.degree,
             field: edu.field,
-            start_date: edu.startDate,
-            end_date: edu.endDate,
+            start_date: formatDate(edu.startDate),
+            end_date: formatDate(edu.endDate),
             gpa: edu.gpa,
             location: edu.location || null
           }));
@@ -847,6 +893,27 @@ function App() {
         
         setShowOnboarding(false);
         setShowSignIn(false);
+        
+        // Set current user for payment checks
+        setCurrentUser({
+          id: userData.user.id,
+          email: userData.user.email || ''
+        });
+        
+        // Check user's payment access
+        try {
+          const access = await paymentService.checkUserAccess(userData.user.id);
+          setUserAccess(access);
+          
+          // If user doesn't have access, show paywall after onboarding
+          if (!access.hasAccess) {
+            setShowPaywall(true);
+          }
+        } catch (error) {
+          console.error('[checkAuth] Error checking payment access:', error);
+          // Continue with app even if payment check fails
+        }
+        
         await fetchProfileAndJobs(); // Load profile after successful auth
       }
       setCheckingAuth(false);
@@ -1410,6 +1477,36 @@ function App() {
             isOpen={showNetworkModal} 
             onClose={() => setShowNetworkModal(false)} 
           />
+
+          {/* Payment Components */}
+          {showPaywall && currentUser && (
+            <PaywallScreen
+              onComplete={handlePaywallComplete}
+              onBack={() => setShowPaywall(false)}
+              userId={currentUser.id}
+              userEmail={currentUser.email}
+            />
+          )}
+
+          {userAccess && userAccess.hasAccess && userAccess.type === 'trial' && userAccess.expiresAt && (
+            <TrialExpiryBanner
+              expiresAt={userAccess.expiresAt}
+              onUpgrade={handleTrialExpiryUpgrade}
+              onDismiss={() => setUserAccess(prev => prev ? { ...prev, dismissed: true } : null)}
+              isVisible={true}
+            />
+          )}
+
+          {currentUser && (
+            <UpgradeModal
+              isOpen={showUpgradeModal}
+              onClose={() => setShowUpgradeModal(false)}
+              onUpgrade={handleUpgrade}
+              userId={currentUser.id}
+              userEmail={currentUser.email}
+              currentPlan={userAccess?.data?.plan_type}
+            />
+          )}
         </div>
       );
     }

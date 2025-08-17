@@ -494,9 +494,9 @@ const ResumeReviewScreen: React.FC<ResumeReviewScreenProps> = ({
       {/* Bottom gradient bar */}
       <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
-        <div className="w-full flex flex-col gap-6 overflow-y-auto">
+      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4 py-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center h-[calc(100vh-8rem)] max-h-[600px]">
+        <div className="w-full flex flex-col gap-6 overflow-y-auto flex-1 pr-2">
           {parserError && (
             <div className="w-full bg-red-100 text-red-700 rounded-lg p-3 text-xs mb-2">{parserError}</div>
           )}
@@ -580,8 +580,8 @@ const ResumeReviewScreen: React.FC<ResumeReviewScreenProps> = ({
             {loading ? 'Saving...' : 'Save & Continue'}
         </button>
         </div>
-        {error && <div className="w-full bg-red-100 text-red-700 rounded-lg p-3 text-xs mb-2">{error}</div>}
         </div>
+        {error && <div className="w-full bg-red-100 text-red-700 rounded-lg p-3 text-xs mb-2">{error}</div>}
       </div>
     </div>
   );

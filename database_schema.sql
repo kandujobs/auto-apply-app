@@ -88,4 +88,6 @@ CREATE INDEX IF NOT EXISTS idx_job_applications_job_id ON job_applications(job_i
 CREATE INDEX IF NOT EXISTS idx_job_applications_status ON job_applications(status);
 CREATE INDEX IF NOT EXISTS idx_job_swipes_user_id ON job_swipes(user_id);
 CREATE INDEX IF NOT EXISTS idx_job_swipes_job_id ON job_swipes(job_id);
-CREATE INDEX IF NOT EXISTS idx_job_swipes_direction ON job_swipes(swipe_direction); 
+CREATE INDEX IF NOT EXISTS idx_job_swipes_direction ON job_swipes(swipe_direction);
+
+-- Note: After running this schema, also run education_experience_schema.sql to create the education and experience tables 

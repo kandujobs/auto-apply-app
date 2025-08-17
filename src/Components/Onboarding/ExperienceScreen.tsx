@@ -121,8 +121,8 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
     setEditingEduId(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     onContinue({ experience, education });
   };
 
@@ -133,11 +133,11 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
       {/* Bottom gradient bar */}
       <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-32 transition-all duration-500" />
       {/* Main content */}
-      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
+      <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4 py-4">
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center h-[calc(100vh-8rem)] max-h-[600px]">
         <h2 className="text-2xl font-bold text-black mb-2 text-center w-full">Your Experience</h2>
         <p className="text-base text-gray-500 mb-6 text-center w-full">Add your work and education history</p>
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 mb-6">
+        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6 mb-6 flex-1 overflow-y-auto pr-2">
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">Work Experience</label>
@@ -202,19 +202,22 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
               </div>
             ))}
           </div>
+        </form>
+        <div className="w-full mt-4">
           <button
             type="submit"
-            className="w-full py-3 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-bold shadow-lg mt-2 disabled:opacity-60"
+            onClick={handleSubmit}
+            className="w-full py-3 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-bold shadow-lg disabled:opacity-60"
           >
             Continue
           </button>
-        </form>
-        <button
-          className="text-[#7300FF] underline text-base mt-4"
-          onClick={onBack}
-        >
-          Back to previous step
-        </button>
+          <button
+            className="text-[#7300FF] underline text-base mt-4 w-full text-center"
+            onClick={onBack}
+          >
+            Back to previous step
+          </button>
+        </div>
       </div>
       </div>
     </div>
