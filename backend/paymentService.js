@@ -1,10 +1,20 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Lazy initialization of Supabase client
+let supabase = null;
+function getSupabaseClient() {
+  if (!supabase) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase environment variables are not configured');
+    }
+    supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+  }
+  return supabase;
+}
 
 class PaymentService {
   constructor() {
@@ -108,7 +118,7 @@ class PaymentService {
   // Save subscription to database
   async saveSubscriptionToDatabase(userId, subscriptionData) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('user_subscriptions')
         .upsert({
           user_id: userId,
@@ -134,7 +144,7 @@ class PaymentService {
   // Save payment to database
   async savePaymentToDatabase(userId, paymentData) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('payment_history')
         .insert({
           user_id: userId,
@@ -161,7 +171,7 @@ class PaymentService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + trialDays);
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('free_trials')
         .insert({
           user_id: userId,
@@ -181,7 +191,7 @@ class PaymentService {
   async checkUserAccess(userId) {
     try {
       // Check for active subscription
-      const { data: subscription, error: subError } = await supabase
+      const { data: subscription, error: subError } = await getSupabaseClient()
         .from('user_subscriptions')
         .select('*')
         .eq('user_id', userId)
@@ -202,7 +212,7 @@ class PaymentService {
       }
 
       // Check for active free trial
-      const { data: trial, error: trialError } = await supabase
+      const { data: trial, error: trialError } = await getSupabaseClient()
         .from('free_trials')
         .select('*')
         .eq('user_id', userId)
@@ -238,7 +248,7 @@ class PaymentService {
   // Get subscription plans
   async getSubscriptionPlans() {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
@@ -280,7 +290,7 @@ class PaymentService {
 
   async handleSubscriptionChange(subscription) {
     try {
-      const { data: userSub, error } = await supabase
+      const { data: userSub, error } = await getSupabaseClient()
         .from('user_subscriptions')
         .select('user_id')
         .eq('stripe_subscription_id', subscription.id)
@@ -297,7 +307,7 @@ class PaymentService {
 
   async handleSubscriptionCancellation(subscription) {
     try {
-      const { data: userSub, error } = await supabase
+      const { data: userSub, error } = await getSupabaseClient()
         .from('user_subscriptions')
         .select('user_id')
         .eq('stripe_subscription_id', subscription.id)
@@ -305,7 +315,7 @@ class PaymentService {
 
       if (error) throw error;
 
-      await supabase
+      await getSupabaseClient()
         .from('user_subscriptions')
         .update({ status: 'canceled' })
         .eq('user_id', userSub.user_id);
@@ -317,7 +327,7 @@ class PaymentService {
 
   async handlePaymentSuccess(invoice) {
     try {
-      const { data: userSub, error } = await supabase
+      const { data: userSub, error } = await getSupabaseClient()
         .from('user_subscriptions')
         .select('user_id')
         .eq('stripe_subscription_id', invoice.subscription)
@@ -342,7 +352,7 @@ class PaymentService {
 
   async handlePaymentFailure(invoice) {
     try {
-      const { data: userSub, error } = await supabase
+      const { data: userSub, error } = await getSupabaseClient()
         .from('user_subscriptions')
         .select('user_id')
         .eq('stripe_subscription_id', invoice.subscription)
