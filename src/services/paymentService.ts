@@ -1,5 +1,5 @@
 import { loadStripe } from '@stripe/stripe-js';
-import { backendUrl } from '../utils/backendUrl';
+import { getBackendUrl } from '../utils/backendUrl';
 
 // Load Stripe with your publishable key
 const stripePromise = loadStripe(process.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_your_key_here');
@@ -52,9 +52,9 @@ export interface StripeSubscription {
 
 class PaymentService {
   private backendUrl: string;
-
+  
   constructor() {
-    this.backendUrl = backendUrl;
+    this.backendUrl = getBackendUrl();
   }
 
   // Get subscription plans
