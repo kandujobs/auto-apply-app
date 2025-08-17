@@ -3387,10 +3387,25 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
 }
 
 // Initialize Payment Service
-const paymentService = new PaymentService();
+let paymentService;
+try {
+  paymentService = new PaymentService();
+  console.log('✅ Payment service initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize payment service:', error.message);
+  paymentService = null;
+}
+
+// Payment service availability middleware
+const checkPaymentService = (req, res, next) => {
+  if (!paymentService) {
+    return res.status(503).json({ error: 'Payment service not available' });
+  }
+  next();
+};
 
 // Payment Routes
-app.post('/api/payment/create-customer', async (req, res) => {
+app.post('/api/payment/create-customer', checkPaymentService, async (req, res) => {
   try {
     const { email, name } = req.body;
     
@@ -3406,7 +3421,7 @@ app.post('/api/payment/create-customer', async (req, res) => {
   }
 });
 
-app.post('/api/payment/create-subscription', async (req, res) => {
+app.post('/api/payment/create-subscription', checkPaymentService, async (req, res) => {
   try {
     const { customerId, priceId, userId, trialDays = 2 } = req.body;
     
@@ -3426,7 +3441,7 @@ app.post('/api/payment/create-subscription', async (req, res) => {
   }
 });
 
-app.post('/api/payment/create-payment-intent', async (req, res) => {
+app.post('/api/payment/create-payment-intent', checkPaymentService, async (req, res) => {
   try {
     const { amount, currency = 'usd', customerId } = req.body;
     
@@ -3442,7 +3457,7 @@ app.post('/api/payment/create-payment-intent', async (req, res) => {
   }
 });
 
-app.get('/api/payment/subscription-plans', async (req, res) => {
+app.get('/api/payment/subscription-plans', checkPaymentService, async (req, res) => {
   try {
     const plans = await paymentService.getSubscriptionPlans();
     res.json({ plans });
@@ -3452,7 +3467,7 @@ app.get('/api/payment/subscription-plans', async (req, res) => {
   }
 });
 
-app.get('/api/payment/user-access/:userId', async (req, res) => {
+app.get('/api/payment/user-access/:userId', checkPaymentService, async (req, res) => {
   try {
     const { userId } = req.params;
     const access = await paymentService.checkUserAccess(userId);
@@ -3463,7 +3478,7 @@ app.get('/api/payment/user-access/:userId', async (req, res) => {
   }
 });
 
-app.post('/api/payment/create-free-trial', async (req, res) => {
+app.post('/api/payment/create-free-trial', checkPaymentService, async (req, res) => {
   try {
     const { userId, trialDays = 2 } = req.body;
     
@@ -3479,7 +3494,7 @@ app.post('/api/payment/create-free-trial', async (req, res) => {
   }
 });
 
-app.post('/api/payment/cancel-subscription', async (req, res) => {
+app.post('/api/payment/cancel-subscription', checkPaymentService, async (req, res) => {
   try {
     const { subscriptionId, cancelAtPeriodEnd = true } = req.body;
     
@@ -3495,7 +3510,7 @@ app.post('/api/payment/cancel-subscription', async (req, res) => {
   }
 });
 
-app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), checkPaymentService, async (req, res) => {
   try {
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
