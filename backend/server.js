@@ -3387,19 +3387,22 @@ async function processJobWithExistingSession(userId, jobId, jobUrl) {
 }
 
 // Initialize Payment Service
-let paymentService;
+let paymentService = null;
 try {
   paymentService = new PaymentService();
   console.log('✅ Payment service initialized successfully');
 } catch (error) {
-  console.error('❌ Failed to initialize payment service:', error.message);
-  paymentService = null;
+  console.warn('⚠️ Payment service initialization failed:', error.message);
+  console.log('🔧 Payment features will be disabled');
 }
 
 // Payment service availability middleware
 const checkPaymentService = (req, res, next) => {
   if (!paymentService) {
-    return res.status(503).json({ error: 'Payment service not available' });
+    return res.status(503).json({ 
+      error: 'Payment service is currently unavailable',
+      message: 'Please try again later'
+    });
   }
   next();
 };
