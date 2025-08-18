@@ -149,8 +149,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
         .from('profiles')
         .update({
           notification_settings: newNotificationSettings || notificationSettings,
-          privacy_settings: newPrivacySettings || privacySettings,
-          updated_at: new Date().toISOString()
+          privacy_settings: newPrivacySettings || privacySettings
         })
         .eq('id', user.id);
 
