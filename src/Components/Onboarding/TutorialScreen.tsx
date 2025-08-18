@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiHome, FiBookmark, FiCheckCircle, FiX, FiUser, FiBell, FiFilter } from "react-icons/fi";
+import { FiZap, FiUser, FiTrendingUp, FiX, FiCheckCircle, FiBell, FiFilter } from "react-icons/fi";
 
 interface TutorialScreenProps {
   onContinue: () => void;
@@ -14,15 +14,15 @@ const steps = [
   },
   {
     label: "Navigation",
-    description: "Use the top bar for notifications, your profile, and filters. Use the bottom bar to switch between Discover, Saved, and Applied jobs.",
+    description: "Use the top bar for notifications and settings. Use the bottom bar to switch between AutoApply, Profile, and SmartFeed.",
     icon: "🧭",
     highlight: "navigation"
   },
   {
-    label: "Swipe Right to Apply",
-    description: "Swipe right on a job card to instantly apply to jobs that match your profile.",
-    icon: "✅",
-    highlight: "apply"
+    label: "AutoApply Jobs",
+    description: "Swipe right on job cards to instantly apply to jobs that match your profile using AI.",
+    icon: "⚡",
+    highlight: "autoapply"
   },
   {
     label: "Swipe Left to Pass",
@@ -31,16 +31,16 @@ const steps = [
     highlight: "pass"
   },
   {
-    label: "Save Jobs for Later",
-    description: "Tap the bookmark icon to save interesting jobs for later review.",
-    icon: "🔖",
-    highlight: "save"
+    label: "Manage Your Profile",
+    description: "Update your profile, skills, and preferences to get better job matches.",
+    icon: "👤",
+    highlight: "profile"
   },
   {
-    label: "Track Your Progress",
-    description: "View your saved and applied jobs anytime from the bottom navigation bar.",
+    label: "SmartFeed Analytics",
+    description: "Track your application progress and view detailed analytics in the SmartFeed.",
     icon: "📊",
-    highlight: "track"
+    highlight: "smartfeed"
   },
 ];
 
@@ -79,31 +79,30 @@ const TutorialScreen: React.FC<TutorialScreenProps> = ({ onContinue }) => {
                   <div className="flex justify-between items-center mb-3">
                     <FiBell className="w-5 h-5 text-gray-600" />
                     <FiUser className="w-5 h-5 text-gray-600" />
-                    <FiFilter className="w-5 h-5 text-gray-600" />
                   </div>
                   <div className="flex justify-around items-center">
                     <div className="text-center">
-                      <FiHome className="w-6 h-6 text-purple-600 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Discover</span>
+                      <FiZap className="w-6 h-6 text-purple-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">AutoApply</span>
                     </div>
                     <div className="text-center">
-                      <FiBookmark className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Saved</span>
+                      <FiUser className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">Profile</span>
                     </div>
                     <div className="text-center">
-                      <FiCheckCircle className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Applied</span>
+                      <FiTrendingUp className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">SmartFeed</span>
                     </div>
                   </div>
                 </div>
               )}
               
-              {current.highlight === 'apply' && (
-                <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4">
+              {current.highlight === 'autoapply' && (
+                <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4">
                   <div className="flex items-center justify-center mb-2">
-                    <FiCheckCircle className="w-8 h-8 text-green-600" />
+                    <FiZap className="w-8 h-8 text-purple-600" />
                   </div>
-                  <p className="text-green-800 font-semibold">Swipe Right to Apply</p>
+                  <p className="text-purple-800 font-semibold">AutoApply with AI</p>
                 </div>
               )}
               
@@ -116,21 +115,21 @@ const TutorialScreen: React.FC<TutorialScreenProps> = ({ onContinue }) => {
                 </div>
               )}
               
-              {current.highlight === 'save' && (
+              {current.highlight === 'profile' && (
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4">
                   <div className="flex items-center justify-center mb-2">
-                    <FiBookmark className="w-8 h-8 text-blue-600" />
+                    <FiUser className="w-8 h-8 text-blue-600" />
                   </div>
-                  <p className="text-blue-800 font-semibold">Tap to Save</p>
+                  <p className="text-blue-800 font-semibold">Manage Profile</p>
                 </div>
               )}
               
-              {current.highlight === 'track' && (
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4">
+              {current.highlight === 'smartfeed' && (
+                <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-4">
                   <div className="flex items-center justify-center mb-2">
-                    <FiCheckCircle className="w-8 h-8 text-purple-600" />
+                    <FiTrendingUp className="w-8 h-8 text-green-600" />
                   </div>
-                  <p className="text-purple-800 font-semibold">Track Progress</p>
+                  <p className="text-green-800 font-semibold">SmartFeed Analytics</p>
                 </div>
               )}
             </div>
