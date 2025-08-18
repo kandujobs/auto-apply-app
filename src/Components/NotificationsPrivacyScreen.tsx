@@ -108,7 +108,6 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
   });
 
   const [activeTab, setActiveTab] = useState<'notifications' | 'privacy' | 'security' | 'data'>('notifications');
-  const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   // Load settings from database
@@ -138,9 +137,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
     loadSettings();
   }, []);
 
-  // Save settings to database
-  const saveSettings = async () => {
-    setSaving(true);
+  // Auto-save settings to database
+  const saveSettings = async (newNotificationSettings?: NotificationSettings, newPrivacySettings?: PrivacySettings) => {
     setSaveStatus('saving');
     
     try {
@@ -150,8 +148,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
       const { error } = await supabase
         .from('profiles')
         .update({
-          notification_settings: notificationSettings,
-          privacy_settings: privacySettings,
+          notification_settings: newNotificationSettings || notificationSettings,
+          privacy_settings: newPrivacySettings || privacySettings,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -164,17 +162,19 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
       console.error('Error saving settings:', error);
       setSaveStatus('error');
       setTimeout(() => setSaveStatus('idle'), 3000);
-    } finally {
-      setSaving(false);
     }
   };
 
   const updateNotificationSetting = (key: keyof NotificationSettings, value: boolean) => {
-    setNotificationSettings(prev => ({ ...prev, [key]: value }));
+    const newSettings = { ...notificationSettings, [key]: value };
+    setNotificationSettings(newSettings);
+    saveSettings(newSettings, privacySettings);
   };
 
   const updatePrivacySetting = (key: keyof PrivacySettings, value: boolean | number) => {
-    setPrivacySettings(prev => ({ ...prev, [key]: value }));
+    const newSettings = { ...privacySettings, [key]: value };
+    setPrivacySettings(newSettings);
+    saveSettings(notificationSettings, newSettings);
   };
 
   const ToggleSwitch = ({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) => (
@@ -227,9 +227,9 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+    <div className="h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex flex-col">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-10 bg-gradient-to-br from-purple-50 to-blue-50 pt-4 pb-4 px-4">
+      <div className="flex-shrink-0 bg-gradient-to-br from-purple-50 to-blue-50 pt-4 pb-4 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
@@ -243,19 +243,22 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                 </button>
                 <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Notifications & Privacy</h1>
               </div>
-              <button
-                onClick={saveSettings}
-                disabled={saving}
-                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm sm:text-base ${
-                  saveStatus === 'success' 
-                    ? 'bg-green-100 text-green-700' 
-                    : saveStatus === 'error'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
-              </button>
+              {saveStatus === 'saving' && (
+                <div className="text-sm text-gray-500 flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                  <span>Saving...</span>
+                </div>
+              )}
+              {saveStatus === 'success' && (
+                <div className="text-sm text-green-600 flex items-center space-x-2">
+                  <span>✓ Saved!</span>
+                </div>
+              )}
+              {saveStatus === 'error' && (
+                <div className="text-sm text-red-600 flex items-center space-x-2">
+                  <span>✗ Error</span>
+                </div>
+              )}
             </div>
             
             {/* Tab Navigation */}
@@ -285,7 +288,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
       </div>
 
       {/* Scrollable Content */}
-      <div className="px-4 pb-8">
+      <div className="flex-1 overflow-y-auto px-4 pb-8">
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             {activeTab === 'notifications' && (
