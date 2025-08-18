@@ -227,405 +227,411 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pt-16 pb-16 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={goBack} 
-                className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2 transition-colors"
-              >
-                <span className="text-lg">←</span>
-                <span>Back</span>
-              </button>
-              <h1 className="text-2xl font-bold text-gray-900">Notifications & Privacy</h1>
-            </div>
-            <button
-              onClick={saveSettings}
-              disabled={saving}
-              className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
-                saveStatus === 'success' 
-                  ? 'bg-green-100 text-green-700' 
-                  : saveStatus === 'error'
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
-            </button>
-          </div>
-          
-          {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-100 p-1.5 rounded-xl">
-            {[
-              { id: 'notifications', label: 'Notifications', icon: FiBell },
-              { id: 'privacy', label: 'Privacy', icon: FiEye },
-              { id: 'security', label: 'Security', icon: FiShield },
-              { id: 'data', label: 'Data', icon: FiSave }
-            ].map(({ id, label, icon: Icon }) => (
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-10 bg-gradient-to-br from-purple-50 to-blue-50 pt-4 pb-4 px-4">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <button 
+                  onClick={goBack} 
+                  className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2 transition-colors text-sm sm:text-base"
+                >
+                  <span className="text-lg">←</span>
+                  <span>Back</span>
+                </button>
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Notifications & Privacy</h1>
+              </div>
               <button
-                key={id}
-                onClick={() => setActiveTab(id as any)}
-                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  activeTab === id
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                }`}
+                onClick={saveSettings}
+                disabled={saving}
+                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-semibold transition-all duration-200 text-sm sm:text-base ${
+                  saveStatus === 'success' 
+                    ? 'bg-green-100 text-green-700' 
+                    : saveStatus === 'error'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{label}</span>
+                {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
               </button>
-            ))}
+            </div>
+            
+            {/* Tab Navigation */}
+            <div className="flex space-x-1 bg-gray-100 p-1.5 rounded-xl overflow-x-auto">
+              {[
+                { id: 'notifications', label: 'Notifications', icon: FiBell },
+                { id: 'privacy', label: 'Privacy', icon: FiEye },
+                { id: 'security', label: 'Security', icon: FiShield },
+                { id: 'data', label: 'Data', icon: FiSave }
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as any)}
+                  className={`flex items-center space-x-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    activeTab === id
+                      ? 'bg-white text-purple-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          {activeTab === 'notifications' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiMail className="w-5 h-5 text-purple-600" />
-                  <span>Email Notifications</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Email Notifications"
-                    description="Receive notifications via email"
-                    checked={notificationSettings.emailNotifications}
-                    onChange={() => updateNotificationSetting('emailNotifications', !notificationSettings.emailNotifications)}
-                    icon={FiMail}
-                  />
-                  <SettingItem
-                    title="Job Match Alerts"
-                    description="Get notified when we find jobs that match your profile"
-                    checked={notificationSettings.jobMatchNotifications}
-                    onChange={() => updateNotificationSetting('jobMatchNotifications', !notificationSettings.jobMatchNotifications)}
-                    icon={FiZap}
-                    disabled={!notificationSettings.emailNotifications}
-                  />
-                  <SettingItem
-                    title="Application Updates"
-                    description="Receive updates on your job applications"
-                    checked={notificationSettings.applicationUpdates}
-                    onChange={() => updateNotificationSetting('applicationUpdates', !notificationSettings.applicationUpdates)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.emailNotifications}
-                  />
-                  <SettingItem
-                    title="Weekly Summary"
-                    description="Get a weekly digest of your job search activity"
-                    checked={notificationSettings.weeklySummary}
-                    onChange={() => updateNotificationSetting('weeklySummary', !notificationSettings.weeklySummary)}
-                    icon={FiMail}
-                    disabled={!notificationSettings.emailNotifications}
-                  />
-                  <SettingItem
-                    title="New Job Alerts"
-                    description="Be notified of new jobs in your area"
-                    checked={notificationSettings.newJobAlerts}
-                    onChange={() => updateNotificationSetting('newJobAlerts', !notificationSettings.newJobAlerts)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.emailNotifications}
-                  />
-                  <SettingItem
-                    title="Employer Messages"
-                    description="Receive messages from potential employers"
-                    checked={notificationSettings.employerMessages}
-                    onChange={() => updateNotificationSetting('employerMessages', !notificationSettings.employerMessages)}
-                    icon={FiUsers}
-                    disabled={!notificationSettings.emailNotifications}
-                  />
+      {/* Scrollable Content */}
+      <div className="px-4 pb-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            {activeTab === 'notifications' && (
+              <div className="space-y-6 sm:space-y-8">
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiMail className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Email Notifications</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Email Notifications"
+                      description="Receive notifications via email"
+                      checked={notificationSettings.emailNotifications}
+                      onChange={() => updateNotificationSetting('emailNotifications', !notificationSettings.emailNotifications)}
+                      icon={FiMail}
+                    />
+                    <SettingItem
+                      title="Job Match Alerts"
+                      description="Get notified when we find jobs that match your profile"
+                      checked={notificationSettings.jobMatchNotifications}
+                      onChange={() => updateNotificationSetting('jobMatchNotifications', !notificationSettings.jobMatchNotifications)}
+                      icon={FiZap}
+                      disabled={!notificationSettings.emailNotifications}
+                    />
+                    <SettingItem
+                      title="Application Updates"
+                      description="Receive updates on your job applications"
+                      checked={notificationSettings.applicationUpdates}
+                      onChange={() => updateNotificationSetting('applicationUpdates', !notificationSettings.applicationUpdates)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.emailNotifications}
+                    />
+                    <SettingItem
+                      title="Weekly Summary"
+                      description="Get a weekly digest of your job search activity"
+                      checked={notificationSettings.weeklySummary}
+                      onChange={() => updateNotificationSetting('weeklySummary', !notificationSettings.weeklySummary)}
+                      icon={FiMail}
+                      disabled={!notificationSettings.emailNotifications}
+                    />
+                    <SettingItem
+                      title="New Job Alerts"
+                      description="Be notified of new jobs in your area"
+                      checked={notificationSettings.newJobAlerts}
+                      onChange={() => updateNotificationSetting('newJobAlerts', !notificationSettings.newJobAlerts)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.emailNotifications}
+                    />
+                    <SettingItem
+                      title="Employer Messages"
+                      description="Receive messages from potential employers"
+                      checked={notificationSettings.employerMessages}
+                      onChange={() => updateNotificationSetting('employerMessages', !notificationSettings.employerMessages)}
+                      icon={FiUsers}
+                      disabled={!notificationSettings.emailNotifications}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiSmartphone className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Push Notifications</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Push Notifications"
+                      description="Receive notifications on your device"
+                      checked={notificationSettings.pushNotifications}
+                      onChange={() => updateNotificationSetting('pushNotifications', !notificationSettings.pushNotifications)}
+                      icon={FiSmartphone}
+                    />
+                    <SettingItem
+                      title="Job Matches"
+                      description="Get push notifications for job matches"
+                      checked={notificationSettings.pushJobMatches}
+                      onChange={() => updateNotificationSetting('pushJobMatches', !notificationSettings.pushJobMatches)}
+                      icon={FiZap}
+                      disabled={!notificationSettings.pushNotifications}
+                    />
+                    <SettingItem
+                      title="Application Updates"
+                      description="Push notifications for application status changes"
+                      checked={notificationSettings.pushApplications}
+                      onChange={() => updateNotificationSetting('pushApplications', !notificationSettings.pushApplications)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.pushNotifications}
+                    />
+                    <SettingItem
+                      title="Messages"
+                      description="Push notifications for new messages"
+                      checked={notificationSettings.pushMessages}
+                      onChange={() => updateNotificationSetting('pushMessages', !notificationSettings.pushMessages)}
+                      icon={FiUsers}
+                      disabled={!notificationSettings.pushNotifications}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiZap className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Auto-Apply Notifications</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Auto-Apply Notifications"
+                      description="Get notified about automatic job applications"
+                      checked={notificationSettings.autoApplyNotifications}
+                      onChange={() => updateNotificationSetting('autoApplyNotifications', !notificationSettings.autoApplyNotifications)}
+                      icon={FiZap}
+                    />
+                    <SettingItem
+                      title="Successful Applications"
+                      description="Notify when auto-apply is successful"
+                      checked={notificationSettings.autoApplySuccess}
+                      onChange={() => updateNotificationSetting('autoApplySuccess', !notificationSettings.autoApplySuccess)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.autoApplyNotifications}
+                    />
+                    <SettingItem
+                      title="Application Errors"
+                      description="Notify when auto-apply encounters errors"
+                      checked={notificationSettings.autoApplyErrors}
+                      onChange={() => updateNotificationSetting('autoApplyErrors', !notificationSettings.autoApplyErrors)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.autoApplyNotifications}
+                    />
+                    <SettingItem
+                      title="Daily Summary"
+                      description="Daily summary of auto-apply activity"
+                      checked={notificationSettings.autoApplyDaily}
+                      onChange={() => updateNotificationSetting('autoApplyDaily', !notificationSettings.autoApplyDaily)}
+                      icon={FiMail}
+                      disabled={!notificationSettings.autoApplyNotifications}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>LinkedIn Integration</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="LinkedIn Notifications"
+                      description="Receive notifications from LinkedIn integration"
+                      checked={notificationSettings.linkedInNotifications}
+                      onChange={() => updateNotificationSetting('linkedInNotifications', !notificationSettings.linkedInNotifications)}
+                      icon={FiUsers}
+                    />
+                    <SettingItem
+                      title="LinkedIn Job Alerts"
+                      description="Get notified of new LinkedIn job opportunities"
+                      checked={notificationSettings.linkedInJobAlerts}
+                      onChange={() => updateNotificationSetting('linkedInJobAlerts', !notificationSettings.linkedInJobAlerts)}
+                      icon={FiBell}
+                      disabled={!notificationSettings.linkedInNotifications}
+                    />
+                    <SettingItem
+                      title="LinkedIn Messages"
+                      description="Receive LinkedIn message notifications"
+                      checked={notificationSettings.linkedInMessages}
+                      onChange={() => updateNotificationSetting('linkedInMessages', !notificationSettings.linkedInMessages)}
+                      icon={FiMail}
+                      disabled={!notificationSettings.linkedInNotifications}
+                    />
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiSmartphone className="w-5 h-5 text-purple-600" />
-                  <span>Push Notifications</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Push Notifications"
-                    description="Receive notifications on your device"
-                    checked={notificationSettings.pushNotifications}
-                    onChange={() => updateNotificationSetting('pushNotifications', !notificationSettings.pushNotifications)}
-                    icon={FiSmartphone}
-                  />
-                  <SettingItem
-                    title="Job Matches"
-                    description="Get push notifications for job matches"
-                    checked={notificationSettings.pushJobMatches}
-                    onChange={() => updateNotificationSetting('pushJobMatches', !notificationSettings.pushJobMatches)}
-                    icon={FiZap}
-                    disabled={!notificationSettings.pushNotifications}
-                  />
-                  <SettingItem
-                    title="Application Updates"
-                    description="Push notifications for application status changes"
-                    checked={notificationSettings.pushApplications}
-                    onChange={() => updateNotificationSetting('pushApplications', !notificationSettings.pushApplications)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.pushNotifications}
-                  />
-                  <SettingItem
-                    title="Messages"
-                    description="Push notifications for new messages"
-                    checked={notificationSettings.pushMessages}
-                    onChange={() => updateNotificationSetting('pushMessages', !notificationSettings.pushMessages)}
-                    icon={FiUsers}
-                    disabled={!notificationSettings.pushNotifications}
-                  />
+            {activeTab === 'privacy' && (
+              <div className="space-y-6 sm:space-y-8">
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Profile Visibility</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Visible to Employers"
+                      description="Allow employers to view your profile"
+                      checked={privacySettings.profileVisibleToEmployers}
+                      onChange={() => updatePrivacySetting('profileVisibleToEmployers', !privacySettings.profileVisibleToEmployers)}
+                      icon={FiEye}
+                    />
+                    <SettingItem
+                      title="Show in Public Search"
+                      description="Allow your profile to appear in public job searches"
+                      checked={privacySettings.showInPublicSearch}
+                      onChange={() => updatePrivacySetting('showInPublicSearch', !privacySettings.showInPublicSearch)}
+                      icon={FiSearch}
+                    />
+                    <SettingItem
+                      title="Show Contact Information"
+                      description="Display your contact information to employers"
+                      checked={privacySettings.showContactInfo}
+                      onChange={() => updatePrivacySetting('showContactInfo', !privacySettings.showContactInfo)}
+                      icon={FiMail}
+                    />
+                    <SettingItem
+                      title="Show Resume"
+                      description="Allow employers to view your resume"
+                      checked={privacySettings.showResume}
+                      onChange={() => updatePrivacySetting('showResume', !privacySettings.showResume)}
+                      icon={FiSave}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiUsers className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Data Sharing</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Allow Employer Messages"
+                      description="Allow employers to send you direct messages"
+                      checked={privacySettings.allowMessagesFromEmployers}
+                      onChange={() => updatePrivacySetting('allowMessagesFromEmployers', !privacySettings.allowMessagesFromEmployers)}
+                      icon={FiUsers}
+                    />
+                    <SettingItem
+                      title="Data Analytics"
+                      description="Help us improve by sharing anonymous usage data"
+                      checked={privacySettings.allowDataAnalytics}
+                      onChange={() => updatePrivacySetting('allowDataAnalytics', !privacySettings.allowDataAnalytics)}
+                      icon={FiSearch}
+                    />
+                    <SettingItem
+                      title="Third-Party Sharing"
+                      description="Allow sharing data with trusted third-party services"
+                      checked={privacySettings.allowThirdPartySharing}
+                      onChange={() => updatePrivacySetting('allowThirdPartySharing', !privacySettings.allowThirdPartySharing)}
+                      icon={FiUsers}
+                    />
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiZap className="w-5 h-5 text-purple-600" />
-                  <span>Auto-Apply Notifications</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Auto-Apply Notifications"
-                    description="Get notified about automatic job applications"
-                    checked={notificationSettings.autoApplyNotifications}
-                    onChange={() => updateNotificationSetting('autoApplyNotifications', !notificationSettings.autoApplyNotifications)}
-                    icon={FiZap}
-                  />
-                  <SettingItem
-                    title="Successful Applications"
-                    description="Notify when auto-apply is successful"
-                    checked={notificationSettings.autoApplySuccess}
-                    onChange={() => updateNotificationSetting('autoApplySuccess', !notificationSettings.autoApplySuccess)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.autoApplyNotifications}
-                  />
-                  <SettingItem
-                    title="Application Errors"
-                    description="Notify when auto-apply encounters errors"
-                    checked={notificationSettings.autoApplyErrors}
-                    onChange={() => updateNotificationSetting('autoApplyErrors', !notificationSettings.autoApplyErrors)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.autoApplyNotifications}
-                  />
-                  <SettingItem
-                    title="Daily Summary"
-                    description="Daily summary of auto-apply activity"
-                    checked={notificationSettings.autoApplyDaily}
-                    onChange={() => updateNotificationSetting('autoApplyDaily', !notificationSettings.autoApplyDaily)}
-                    icon={FiMail}
-                    disabled={!notificationSettings.autoApplyNotifications}
-                  />
+            {activeTab === 'security' && (
+              <div className="space-y-6 sm:space-y-8">
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiShield className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Account Security</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Two-Factor Authentication"
+                      description="Add an extra layer of security to your account"
+                      checked={privacySettings.twoFactorAuthentication}
+                      onChange={() => updatePrivacySetting('twoFactorAuthentication', !privacySettings.twoFactorAuthentication)}
+                      icon={FiLock}
+                    />
+                    <SettingItem
+                      title="Login Notifications"
+                      description="Get notified of new login attempts"
+                      checked={privacySettings.loginNotifications}
+                      onChange={() => updatePrivacySetting('loginNotifications', !privacySettings.loginNotifications)}
+                      icon={FiBell}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Session Timeout</h2>
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Auto-logout after inactivity (minutes)
+                    </label>
+                    <select
+                      value={privacySettings.sessionTimeout}
+                      onChange={(e) => updatePrivacySetting('sessionTimeout', parseInt(e.target.value))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    >
+                      <option value={15}>15 minutes</option>
+                      <option value={30}>30 minutes</option>
+                      <option value={60}>1 hour</option>
+                      <option value={120}>2 hours</option>
+                      <option value={0}>Never</option>
+                    </select>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiUsers className="w-5 h-5 text-purple-600" />
-                  <span>LinkedIn Integration</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="LinkedIn Notifications"
-                    description="Receive notifications from LinkedIn integration"
-                    checked={notificationSettings.linkedInNotifications}
-                    onChange={() => updateNotificationSetting('linkedInNotifications', !notificationSettings.linkedInNotifications)}
-                    icon={FiUsers}
-                  />
-                  <SettingItem
-                    title="LinkedIn Job Alerts"
-                    description="Get notified of new LinkedIn job opportunities"
-                    checked={notificationSettings.linkedInJobAlerts}
-                    onChange={() => updateNotificationSetting('linkedInJobAlerts', !notificationSettings.linkedInJobAlerts)}
-                    icon={FiBell}
-                    disabled={!notificationSettings.linkedInNotifications}
-                  />
-                  <SettingItem
-                    title="LinkedIn Messages"
-                    description="Receive LinkedIn message notifications"
-                    checked={notificationSettings.linkedInMessages}
-                    onChange={() => updateNotificationSetting('linkedInMessages', !notificationSettings.linkedInMessages)}
-                    icon={FiMail}
-                    disabled={!notificationSettings.linkedInNotifications}
-                  />
+            {activeTab === 'data' && (
+              <div className="space-y-6 sm:space-y-8">
+                <div>
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                    <FiSave className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    <span>Data Management</span>
+                  </h2>
+                  <div className="space-y-3">
+                    <SettingItem
+                      title="Allow Data Export"
+                      description="Allow you to export your personal data"
+                      checked={privacySettings.allowDataExport}
+                      onChange={() => updatePrivacySetting('allowDataExport', !privacySettings.allowDataExport)}
+                      icon={FiDownload}
+                    />
+                    <SettingItem
+                      title="Allow Data Deletion"
+                      description="Allow you to delete your account and data"
+                      checked={privacySettings.allowDataDeletion}
+                      onChange={() => updatePrivacySetting('allowDataDeletion', !privacySettings.allowDataDeletion)}
+                      icon={FiTrash2}
+                    />
+                    <SettingItem
+                      title="Auto-Delete Inactive"
+                      description="Automatically delete data from inactive accounts"
+                      checked={privacySettings.autoDeleteInactive}
+                      onChange={() => updatePrivacySetting('autoDeleteInactive', !privacySettings.autoDeleteInactive)}
+                      icon={FiTrash2}
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <h3 className="text-sm font-medium text-blue-900 mb-2">Data Export</h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Download a copy of all your personal data including profile, job applications, and preferences.
+                  </p>
+                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    Export My Data
+                  </button>
+                </div>
+
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <h3 className="text-sm font-medium text-red-900 mb-2">Delete Account</h3>
+                  <p className="text-sm text-red-700 mb-3">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <button className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                    Delete Account
+                  </button>
                 </div>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'privacy' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiEye className="w-5 h-5 text-purple-600" />
-                  <span>Profile Visibility</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Visible to Employers"
-                    description="Allow employers to view your profile"
-                    checked={privacySettings.profileVisibleToEmployers}
-                    onChange={() => updatePrivacySetting('profileVisibleToEmployers', !privacySettings.profileVisibleToEmployers)}
-                    icon={FiEye}
-                  />
-                  <SettingItem
-                    title="Show in Public Search"
-                    description="Allow your profile to appear in public job searches"
-                    checked={privacySettings.showInPublicSearch}
-                    onChange={() => updatePrivacySetting('showInPublicSearch', !privacySettings.showInPublicSearch)}
-                    icon={FiSearch}
-                  />
-                  <SettingItem
-                    title="Show Contact Information"
-                    description="Display your contact information to employers"
-                    checked={privacySettings.showContactInfo}
-                    onChange={() => updatePrivacySetting('showContactInfo', !privacySettings.showContactInfo)}
-                    icon={FiMail}
-                  />
-                  <SettingItem
-                    title="Show Resume"
-                    description="Allow employers to view your resume"
-                    checked={privacySettings.showResume}
-                    onChange={() => updatePrivacySetting('showResume', !privacySettings.showResume)}
-                    icon={FiSave}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiUsers className="w-5 h-5 text-purple-600" />
-                  <span>Data Sharing</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Allow Employer Messages"
-                    description="Allow employers to send you direct messages"
-                    checked={privacySettings.allowMessagesFromEmployers}
-                    onChange={() => updatePrivacySetting('allowMessagesFromEmployers', !privacySettings.allowMessagesFromEmployers)}
-                    icon={FiUsers}
-                  />
-                  <SettingItem
-                    title="Data Analytics"
-                    description="Help us improve by sharing anonymous usage data"
-                    checked={privacySettings.allowDataAnalytics}
-                    onChange={() => updatePrivacySetting('allowDataAnalytics', !privacySettings.allowDataAnalytics)}
-                    icon={FiSearch}
-                  />
-                  <SettingItem
-                    title="Third-Party Sharing"
-                    description="Allow sharing data with trusted third-party services"
-                    checked={privacySettings.allowThirdPartySharing}
-                    onChange={() => updatePrivacySetting('allowThirdPartySharing', !privacySettings.allowThirdPartySharing)}
-                    icon={FiUsers}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'security' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiShield className="w-5 h-5 text-purple-600" />
-                  <span>Account Security</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Two-Factor Authentication"
-                    description="Add an extra layer of security to your account"
-                    checked={privacySettings.twoFactorAuthentication}
-                    onChange={() => updatePrivacySetting('twoFactorAuthentication', !privacySettings.twoFactorAuthentication)}
-                    icon={FiLock}
-                  />
-                  <SettingItem
-                    title="Login Notifications"
-                    description="Get notified of new login attempts"
-                    checked={privacySettings.loginNotifications}
-                    onChange={() => updatePrivacySetting('loginNotifications', !privacySettings.loginNotifications)}
-                    icon={FiBell}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Session Timeout</h2>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Auto-logout after inactivity (minutes)
-                  </label>
-                  <select
-                    value={privacySettings.sessionTimeout}
-                    onChange={(e) => updatePrivacySetting('sessionTimeout', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value={15}>15 minutes</option>
-                    <option value={30}>30 minutes</option>
-                    <option value={60}>1 hour</option>
-                    <option value={120}>2 hours</option>
-                    <option value={0}>Never</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'data' && (
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                  <FiSave className="w-5 h-5 text-purple-600" />
-                  <span>Data Management</span>
-                </h2>
-                <div className="space-y-3">
-                  <SettingItem
-                    title="Allow Data Export"
-                    description="Allow you to export your personal data"
-                    checked={privacySettings.allowDataExport}
-                    onChange={() => updatePrivacySetting('allowDataExport', !privacySettings.allowDataExport)}
-                    icon={FiDownload}
-                  />
-                  <SettingItem
-                    title="Allow Data Deletion"
-                    description="Allow you to delete your account and data"
-                    checked={privacySettings.allowDataDeletion}
-                    onChange={() => updatePrivacySetting('allowDataDeletion', !privacySettings.allowDataDeletion)}
-                    icon={FiTrash2}
-                  />
-                  <SettingItem
-                    title="Auto-Delete Inactive"
-                    description="Automatically delete data from inactive accounts"
-                    checked={privacySettings.autoDeleteInactive}
-                    onChange={() => updatePrivacySetting('autoDeleteInactive', !privacySettings.autoDeleteInactive)}
-                    icon={FiTrash2}
-                  />
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <h3 className="text-sm font-medium text-blue-900 mb-2">Data Export</h3>
-                <p className="text-sm text-blue-700 mb-3">
-                  Download a copy of all your personal data including profile, job applications, and preferences.
-                </p>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                  Export My Data
-                </button>
-              </div>
-
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <h3 className="text-sm font-medium text-red-900 mb-2">Delete Account</h3>
-                <p className="text-sm text-red-700 mb-3">
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </p>
-                <button className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-                  Delete Account
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
