@@ -233,12 +233,12 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
         <div className="max-w-2xl mx-auto">
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
-              <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 <button 
                   onClick={goBack} 
-                  className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2 transition-colors text-sm sm:text-base"
+                  className="text-purple-600 hover:text-purple-700 font-medium flex items-center space-x-1 transition-colors text-sm"
                 >
-                  <span className="text-lg">←</span>
+                  <span className="text-base">←</span>
                   <span>Back</span>
                 </button>
                 <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Notifications & Privacy</h1>
