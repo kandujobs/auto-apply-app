@@ -208,32 +208,36 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
     icon: any;
     disabled?: boolean;
   }) => (
-    <div className="flex items-start space-x-4 p-4 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-colors">
-      <div className="flex-shrink-0 mt-1">
+    <div className={`flex items-start space-x-4 p-4 rounded-xl border transition-all duration-200 ${
+      disabled 
+        ? 'bg-gray-50 border-gray-100' 
+        : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-sm'
+    }`}>
+      <div className="flex-shrink-0 mt-0.5">
         <Icon className={`w-5 h-5 ${checked ? 'text-purple-600' : 'text-gray-400'}`} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
           <ToggleSwitch checked={checked} onChange={onChange} disabled={disabled} />
         </div>
-        <p className="mt-1 text-sm text-gray-500">{description}</p>
+        <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pt-20 pb-20 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 pt-16 pb-16 px-4">
+      <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <button 
                 onClick={goBack} 
-                className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2"
+                className="text-purple-600 hover:text-purple-700 font-semibold flex items-center space-x-2 transition-colors"
               >
-                <span>←</span>
+                <span className="text-lg">←</span>
                 <span>Back</span>
               </button>
               <h1 className="text-2xl font-bold text-gray-900">Notifications & Privacy</h1>
@@ -241,20 +245,20 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
             <button
               onClick={saveSettings}
               disabled={saving}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
                 saveStatus === 'success' 
                   ? 'bg-green-100 text-green-700' 
                   : saveStatus === 'error'
                   ? 'bg-red-100 text-red-700'
-                  : 'bg-purple-600 text-white hover:bg-purple-700'
-              } disabled:opacity-50`}
+                  : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-md'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {saving ? 'Saving...' : saveStatus === 'success' ? 'Saved!' : saveStatus === 'error' ? 'Error' : 'Save Changes'}
             </button>
           </div>
           
           {/* Tab Navigation */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+          <div className="flex space-x-1 bg-gray-100 p-1.5 rounded-xl">
             {[
               { id: 'notifications', label: 'Notifications', icon: FiBell },
               { id: 'privacy', label: 'Privacy', icon: FiEye },
@@ -264,10 +268,10 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
               <button
                 key={id}
                 onClick={() => setActiveTab(id as any)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                   activeTab === id
                     ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -280,7 +284,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
         {/* Content */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           {activeTab === 'notifications' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                   <FiMail className="w-5 h-5 text-purple-600" />
@@ -452,7 +456,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
           )}
 
           {activeTab === 'privacy' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                   <FiEye className="w-5 h-5 text-purple-600" />
@@ -523,7 +527,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
           )}
 
           {activeTab === 'security' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                   <FiShield className="w-5 h-5 text-purple-600" />
@@ -549,14 +553,14 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
 
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Session Timeout</h2>
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-50 rounded-xl p-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Auto-logout after inactivity (minutes)
                   </label>
                   <select
                     value={privacySettings.sessionTimeout}
                     onChange={(e) => updatePrivacySetting('sessionTimeout', parseInt(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   >
                     <option value={15}>15 minutes</option>
                     <option value={30}>30 minutes</option>
@@ -570,7 +574,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
           )}
 
           {activeTab === 'data' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                   <FiSave className="w-5 h-5 text-purple-600" />
@@ -601,7 +605,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-blue-900 mb-2">Data Export</h3>
                 <p className="text-sm text-blue-700 mb-3">
                   Download a copy of all your personal data including profile, job applications, and preferences.
@@ -611,7 +615,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                 </button>
               </div>
 
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <h3 className="text-sm font-medium text-red-900 mb-2">Delete Account</h3>
                 <p className="text-sm text-red-700 mb-3">
                   Permanently delete your account and all associated data. This action cannot be undone.
