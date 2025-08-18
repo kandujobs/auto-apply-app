@@ -344,8 +344,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('employerMessages', !notificationSettings.employerMessages)}
                       icon={FiUsers}
                       disabled={!notificationSettings.emailNotifications}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
 
                 <div>
@@ -384,8 +384,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('pushMessages', !notificationSettings.pushMessages)}
                       icon={FiUsers}
                       disabled={!notificationSettings.pushNotifications}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
 
                 <div>
@@ -424,8 +424,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('autoApplyDaily', !notificationSettings.autoApplyDaily)}
                       icon={FiMail}
                       disabled={!notificationSettings.autoApplyNotifications}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
 
                 <div>
@@ -456,15 +456,15 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('linkedInMessages', !notificationSettings.linkedInMessages)}
                       icon={FiMail}
                       disabled={!notificationSettings.linkedInNotifications}
-                    />
-                  </div>
-                </div>
+            />
+          </div>
+        </div>
               </div>
             )}
 
             {activeTab === 'privacy' && (
               <div className="space-y-6 sm:space-y-8">
-                <div>
+        <div>
                   <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                     <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                     <span>Profile Visibility</span>
@@ -497,8 +497,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.showResume}
                       onChange={() => updatePrivacySetting('showResume', !privacySettings.showResume)}
                       icon={FiSave}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
 
                 <div>
@@ -527,8 +527,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.allowThirdPartySharing}
                       onChange={() => updatePrivacySetting('allowThirdPartySharing', !privacySettings.allowThirdPartySharing)}
                       icon={FiUsers}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
               </div>
             )}
@@ -554,8 +554,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.loginNotifications}
                       onChange={() => updatePrivacySetting('loginNotifications', !privacySettings.loginNotifications)}
                       icon={FiBell}
-                    />
-                  </div>
+            />
+          </div>
                 </div>
 
                 <div>
