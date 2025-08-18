@@ -606,8 +606,9 @@ function App() {
     setShowOnboarding(false);
     setShowSignIn(false);
     
-    // Check if user needs to see paywall
-    if (currentUser && userAccess && !userAccess.hasAccess) {
+    // Always show paywall after tutorial for new users
+    // This ensures users see the pricing options after completing onboarding
+    if (currentUser) {
       setShowPaywall(true);
     }
   };
