@@ -638,9 +638,15 @@ function App() {
     setExperience(info.experience);
     setEducation(info.education);
     
+    console.log('[handleExperienceContinue] Starting to save experience and education data');
+    console.log('[handleExperienceContinue] Experience data:', info.experience);
+    console.log('[handleExperienceContinue] Education data:', info.education);
+    
     // Save experience and education to Supabase
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
+    
+    console.log('[handleExperienceContinue] User ID:', userId);
     
     if (userId) {
       try {
@@ -669,6 +675,8 @@ function App() {
             description: exp.description
           }));
           
+          console.log('[handleExperienceContinue] Experience data to save:', experienceData);
+          
           const { error: expError } = await supabase
             .from('experience')
             .upsert(experienceData, { onConflict: 'id' });
@@ -678,6 +686,8 @@ function App() {
           } else {
             console.log('[handleExperienceContinue] Experience saved successfully');
           }
+        } else {
+          console.log('[handleExperienceContinue] No experience data to save');
         }
         
         // Save education data
@@ -694,6 +704,8 @@ function App() {
             location: edu.location || null
           }));
           
+          console.log('[handleExperienceContinue] Education data to save:', educationData);
+          
           const { error: eduError } = await supabase
             .from('education')
             .upsert(educationData, { onConflict: 'id' });
@@ -703,6 +715,8 @@ function App() {
           } else {
             console.log('[handleExperienceContinue] Education saved successfully');
           }
+        } else {
+          console.log('[handleExperienceContinue] No education data to save');
         }
       } catch (error) {
         console.error('[handleExperienceContinue] Error saving data:', error);
