@@ -13,7 +13,7 @@ interface PaywallScreenProps {
 
 const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userId, userEmail }) => {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<string>('price_starter_monthly');
+  const [selectedPlan, setSelectedPlan] = useState<string>('price_1RxSRoFdjOQFWIuB3KWl6Sx5'); // Default to Starter
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,21 +39,48 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
     setProgress(0);
 
     try {
-      // Step 1: Create Stripe customer
+      const selectedPlanData = getSelectedPlan();
+      
+      if (!selectedPlanData) {
+        throw new Error('Selected plan not found');
+      }
+
+      // If it's the free tier, just create a free trial record
+      if (selectedPlanData.price_monthly === 0) {
+        setProgress(50);
+        await paymentService.createFreeTrial(userId, 2);
+        setProgress(100);
+        
+        setTimeout(() => {
+          onComplete();
+        }, 1000);
+        return;
+      }
+
+      // For paid plans, create Stripe customer and subscription
       setProgress(20);
       const customer = await paymentService.createCustomer(userEmail);
       setProgress(40);
 
-      // Step 2: Create subscription with trial
+      // Get the correct price ID based on billing cycle
+      const priceId = billingCycle === 'yearly' 
+        ? plans.find(p => p.name === `${selectedPlanData.name} Yearly`)?.stripe_price_id
+        : selectedPlan;
+
+      if (!priceId) {
+        throw new Error('Price ID not found for selected plan');
+      }
+
+      // Create subscription with trial
       const subscription = await paymentService.createSubscription(
         customer.id,
-        selectedPlan,
+        priceId,
         userId,
         2 // 2-day trial
       );
       setProgress(80);
 
-      // Step 3: Create free trial record
+      // Create free trial record
       await paymentService.createFreeTrial(userId, 2);
       setProgress(100);
 
@@ -173,7 +200,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           transition={{ delay: 0.2 }}
           className="grid md:grid-cols-3 gap-6 mb-8"
         >
-          {plans.slice(1).map((plan, index) => (
+          {plans.filter(plan => plan.name !== 'Free' && !plan.name.includes('Yearly')).map((plan, index) => (
             <motion.div
               key={plan.id}
               initial={{ opacity: 0, y: 20 }}
@@ -193,18 +220,31 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                   </span>
                 </div>
               )}
+              {plan.name === 'Starter' && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-green-500 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Best Value
+                  </span>
+                </div>
+              )}
 
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                 <div className="mb-4">
-                  <span className="text-4xl font-bold text-gray-900">
-                    {paymentService.formatPrice(
-                      billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly
-                    )}
-                  </span>
-                  <span className="text-gray-500">/{billingCycle === 'monthly' ? 'mo' : 'year'}</span>
+                  {plan.price_monthly === 0 ? (
+                    <span className="text-4xl font-bold text-green-600">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-bold text-gray-900">
+                        {paymentService.formatPrice(
+                          billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly
+                        )}
+                      </span>
+                      <span className="text-gray-500">/{billingCycle === 'monthly' ? 'mo' : 'year'}</span>
+                    </>
+                  )}
                 </div>
-                {billingCycle === 'yearly' && (
+                {billingCycle === 'yearly' && plan.price_monthly > 0 && (
                   <div className="text-green-600 text-sm font-semibold">
                     Save {paymentService.formatPrice(getSavings())} per year
                   </div>

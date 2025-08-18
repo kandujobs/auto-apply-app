@@ -132,7 +132,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'KanduJobs <notifications@kandujobs.com>',
+        from: 'KanduJobs <onboarding@resend.dev>',
         to: profile.email,
         subject: `🎯 New Job Match: ${job_title} at ${company}`,
         html: emailHtml,

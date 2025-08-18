@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to, subject, html, from = 'KanduJobs <notifications@kandujobs.com>' }: EmailRequest = await req.json()
+    const { to, subject, html, from = 'KanduJobs <onboarding@resend.dev>' }: EmailRequest = await req.json()
 
     // Validate required fields
     if (!to || !subject || !html) {
