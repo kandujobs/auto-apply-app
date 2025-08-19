@@ -302,6 +302,9 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
         throw new Error(errorData.error || 'Failed to start trial');
       }
 
+      const subscriptionData = await subscriptionResponse.json();
+      console.log('Subscription created successfully:', subscriptionData);
+
       setProgress(100);
       setTimeout(() => {
         onComplete();

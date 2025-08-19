@@ -45,7 +45,7 @@ class PaymentService {
         customer: customerId,
         items: [{ price: priceId }],
         trial_period_days: trialDays,
-        payment_behavior: 'default_incomplete',
+        // Remove payment_behavior to allow trial to start without payment method
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
       });
