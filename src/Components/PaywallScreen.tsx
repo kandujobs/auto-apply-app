@@ -548,15 +548,12 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 </span>
               </div>
               <p className="text-gray-600 mb-4 text-sm">
-                Credit card required • Cancel anytime • Full access to all features
+                Cancel anytime • Full access to all features
               </p>
-              <div className="flex items-center justify-center space-x-2 mb-4">
-                <span className="text-xs text-gray-500">Secure payment with:</span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs bg-black text-white px-2 py-1 rounded">Apple Pay</span>
-                  <span className="text-xs bg-black text-white px-2 py-1 rounded">Google Pay</span>
-                  <span className="text-xs bg-gray-800 text-white px-2 py-1 rounded">Card</span>
-                </div>
+              <div className="flex items-center justify-center space-x-1 mb-4">
+                <span className="text-xs bg-black text-white px-2 py-1 rounded">Apple Pay</span>
+                <span className="text-xs bg-black text-white px-2 py-1 rounded">Google Pay</span>
+                <span className="text-xs bg-gray-800 text-white px-2 py-1 rounded">Card</span>
               </div>
               <p className="text-xs text-green-600 font-medium mb-4">
                 ✓ 2-day free trial • No charge during trial period
@@ -581,14 +578,12 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
               </button>
             </div>
 
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
-              >
-                ← Back to setup
-              </button>
-            )}
+            <button
+              onClick={() => window.open('https://kandujobs.com/blog/compare-plans', '_blank')}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              Compare Plans
+            </button>
           </motion.div>
         </div>
       </div>
