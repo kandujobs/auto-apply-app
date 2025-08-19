@@ -643,13 +643,38 @@ function App() {
     setParsedResume(prev => prev.map((section, i) => i === sectionIdx ? { ...section, fields } : section));
   };
 
-  const handleTutorialContinue = () => {
+  const handleTutorialContinue = async () => {
     setShowOnboarding(false);
     setShowSignIn(false);
     
-    // Always show paywall after tutorial for new users
-    // This ensures users see the pricing options after completing onboarding
-    if (currentUser) {
+    console.log('[handleTutorialContinue] Tutorial completed, checking user access');
+    
+    // Get current user and check their payment access
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user) {
+      console.log('[handleTutorialContinue] User found:', userData.user.id);
+      
+      try {
+        // Check user's payment access
+        const access = await paymentService.checkUserAccess(userData.user.id);
+        console.log('[handleTutorialContinue] User access:', access);
+        setUserAccess(access);
+        
+        if (!access.hasAccess) {
+          console.log('[handleTutorialContinue] User has no access, showing paywall');
+          setShowPaywall(true);
+        } else {
+          console.log('[handleTutorialContinue] User has access, proceeding to main app');
+          // User has access, proceed to main app
+          await fetchProfileAndJobs();
+        }
+      } catch (error) {
+        console.error('[handleTutorialContinue] Error checking user access:', error);
+        // If there's an error checking access, show paywall as fallback
+        setShowPaywall(true);
+      }
+    } else {
+      console.log('[handleTutorialContinue] No user found, showing paywall');
       setShowPaywall(true);
     }
   };
