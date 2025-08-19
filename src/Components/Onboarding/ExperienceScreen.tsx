@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../../supabaseClient";
 import { Experience, Education } from "../../types/Profile";
 import ExperienceItem from "../ProfileSections/ExperienceItem";
 import EducationItem from "../ProfileSections/EducationItem";
@@ -39,6 +40,57 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
   const [editingEduId, setEditingEduId] = useState<string | null>(null);
 
   React.useEffect(() => {
+    // Load existing experience and education data if available
+    const loadProfileData = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          // Load experience data
+          const { data: experienceData, error: expError } = await supabase
+            .from('experience')
+            .select('*')
+            .eq('profile_id', userData.user.id);
+          
+          if (experienceData && !expError) {
+            const mappedExperience = experienceData.map((exp: any) => ({
+              id: exp.id,
+              title: exp.job_title,
+              company: exp.company,
+              location: exp.location,
+              startDate: exp.start_date,
+              endDate: exp.end_date,
+              current: !!exp.is_current,
+              description: exp.description,
+            }));
+            setExperience(mappedExperience);
+          }
+
+          // Load education data
+          const { data: educationData, error: eduError } = await supabase
+            .from('education')
+            .select('*')
+            .eq('profile_id', userData.user.id);
+          
+          if (educationData && !eduError) {
+            const mappedEducation = educationData.map((edu: any) => ({
+              id: edu.id,
+              institution: edu.institution,
+              degree: edu.degree,
+              field: edu.field,
+              startDate: edu.start_date,
+              endDate: edu.end_date,
+              gpa: edu.gpa,
+              location: edu.location,
+            }));
+            setEducation(mappedEducation);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading experience/education data:', error);
+      }
+    };
+
+    // First try to load from prefill (resume parsing)
     if (prefill && Array.isArray(prefill)) {
       const expSection = prefill.find(s => s.title && s.title.toLowerCase() === 'experience');
       if (expSection && Array.isArray(expSection.fields)) {
@@ -83,6 +135,9 @@ const ExperienceScreen: React.FC<ExperienceScreenProps> = ({ onContinue, onBack,
         setEducation(grouped);
       }
     }
+
+    // Then load from existing database data
+    loadProfileData();
   }, [prefill]);
 
   // Experience handlers
