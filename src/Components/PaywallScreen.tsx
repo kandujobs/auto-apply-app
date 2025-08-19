@@ -117,20 +117,19 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center p-4">
-      {/* Progress bar */}
-      {loading && (
-        <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
-          <motion.div
-            className="h-full bg-gradient-to-r from-purple-600 to-blue-600"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      )}
-
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 overflow-y-auto">
+      <div className="max-w-4xl mx-auto py-8">
+        {/* Progress bar */}
+        {loading && (
+          <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+            <motion.div
+              className="h-full bg-gradient-to-r from-purple-600 to-blue-600"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+        )}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -145,13 +144,13 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
               Kandu
             </span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Start Your{' '}
             <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               2-Day Free Trial
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
             Unlock unlimited job applications, AI-powered auto-apply, and advanced job search features.
             No commitment required.
           </p>
@@ -198,7 +197,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid md:grid-cols-3 gap-6 mb-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
         >
           {plans.filter(plan => plan.name !== 'Free' && !plan.name.includes('Yearly')).map((plan, index) => (
             <motion.div
