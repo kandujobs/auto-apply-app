@@ -682,6 +682,8 @@ function App() {
     console.log('[handleExperienceContinue] Starting to save experience and education data');
     console.log('[handleExperienceContinue] Experience data:', info.experience);
     console.log('[handleExperienceContinue] Education data:', info.education);
+    console.log('[handleExperienceContinue] Experience length:', info.experience.length);
+    console.log('[handleExperienceContinue] Education length:', info.education.length);
     
     // Save experience and education to Supabase
     const { data: userData } = await supabase.auth.getUser();
@@ -703,6 +705,7 @@ function App() {
         };
         
         // Save experience data
+        console.log('[handleExperienceContinue] About to save experience data, length:', info.experience.length);
         if (info.experience.length > 0) {
           const experienceData = info.experience.map(exp => ({
             id: exp.id,
@@ -717,10 +720,13 @@ function App() {
           }));
           
           console.log('[handleExperienceContinue] Experience data to save:', experienceData);
+          console.log('[handleExperienceContinue] About to call supabase.upsert for experience');
           
           const { error: expError } = await supabase
             .from('experience')
             .upsert(experienceData, { onConflict: 'id' });
+          
+          console.log('[handleExperienceContinue] Supabase upsert response for experience:', { error: expError });
           
           if (expError) {
             console.error('[handleExperienceContinue] Error saving experience:', expError);
@@ -732,6 +738,7 @@ function App() {
         }
         
         // Save education data
+        console.log('[handleExperienceContinue] About to save education data, length:', info.education.length);
         if (info.education.length > 0) {
           const educationData = info.education.map(edu => ({
             id: edu.id,
@@ -746,10 +753,13 @@ function App() {
           }));
           
           console.log('[handleExperienceContinue] Education data to save:', educationData);
+          console.log('[handleExperienceContinue] About to call supabase.upsert for education');
           
           const { error: eduError } = await supabase
             .from('education')
             .upsert(educationData, { onConflict: 'id' });
+          
+          console.log('[handleExperienceContinue] Supabase upsert response for education:', { error: eduError });
           
           if (eduError) {
             console.error('[handleExperienceContinue] Error saving education:', eduError);
