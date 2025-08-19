@@ -972,14 +972,61 @@ function App() {
           email: session.user.email || ''
         });
         
-        // Check if user has completed onboarding
+        // Check if user has a profile, create one if not
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('onboarding_complete')
           .eq('id', session.user.id)
           .single();
         
-        if (profileError || !profileData || !profileData.onboarding_complete) {
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist, create a default profile
+          console.log('[handleHostedAuthCallback] Profile not found, creating default profile');
+          const { error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.email?.split('@')[0] || 'User',
+              location: 'New York, NY',
+              phone: '',
+              headline: '',
+              skills: [],
+              interests: [],
+              desired_job_title: 'Intern',
+              salary_min: 0,
+              salary_max: 0,
+              latitude: 0,
+              longitude: 0,
+              onboarding_complete: false,
+              statistics: {
+                applied: 0,
+                pending: 0,
+                offers: 0,
+              },
+            });
+          
+          if (createError) {
+            console.error('[handleHostedAuthCallback] Error creating profile:', createError);
+            setSignUpError('Failed to create user profile. Please try again.');
+            setCheckingAuth(false);
+            return;
+          }
+          
+          console.log('[handleHostedAuthCallback] Default profile created, showing onboarding flow');
+          setShowOnboarding(true);
+          setShowSignIn(false);
+          setCheckingAuth(false);
+          return;
+        } else if (profileError) {
+          console.error('[handleHostedAuthCallback] Error checking profile:', profileError);
+          setSignUpError('Failed to check user profile. Please try again.');
+          setCheckingAuth(false);
+          return;
+        }
+        
+        // Profile exists, check if onboarding is complete
+        if (!profileData.onboarding_complete) {
           console.log('[handleHostedAuthCallback] User has not completed onboarding, showing onboarding flow');
           setShowOnboarding(true);
           setShowSignIn(false);
@@ -1055,14 +1102,61 @@ function App() {
           email: data.user.email || ''
         });
         
-        // Check if user has completed onboarding
+        // Check if user has a profile, create one if not
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('onboarding_complete')
           .eq('id', data.user.id)
           .single();
         
-        if (profileError || !profileData || !profileData.onboarding_complete) {
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist, create a default profile
+          console.log('[handleOAuthCallback] Profile not found, creating default profile');
+          const { error: createError } = await supabase
+            .from('profiles')
+            .insert({
+              id: data.user.id,
+              email: data.user.email || '',
+              name: data.user.email?.split('@')[0] || 'User',
+              location: 'New York, NY',
+              phone: '',
+              headline: '',
+              skills: [],
+              interests: [],
+              desired_job_title: 'Intern',
+              salary_min: 0,
+              salary_max: 0,
+              latitude: 0,
+              longitude: 0,
+              onboarding_complete: false,
+              statistics: {
+                applied: 0,
+                pending: 0,
+                offers: 0,
+              },
+            });
+          
+          if (createError) {
+            console.error('[handleOAuthCallback] Error creating profile:', createError);
+            setSignUpError('Failed to create user profile. Please try again.');
+            setCheckingAuth(false);
+            return;
+          }
+          
+          console.log('[handleOAuthCallback] Default profile created, showing onboarding flow');
+          setShowOnboarding(true);
+          setShowSignIn(false);
+          setCheckingAuth(false);
+          return;
+        } else if (profileError) {
+          console.error('[handleOAuthCallback] Error checking profile:', profileError);
+          setSignUpError('Failed to check user profile. Please try again.');
+          setCheckingAuth(false);
+          return;
+        }
+        
+        // Profile exists, check if onboarding is complete
+        if (!profileData.onboarding_complete) {
           console.log('[handleOAuthCallback] User has not completed onboarding, showing onboarding flow');
           setShowOnboarding(true);
           setShowSignIn(false);
@@ -1132,14 +1226,59 @@ function App() {
         console.log('[checkAuth] Cleared incomplete onboarding step');
       }
       
-      // Check if user has completed onboarding
+      // Check if user has a profile, create one if not
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('onboarding_complete')
         .eq('id', userData.user.id)
         .single();
       
-      if (profileError || !profileData || !profileData.onboarding_complete) {
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create a default profile
+        console.log('[checkAuth] Profile not found, creating default profile');
+        const { error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userData.user.id,
+            email: userData.user.email || '',
+            name: userData.user.email?.split('@')[0] || 'User',
+            location: 'New York, NY',
+            phone: '',
+            headline: '',
+            skills: [],
+            interests: [],
+            desired_job_title: 'Intern',
+            salary_min: 0,
+            salary_max: 0,
+            latitude: 0,
+            longitude: 0,
+            onboarding_complete: false,
+            statistics: {
+              applied: 0,
+              pending: 0,
+              offers: 0,
+            },
+          });
+        
+        if (createError) {
+          console.error('[checkAuth] Error creating profile:', createError);
+          setCheckingAuth(false);
+          return;
+        }
+        
+        console.log('[checkAuth] Default profile created, showing onboarding flow');
+        setShowOnboarding(true);
+        setShowSignIn(false);
+        setCheckingAuth(false);
+        return;
+      } else if (profileError) {
+        console.error('[checkAuth] Error checking profile:', profileError);
+        setCheckingAuth(false);
+        return;
+      }
+      
+      // Profile exists, check if onboarding is complete
+      if (!profileData.onboarding_complete) {
         console.log('[checkAuth] User has not completed onboarding, showing onboarding flow');
         setShowOnboarding(true);
         setShowSignIn(false);
