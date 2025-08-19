@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { FiZap, FiTrendingUp, FiUsers, FiShield, FiStar, FiArrowRight, FiX } from 'react-icons/fi';
 import { paymentService } from '../services/paymentService';
 import { supabase } from '../supabaseClient';
+import { getBackendUrl } from '../utils/backendUrl';
 
 interface PaywallScreenProps {
   onComplete: () => void;
@@ -260,17 +261,16 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
         ? selectedPlanData.stripe_price_id_monthly 
         : selectedPlanData.stripe_price_id_yearly;
 
-      const response = await fetch('/api/start-trial', {
+      const response = await fetch(`${getBackendUrl()}/api/payment/create-subscription`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId,
-          userEmail,
-          planId: selectedPlanData.id,
-          billingCycle,
-          stripePriceId: stripePriceId
+          customerId: userId, // Using userId as customerId for now
+          priceId: stripePriceId,
+          userId: userId,
+          trialDays: 2
         }),
       });
 
