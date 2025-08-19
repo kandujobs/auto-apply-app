@@ -1717,7 +1717,11 @@ function App() {
               goToApplied={goTo("applied")}
               goToProfile={goTo("profile")}
               goToFilters={goTo("filters")}
-              showPaywall={() => setShowPaywall(true)}
+              showPaywall={() => {
+                console.log('[AutoApplyScreen] Upgrade Now clicked, setting showPaywall to true');
+                console.log('[AutoApplyScreen] Current user:', currentUser);
+                setShowPaywall(true);
+              }}
             />
           )}
           {screen === "filters" && (
@@ -1773,13 +1777,16 @@ function App() {
           />
 
           {/* Payment Components */}
-          {showPaywall && currentUser && (
-            <PaywallScreen
-              onComplete={handlePaywallComplete}
-              onBack={() => setShowPaywall(false)}
-              userId={currentUser.id}
-              userEmail={currentUser.email}
-            />
+          {showPaywall && (
+            <>
+              {console.log('[App] Rendering PaywallScreen, showPaywall:', showPaywall, 'currentUser:', currentUser)}
+              <PaywallScreen
+                onComplete={handlePaywallComplete}
+                onBack={() => setShowPaywall(false)}
+                userId={currentUser?.id || ''}
+                userEmail={currentUser?.email || ''}
+              />
+            </>
           )}
 
           {userAccess && userAccess.hasAccess && userAccess.type === 'trial' && userAccess.expiresAt && (
