@@ -49,10 +49,63 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
   }, [billingCycle, plans]);
 
   const loadPlans = async () => {
-    // Temporarily skip API call to force new pricing structure
-    console.log('Forcing new pricing structure...');
-    throw new Error('Skip API call');
+    // Set our new pricing structure directly - no API call needed
+    console.log('Loading new pricing structure...');
     
+    // Set the plans directly with our new pricing structure
+    const newPlans: Plan[] = [
+      {
+        id: '1',
+        name: 'Starter',
+        price_monthly: 19,
+        price_yearly: 160,
+        stripe_price_id_monthly: 'price_1Rxw90FdjOQFWIuBLKpOYFNt',
+        stripe_price_id_yearly: 'price_1Rxw90FdjOQFWIuBtcrtKwYH',
+        features: [
+          'Up to 50 auto-applies per month',
+          'Daily job matches tailored to your profile',
+          'Save & track jobs in-app',
+          'Priority email support'
+        ]
+      },
+      {
+        id: '2',
+        name: 'Pro',
+        price_monthly: 39,
+        price_yearly: 235,
+        stripe_price_id_monthly: 'price_1RxwCpFdjOQFWIuBnwyoFzpN',
+        stripe_price_id_yearly: 'price_1RxwCpFdjOQFWIuBIAtb3f0C',
+        features: [
+          'Up to 200 auto-applies per month',
+          'AI-optimized resume matching for every job',
+          'Daily job alerts (higher volume)',
+          'Track applications in real time',
+          'Access to upcoming features first'
+        ]
+      },
+      {
+        id: '3',
+        name: 'Premium',
+        price_monthly: 79,
+        price_yearly: 349,
+        stripe_price_id_monthly: 'price_1RxwFEFdjOQFWIuBp1e14nIj',
+        stripe_price_id_yearly: 'price_1RxwFEFdjOQFWIuBGW44l7c8',
+        features: [
+          'Unlimited auto-applies',
+          'Everything in Pro',
+          'Personalized resume feedback (AI-driven)',
+          'Priority queue for job applications (faster processing)',
+          'Dedicated email + chat support',
+          'Access to premium beta features'
+        ]
+      }
+    ];
+    
+    setPlans(newPlans);
+    setSelectedPlan(newPlans[0].stripe_price_id_monthly);
+    
+    // TODO: Re-enable API call once backend is updated with new pricing
+    /*
     try {
       const plansData = await paymentService.getSubscriptionPlans();
       // Convert SubscriptionPlan to local Plan format with our new pricing structure
@@ -169,6 +222,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
       ]);
       setSelectedPlan('price_1Rxw90FdjOQFWIuBLKpOYFNt');
     }
+    */
   };
 
   const handleStartTrial = async () => {
