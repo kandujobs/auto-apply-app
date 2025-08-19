@@ -3,31 +3,6 @@ import React from 'react';
 const PrivacyPolicy: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Privacy Policy - Kandu Jobs | How We Protect Your Data</title>
-        <meta name="description" content="Read Kandu Jobs' comprehensive privacy policy. Learn how we collect, use, and protect your personal information and job application data." />
-        <meta name="keywords" content="privacy policy, data protection, kandu jobs, job application privacy, personal data" />
-        <meta property="og:title" content="Privacy Policy - Kandu Jobs" />
-        <meta property="og:description" content="Learn how Kandu Jobs protects your personal information and job application data." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kandujobs.com/privacy-policy" />
-        <link rel="canonical" href="https://kandujobs.com/privacy-policy" />
-        
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Privacy Policy - Kandu Jobs",
-            "description": "Comprehensive privacy policy explaining how Kandu Jobs collects, uses, and protects user data.",
-            "url": "https://kandujobs.com/privacy-policy",
-            "publisher": {
-              "@type": "Organization",
-              "name": "Kandu Jobs",
-              "url": "https://kandujobs.com"
-            }
-          })}
-        </script>
-      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
         {/* Header */}

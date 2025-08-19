@@ -3,31 +3,6 @@ import React from 'react';
 const TermsOfService: React.FC = () => {
   return (
     <>
-      <Helmet>
-        <title>Terms of Service - Kandu Jobs | User Agreement and Conditions</title>
-        <meta name="description" content="Read Kandu Jobs' terms of service and user agreement. Understand your rights and responsibilities when using our job application automation platform." />
-        <meta name="keywords" content="terms of service, user agreement, kandu jobs, legal terms, service conditions" />
-        <meta property="og:title" content="Terms of Service - Kandu Jobs" />
-        <meta property="og:description" content="Understand your rights and responsibilities when using Kandu Jobs' job application automation platform." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://kandujobs.com/terms-of-service" />
-        <link rel="canonical" href="https://kandujobs.com/terms-of-service" />
-        
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Terms of Service - Kandu Jobs",
-            "description": "Comprehensive terms of service and user agreement for Kandu Jobs platform.",
-            "url": "https://kandujobs.com/terms-of-service",
-            "publisher": {
-              "@type": "Organization",
-              "name": "Kandu Jobs",
-              "url": "https://kandujobs.com"
-            }
-          })}
-        </script>
-      </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
         {/* Header */}
