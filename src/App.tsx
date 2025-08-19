@@ -143,7 +143,7 @@ function App() {
   const [globalError, setGlobalError] = useState<string | null>(null);
 
   // Payment and subscription state
-  const [showPaywall, setShowPaywall] = useState(false);
+
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [userAccess, setUserAccess] = useState<UserAccess | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
@@ -662,7 +662,7 @@ function App() {
         
         if (!access.hasAccess) {
           console.log('[handleTutorialContinue] User has no access, showing paywall');
-          setShowPaywall(true);
+          setScreen("paywall");
         } else {
           console.log('[handleTutorialContinue] User has access, proceeding to main app');
           // User has access, proceed to main app
@@ -673,17 +673,17 @@ function App() {
         // If there's an error checking access, show paywall as fallback
         // This handles cases where the payment API is down or returns errors
         console.log('[handleTutorialContinue] Payment API error, showing paywall as fallback');
-        setShowPaywall(true);
+        setScreen("paywall");
       }
     } else {
       console.log('[handleTutorialContinue] No user found, showing paywall');
-      setShowPaywall(true);
+      setScreen("paywall");
     }
   };
 
   // Payment handlers
   const handlePaywallComplete = () => {
-    setShowPaywall(false);
+    setScreen("home");
     // Refresh user access after successful trial start
     if (currentUser) {
       paymentService.checkUserAccess(currentUser.id).then(setUserAccess);
@@ -1207,7 +1207,7 @@ function App() {
         
         // If user doesn't have access, show paywall after onboarding
         if (!access.hasAccess) {
-          setShowPaywall(true);
+          setScreen("paywall");
         }
       } catch (error) {
         console.error('[checkAuth] Error checking payment access:', error);
