@@ -261,21 +261,44 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
         ? selectedPlanData.stripe_price_id_monthly 
         : selectedPlanData.stripe_price_id_yearly;
 
-      const response = await fetch(`${getBackendUrl()}/api/payment/create-subscription`, {
+      // Step 1: Create Stripe customer first
+      console.log('Creating Stripe customer...');
+      const customerResponse = await fetch(`${getBackendUrl()}/api/payment/create-customer`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          customerId: userId, // Using userId as customerId for now
+          email: userEmail,
+          name: userEmail.split('@')[0] // Use email prefix as name
+        }),
+      });
+
+      if (!customerResponse.ok) {
+        const errorData = await customerResponse.json();
+        throw new Error(errorData.error || 'Failed to create customer');
+      }
+
+      const customerData = await customerResponse.json();
+      const stripeCustomerId = customerData.customer.id;
+
+      // Step 2: Create subscription with the Stripe customer ID
+      console.log('Creating subscription with customer ID:', stripeCustomerId);
+      const subscriptionResponse = await fetch(`${getBackendUrl()}/api/payment/create-subscription`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerId: stripeCustomerId,
           priceId: stripePriceId,
           userId: userId,
           trialDays: 2
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (!subscriptionResponse.ok) {
+        const errorData = await subscriptionResponse.json();
         throw new Error(errorData.error || 'Failed to start trial');
       }
 
