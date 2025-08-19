@@ -49,6 +49,10 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
   }, [billingCycle, plans]);
 
   const loadPlans = async () => {
+    // Temporarily skip API call to force new pricing structure
+    console.log('Forcing new pricing structure...');
+    throw new Error('Skip API call');
+    
     try {
       const plansData = await paymentService.getSubscriptionPlans();
       // Convert SubscriptionPlan to local Plan format with our new pricing structure
