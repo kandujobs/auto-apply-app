@@ -394,19 +394,21 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 >
                   Monthly
                 </button>
-                <button
-                  onClick={() => setBillingCycle('yearly')}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all relative ${
-                    billingCycle === 'yearly'
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Yearly
-                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                <div className="relative">
+                  <button
+                    onClick={() => setBillingCycle('yearly')}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                      billingCycle === 'yearly'
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    Yearly
+                  </button>
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow-sm">
                     Save up to 63%
                   </span>
-                </button>
+                </div>
               </div>
             </div>
           </motion.div>
