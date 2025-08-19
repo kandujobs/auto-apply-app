@@ -138,6 +138,7 @@ function App() {
 
 
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [oauthProcessing, setOauthProcessing] = useState(false);
 
   const [globalError, setGlobalError] = useState<string | null>(null);
 
@@ -945,6 +946,11 @@ function App() {
   }, []);
 
   const handleHostedAuthCallback = async (session: any) => {
+    if (oauthProcessing) {
+      console.log('[handleHostedAuthCallback] Already processing OAuth, skipping');
+      return;
+    }
+    setOauthProcessing(true);
     setCheckingAuth(true);
     console.log('[handleHostedAuthCallback] Processing hosted auth callback');
     
@@ -983,26 +989,8 @@ function App() {
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
-        
-        // Force page refresh to ensure proper state
-        window.location.reload();
+        setOauthProcessing(false);
         return;
-        
-        // Check user's payment access
-        try {
-          const access = await paymentService.checkUserAccess(session.user.id);
-          setUserAccess(access);
-          
-          if (!access.hasAccess) {
-            setShowPaywall(true);
-          }
-        } catch (error) {
-          console.error('[handleHostedAuthCallback] Error checking payment access:', error);
-        }
-        
-        await fetchProfileAndJobs();
-        setShowOnboarding(false);
-        setShowSignIn(false);
       }
     } catch (err) {
       console.error('[handleHostedAuthCallback] Exception:', err);
@@ -1010,9 +998,15 @@ function App() {
     }
     
     setCheckingAuth(false);
+    setOauthProcessing(false);
   };
 
   const handleOAuthCallback = async (accessToken: string, refreshToken: string) => {
+    if (oauthProcessing) {
+      console.log('[handleOAuthCallback] Already processing OAuth, skipping');
+      return;
+    }
+    setOauthProcessing(true);
     setCheckingAuth(true);
     console.log('[handleOAuthCallback] Processing OAuth callback');
     
@@ -1067,9 +1061,7 @@ function App() {
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
-        
-        // Force page refresh to ensure proper state
-        window.location.reload();
+        setOauthProcessing(false);
         return;
       }
     } catch (err) {
@@ -1078,6 +1070,7 @@ function App() {
     }
     
     setCheckingAuth(false);
+    setOauthProcessing(false);
   };
 
   async function checkAuth() {
