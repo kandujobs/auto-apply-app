@@ -564,7 +564,7 @@ function App() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://auth.kandujobs.com/auth/callback'
+          redirectTo: `${window.location.origin}`
         }
       });
       
@@ -908,19 +908,92 @@ function App() {
 
 
   useEffect(() => {
-    // Check if we're returning from an OAuth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
+    const checkAuthAndCallbacks = async () => {
+      // Check if we're returning from an OAuth callback
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessToken = urlParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token');
+      
+      if (accessToken && refreshToken) {
+        // Handle OAuth callback with tokens
+        handleOAuthCallback(accessToken, refreshToken);
+      } else {
+        // Check for Supabase hosted auth callback
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          // User is already authenticated via hosted auth
+          handleHostedAuthCallback(session);
+        } else {
+          // Normal auth check
+          checkAuth();
+        }
+      }
+    };
     
-    if (accessToken && refreshToken) {
-      // Handle OAuth callback
-      handleOAuthCallback(accessToken, refreshToken);
-    } else {
-      // Normal auth check
-      checkAuth();
-    }
+    checkAuthAndCallbacks();
+    
+    // Listen for auth state changes (for hosted auth flow)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        console.log('[AuthStateChange] User signed in via hosted auth');
+        handleHostedAuthCallback(session);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
+
+  const handleHostedAuthCallback = async (session: any) => {
+    setCheckingAuth(true);
+    console.log('[handleHostedAuthCallback] Processing hosted auth callback');
+    
+    try {
+      if (session.user) {
+        console.log('[handleHostedAuthCallback] Hosted auth successful:', session.user.email);
+        
+        // Check if user is an employer
+        const { data: employerData, error: employerError } = await supabase
+          .from('employers')
+          .select('id')
+          .eq('contact_email', session.user.email)
+          .single();
+        
+        if (employerData && !employerError) {
+          console.log('[handleHostedAuthCallback] Employer found, setting isEmployer true');
+          setIsEmployer(true);
+          setCheckingAuth(false);
+          return;
+        }
+        
+        // Set current user for payment checks
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email || ''
+        });
+        
+        // Check user's payment access
+        try {
+          const access = await paymentService.checkUserAccess(session.user.id);
+          setUserAccess(access);
+          
+          if (!access.hasAccess) {
+            setShowPaywall(true);
+          }
+        } catch (error) {
+          console.error('[handleHostedAuthCallback] Error checking payment access:', error);
+        }
+        
+        await fetchProfileAndJobs();
+        setShowOnboarding(false);
+        setShowSignIn(false);
+      }
+    } catch (err) {
+      console.error('[handleHostedAuthCallback] Exception:', err);
+      setSignUpError('Failed to complete Google sign-in. Please try again.');
+    }
+    
+    setCheckingAuth(false);
+  };
 
   const handleOAuthCallback = async (accessToken: string, refreshToken: string) => {
     setCheckingAuth(true);
