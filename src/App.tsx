@@ -43,7 +43,7 @@ import { getBackendEndpoint } from './utils/backendUrl';
 
 function App() {
   const [screen, setScreen] = useState<
-    "home" | "applied" | "profile" | "saved" | "notifications" | "filters" | "notificationsPrivacy" | "accountSettings" | "upgrade"
+    "home" | "applied" | "profile" | "saved" | "notifications" | "filters" | "notificationsPrivacy" | "accountSettings" | "upgrade" | "paywall"
   >("home");
 
   // Onboarding/sign-in state
@@ -1717,11 +1717,7 @@ function App() {
               goToApplied={goTo("applied")}
               goToProfile={goTo("profile")}
               goToFilters={goTo("filters")}
-              showPaywall={() => {
-                console.log('[AutoApplyScreen] Upgrade Now clicked, setting showPaywall to true');
-                console.log('[AutoApplyScreen] Current user:', currentUser);
-                setShowPaywall(true);
-              }}
+              goToPaywall={goTo("paywall")}
             />
           )}
           {screen === "filters" && (
@@ -1759,6 +1755,14 @@ function App() {
               goBack={goTo("profile")}
             />
           )}
+          {screen === "paywall" && (
+            <PaywallScreen
+              onComplete={handlePaywallComplete}
+              onBack={goTo("notifications")}
+              userId={currentUser?.id || ''}
+              userEmail={currentUser?.email || ''}
+            />
+          )}
 
           {/* Badge Achievement Notification */}
           {currentAchievement && (
@@ -1776,18 +1780,7 @@ function App() {
             onClose={() => setShowNetworkModal(false)} 
           />
 
-          {/* Payment Components */}
-          {showPaywall && (
-            <>
-              {console.log('[App] Rendering PaywallScreen, showPaywall:', showPaywall, 'currentUser:', currentUser)}
-              <PaywallScreen
-                onComplete={handlePaywallComplete}
-                onBack={() => setShowPaywall(false)}
-                userId={currentUser?.id || ''}
-                userEmail={currentUser?.email || ''}
-              />
-            </>
-          )}
+
 
           {userAccess && userAccess.hasAccess && userAccess.type === 'trial' && userAccess.expiresAt && (
             <TrialExpiryBanner
