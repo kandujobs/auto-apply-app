@@ -129,9 +129,8 @@ const PrivacyPolicy: React.FC = () => {
                 If you have any questions about this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <p className="text-gray-700 mb-2"><strong>Email:</strong> privacy@kandujobs.com</p>
-                <p className="text-gray-700 mb-2"><strong>Address:</strong> Kandu Jobs, [Your Business Address]</p>
-                <p className="text-gray-700"><strong>Phone:</strong> [Your Phone Number]</p>
+                <p className="text-gray-700 mb-2"><strong>Email:</strong> legal@kandujobs.com</p>
+                <p className="text-gray-700"><strong>Phone:</strong> [329-210-8197]</p>
               </div>
 
               <div className="mt-8 pt-6 border-t border-gray-200">
