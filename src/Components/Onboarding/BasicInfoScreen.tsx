@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../../supabaseClient";
 
 const NY_LOCATIONS = [
   "New York, NY", "Buffalo, NY", "Rochester, NY", "Yonkers, NY", "Syracuse, NY", "Albany, NY", "New Rochelle, NY", "Mount Vernon, NY", "Schenectady, NY", "Utica, NY", "White Plains, NY", "Troy, NY", "Niagara Falls, NY", "Binghamton, NY", "Rome, NY", "Long Beach, NY", "Poughkeepsie, NY", "North Tonawanda, NY", "Jamestown, NY", "Ithaca, NY", "Elmira, NY", "Newburgh, NY", "Middletown, NY", "Auburn, NY", "Watertown, NY", "Glen Cove, NY", "Saratoga Springs, NY", "Kingston, NY", "Peekskill, NY", "Lockport, NY", "Plattsburgh, NY"
@@ -17,6 +18,29 @@ const BasicInfoScreen: React.FC<BasicInfoScreenProps> = ({ onContinue, onBack, p
   const [radius, setRadius] = useState(25);
 
   React.useEffect(() => {
+    // Load existing profile data if available
+    const loadProfileData = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('name, location, radius')
+            .eq('id', userData.user.id)
+            .single();
+          
+          if (profileData && !error) {
+            if (profileData.name) setName(profileData.name);
+            if (profileData.location) setLocation(profileData.location);
+            if (profileData.radius) setRadius(profileData.radius);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
+    };
+
+    // First try to load from prefill (resume parsing)
     if (prefill && Array.isArray(prefill)) {
       const profileSection = prefill.find(s => s.title && s.title.toLowerCase() === 'profile');
       if (profileSection && Array.isArray(profileSection.fields)) {
@@ -26,6 +50,9 @@ const BasicInfoScreen: React.FC<BasicInfoScreenProps> = ({ onContinue, onBack, p
         if (locationField) setLocation(locationField.value);
       }
     }
+
+    // Then load from existing profile data
+    loadProfileData();
   }, [prefill]);
 
   const filteredLocations = location.length > 0

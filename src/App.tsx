@@ -983,6 +983,9 @@ function App() {
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
+        
+        // Force page refresh to ensure proper state
+        window.location.reload();
         return;
         
         // Check user's payment access
@@ -1064,6 +1067,9 @@ function App() {
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
+        
+        // Force page refresh to ensure proper state
+        window.location.reload();
         return;
       }
     } catch (err) {
