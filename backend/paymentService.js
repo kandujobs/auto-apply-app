@@ -61,7 +61,7 @@ class PaymentService {
     try {
       const session = await this.stripe.checkout.sessions.create({
         customer: customerId,
-        payment_method_types: ['card', 'apple_pay', 'google_pay'],
+        payment_method_types: ['card'],
         line_items: [{
           price: priceId,
           quantity: 1,
@@ -86,6 +86,12 @@ class PaymentService {
         customer_update: {
           address: 'auto',
           name: 'auto',
+        },
+        // Enable Apple Pay and Google Pay automatically when available
+        payment_method_options: {
+          card: {
+            request_three_d_secure: 'automatic',
+          },
         },
       });
       return session;
