@@ -159,13 +159,13 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 Kandu
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
               Start Your{' '}
               <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 2-Day Free Trial
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
               Unlock unlimited job applications, AI-powered auto-apply, and advanced job search features.
               No commitment required.
             </p>
@@ -212,7 +212,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+            className="grid grid-cols-1 gap-6 mb-8"
           >
             {plans.filter(plan => plan.name !== 'Free' && !plan.name.includes('Yearly')).map((plan, index) => (
               <motion.div
@@ -236,23 +236,23 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 )}
 
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name} Plan</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-gray-900">
-                      ${billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly}
-                    </span>
-                    <span className="text-gray-600 ml-2">
-                      /{billingCycle === 'monthly' ? 'mo' : 'year'}
-                    </span>
-                  </div>
-                  {billingCycle === 'yearly' && (
-                    <div className="text-green-600 text-sm font-semibold">
-                      Save ${calculateSavings(plan).toFixed(2)} per year
-                    </div>
-                  )}
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{plan.name} Plan</h3>
+                                     <div className="mb-4">
+                     <span className="text-2xl font-bold text-gray-900">
+                       ${billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly}
+                     </span>
+                     <span className="text-gray-600 ml-2 text-sm">
+                       /{billingCycle === 'monthly' ? 'mo' : 'year'}
+                     </span>
+                   </div>
+                                     {billingCycle === 'yearly' && (
+                     <div className="text-green-600 text-xs font-semibold">
+                       Save ${calculateSavings(plan).toFixed(2)} per year
+                     </div>
+                   )}
                 </div>
 
-                <ul className="space-y-3 mb-6">
+                                 <ul className="space-y-2 mb-4">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center">
                       <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
@@ -260,7 +260,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
-                      <span className="text-gray-700">{feature}</span>
+                                             <span className="text-gray-700 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -273,12 +273,12 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-white rounded-2xl p-8 shadow-sm border mb-8"
+            className="bg-white rounded-2xl p-6 shadow-sm border mb-6"
           >
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">
               What You'll Get During Your Free Trial
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 {
                   icon: <FiZap className="w-8 h-8" />,
@@ -303,8 +303,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
               ].map((feature, index) => (
                 <div key={index} className="text-center">
                   <div className="text-purple-600 mb-3 flex justify-center">{feature.icon}</div>
-                  <h4 className="font-semibold text-gray-900 mb-2">{feature.title}</h4>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                                   <h4 className="font-semibold text-gray-900 mb-1 text-sm">{feature.title}</h4>
+                 <p className="text-gray-600 text-xs">{feature.description}</p>
                 </div>
               ))}
             </div>
@@ -323,21 +323,21 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
               </div>
             )}
 
-            <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
-              <div className="flex items-center justify-center space-x-4 mb-4">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border mb-4">
+                              <div className="flex items-center justify-center space-x-3 mb-3">
                 <FiStar className="w-6 h-6 text-yellow-500" />
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-base font-semibold text-gray-900">
                   Start your 2-day free trial today
                 </span>
               </div>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-4 text-sm">
                 No credit card required • Cancel anytime • Full access to all features
               </p>
               
               <button
                 onClick={handleStartTrial}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-8 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-xl font-semibold text-base hover:from-purple-700 hover:to-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {loading ? (
                   <>
