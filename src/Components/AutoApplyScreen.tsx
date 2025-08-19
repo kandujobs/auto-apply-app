@@ -578,7 +578,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
             <span className="text-lg text-gray-700 text-center">{rewardMsg}</span>
             <button
               className="mt-2 px-4 py-2 bg-white border-2 border-[#984DE0] font-semibold rounded-full shadow hover:bg-[#F3EFFF] transition-all duration-200 text-sm flex items-center justify-center whitespace-nowrap"
-              onClick={() => setShowUpgradeScreen(true)}
+              onClick={showPaywall}
             >
               <span className="text-black whitespace-nowrap">Find out how to get more </span>
               <span className="text-[#984DE0] ml-1 whitespace-nowrap">for free</span>
