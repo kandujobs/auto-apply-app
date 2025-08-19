@@ -29,15 +29,59 @@ const AccountCreationScreen: React.FC<AccountCreationScreenProps> = ({ onGoogle,
       <div className="absolute left-0 bottom-0 w-full bg-gradient-to-r from-[#984DE0] to-[#7300FF] z-0 rounded-t-[2rem] h-16 transition-all duration-500" />
       {/* Main content */}
       <div className="flex flex-col items-center justify-center flex-1 z-10 w-full px-4">
-        <div className="w-full max-w-sm bg-white rounded-3xl shadow-lg border-4 border-gray-250 p-6 flex flex-col items-center mt-16 mb-8">
-          <h2 className="text-2xl font-extrabold text-black mb-6 text-center">Create Your Account</h2>
+        <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 flex flex-col items-center mt-16 mb-8">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">Create Your Account</h2>
           
+          <form onSubmit={handleCreateAccount} className="w-full">
+            <div className="w-full mb-6">
+              <label className="block text-gray-700 font-semibold mb-2 text-sm">Email or Phone</label>
+              <input 
+                type="text" 
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200" 
+                value={emailOrPhone} 
+                onChange={e => setEmailOrPhone(e.target.value)} 
+                required 
+                autoComplete="username" 
+                disabled={loading}
+                placeholder="Enter your email or phone number"
+              />
+            </div>
+            <div className="w-full mb-6">
+              <label className="block text-gray-700 font-semibold mb-2 text-sm">Password</label>
+              <input 
+                type="password" 
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                required 
+                autoComplete="new-password" 
+                disabled={loading}
+                placeholder="Create a strong password"
+              />
+            </div>
+            {error && <div className="text-red-500 text-sm mb-4 w-full text-center bg-red-50 p-3 rounded-lg border border-red-200">{error}</div>}
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-bold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="w-full flex items-center my-6">
+            <div className="flex-1 border-t border-gray-200"></div>
+            <span className="px-4 text-sm text-gray-500 font-medium">or continue with</span>
+            <div className="flex-1 border-t border-gray-200"></div>
+          </div>
+
           {/* Google Sign In Button */}
           <button
             type="button"
             onClick={onGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed mb-4"
+            className="w-full flex items-center justify-center gap-3 py-4 px-6 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -47,43 +91,21 @@ const AccountCreationScreen: React.FC<AccountCreationScreenProps> = ({ onGoogle,
             </svg>
             Continue with Google
           </button>
-
-          {/* Divider */}
-          <div className="w-full flex items-center mb-4">
-            <div className="flex-1 border-t border-gray-300"></div>
-            <span className="px-3 text-sm text-gray-500">or</span>
-            <div className="flex-1 border-t border-gray-300"></div>
-          </div>
-
-          <form onSubmit={handleCreateAccount} className="w-full">
-            <div className="w-full mb-6">
-              <label className="block text-gray-700 font-semibold mb-1">Email or Phone</label>
-              <input type="text" className="w-full border rounded px-3 py-2" value={emailOrPhone} onChange={e => setEmailOrPhone(e.target.value)} required autoComplete="username" disabled={loading} />
-            </div>
-            <div className="w-full mb-6">
-              <label className="block text-gray-700 font-semibold mb-1">Password</label>
-              <input type="password" className="w-full border rounded px-3 py-2" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" disabled={loading} />
-            </div>
-            {error && <div className="text-red-500 text-sm mb-4 w-full text-center">{error}</div>}
-            <button type="submit" disabled={loading} className="w-full py-3 rounded-[1rem] bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-bold shadow-lg mt-2 disabled:opacity-60">
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
           
           {onBack && (
             <button
               type="button"
-              className="text-[#7300FF] underline text-base mt-4"
+              className="text-purple-600 hover:text-purple-700 font-medium text-base mt-6 transition-colors duration-200"
               onClick={onBack}
               disabled={loading}
             >
-              Back to Sign In
+              ← Back to Sign In
             </button>
           )}
           
           {/* Legal Links */}
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500 mb-2">
+          <div className="mt-8 text-center">
+            <p className="text-xs text-gray-500 mb-3">
               By creating an account, you agree to our
             </p>
             <div className="flex justify-center gap-4 text-xs">
@@ -91,7 +113,7 @@ const AccountCreationScreen: React.FC<AccountCreationScreenProps> = ({ onGoogle,
                 href="https://kandujobs.com/terms-of-service"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#7300FF] hover:underline"
+                className="text-purple-600 hover:text-purple-700 hover:underline transition-colors duration-200"
               >
                 Terms of Service
               </a>
@@ -100,7 +122,7 @@ const AccountCreationScreen: React.FC<AccountCreationScreenProps> = ({ onGoogle,
                 href="https://kandujobs.com/privacy-policy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#7300FF] hover:underline"
+                className="text-purple-600 hover:text-purple-700 hover:underline transition-colors duration-200"
               >
                 Privacy Policy
               </a>
