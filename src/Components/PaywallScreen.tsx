@@ -16,7 +16,8 @@ interface Plan {
   name: string;
   price_monthly: number;
   price_yearly: number;
-  stripe_price_id: string;
+  stripe_price_id_monthly: string;
+  stripe_price_id_yearly: string;
   features: string[];
 }
 
@@ -32,12 +33,37 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
     loadPlans();
   }, []);
 
+  // Update selected plan when billing cycle changes
+  useEffect(() => {
+    if (plans.length > 0 && selectedPlan) {
+      const currentPlan = plans.find(plan => 
+        plan.stripe_price_id_monthly === selectedPlan || plan.stripe_price_id_yearly === selectedPlan
+      );
+      if (currentPlan) {
+        const newPriceId = billingCycle === 'monthly' 
+          ? currentPlan.stripe_price_id_monthly 
+          : currentPlan.stripe_price_id_yearly;
+        setSelectedPlan(newPriceId);
+      }
+    }
+  }, [billingCycle, plans]);
+
   const loadPlans = async () => {
     try {
       const plansData = await paymentService.getSubscriptionPlans();
-      setPlans(plansData);
-      if (plansData.length > 0) {
-        setSelectedPlan(plansData[0].stripe_price_id);
+      // Convert SubscriptionPlan to local Plan format
+      const convertedPlans: Plan[] = plansData.map(plan => ({
+        id: plan.id,
+        name: plan.name,
+        price_monthly: plan.price_monthly,
+        price_yearly: plan.price_yearly,
+        stripe_price_id_monthly: plan.stripe_price_id, // Use the same ID for both for now
+        stripe_price_id_yearly: plan.stripe_price_id, // Use the same ID for both for now
+        features: plan.features
+      }));
+      setPlans(convertedPlans);
+      if (convertedPlans.length > 0) {
+        setSelectedPlan(convertedPlans[0].stripe_price_id_monthly);
       }
     } catch (error) {
       console.error('Error loading plans:', error);
@@ -48,7 +74,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           name: 'Starter',
           price_monthly: 19,
           price_yearly: 160,
-          stripe_price_id: 'starter_monthly',
+          stripe_price_id_monthly: 'price_1Rxw90FdjOQFWIuBLKpOYFNt',
+          stripe_price_id_yearly: 'price_1Rxw90FdjOQFWIuBtcrtKwYH',
           features: [
             'Up to 50 auto-applies per month',
             'Daily job matches tailored to your profile',
@@ -61,7 +88,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           name: 'Pro',
           price_monthly: 39,
           price_yearly: 235,
-          stripe_price_id: 'pro_monthly',
+          stripe_price_id_monthly: 'price_1Rxw90FdjOQFWIuBLKpOYFNt',
+          stripe_price_id_yearly: 'price_1Rxw90FdjOQFWIuBtcrtKwYH',
           features: [
             'Up to 200 auto-applies per month',
             'AI-optimized resume matching for every job',
@@ -75,7 +103,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           name: 'Premium',
           price_monthly: 79,
           price_yearly: 349,
-          stripe_price_id: 'premium_monthly',
+          stripe_price_id_monthly: 'price_1RxwFEFdjOQFWIuBp1e14nIj',
+          stripe_price_id_yearly: 'price_1RxwFEFdjOQFWIuBGW44l7c8',
           features: [
             'Unlimited auto-applies',
             'Everything in Pro',
@@ -86,7 +115,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           ]
         }
       ]);
-      setSelectedPlan('starter_monthly');
+      setSelectedPlan('price_1Rxw90FdjOQFWIuBLKpOYFNt');
     }
   };
 
@@ -112,10 +141,16 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
         });
       }, 200);
 
-      const selectedPlanData = plans.find(plan => plan.stripe_price_id === selectedPlan);
+      const selectedPlanData = plans.find(plan => 
+        plan.stripe_price_id_monthly === selectedPlan || plan.stripe_price_id_yearly === selectedPlan
+      );
       if (!selectedPlanData) {
         throw new Error('Selected plan not found');
       }
+
+      const stripePriceId = billingCycle === 'monthly' 
+        ? selectedPlanData.stripe_price_id_monthly 
+        : selectedPlanData.stripe_price_id_yearly;
 
       const response = await fetch('/api/start-trial', {
         method: 'POST',
@@ -127,7 +162,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           userEmail,
           planId: selectedPlanData.id,
           billingCycle,
-          stripePriceId: selectedPlanData.stripe_price_id
+          stripePriceId: stripePriceId
         }),
       });
 
@@ -257,11 +292,11 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + index * 0.1 }}
                 className={`relative bg-white rounded-2xl p-6 shadow-sm border-2 transition-all cursor-pointer ${
-                  selectedPlan === plan.stripe_price_id
+                  selectedPlan === (billingCycle === 'monthly' ? plan.stripe_price_id_monthly : plan.stripe_price_id_yearly)
                     ? 'border-purple-500 shadow-lg scale-105'
                     : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
                 }`}
-                onClick={() => setSelectedPlan(plan.stripe_price_id)}
+                onClick={() => setSelectedPlan(billingCycle === 'monthly' ? plan.stripe_price_id_monthly : plan.stripe_price_id_yearly)}
               >
                                  {plan.name === 'Pro' && (
                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
