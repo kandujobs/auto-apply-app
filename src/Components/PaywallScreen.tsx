@@ -51,16 +51,64 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
   const loadPlans = async () => {
     try {
       const plansData = await paymentService.getSubscriptionPlans();
-      // Convert SubscriptionPlan to local Plan format
-      const convertedPlans: Plan[] = plansData.map(plan => ({
-        id: plan.id,
-        name: plan.name,
-        price_monthly: plan.price_monthly,
-        price_yearly: plan.price_yearly,
-        stripe_price_id_monthly: plan.stripe_price_id, // Use the same ID for both for now
-        stripe_price_id_yearly: plan.stripe_price_id, // Use the same ID for both for now
-        features: plan.features
-      }));
+      // Convert SubscriptionPlan to local Plan format with our new pricing structure
+      const convertedPlans: Plan[] = plansData.map(plan => {
+        // Map backend plan names to our new pricing structure
+        let newPlan: Plan;
+        
+        if (plan.name.toLowerCase().includes('starter') || plan.name.toLowerCase().includes('basic')) {
+          newPlan = {
+            id: plan.id,
+            name: 'Starter',
+            price_monthly: 19,
+            price_yearly: 160,
+            stripe_price_id_monthly: 'price_1Rxw90FdjOQFWIuBLKpOYFNt',
+            stripe_price_id_yearly: 'price_1Rxw90FdjOQFWIuBtcrtKwYH',
+            features: [
+              'Up to 50 auto-applies per month',
+              'Daily job matches tailored to your profile',
+              'Save & track jobs in-app',
+              'Priority email support'
+            ]
+          };
+        } else if (plan.name.toLowerCase().includes('pro') || plan.name.toLowerCase().includes('premium')) {
+          newPlan = {
+            id: plan.id,
+            name: 'Pro',
+            price_monthly: 39,
+            price_yearly: 235,
+            stripe_price_id_monthly: 'price_1RxwCpFdjOQFWIuBnwyoFzpN',
+            stripe_price_id_yearly: 'price_1RxwCpFdjOQFWIuBIAtb3f0C',
+            features: [
+              'Up to 200 auto-applies per month',
+              'AI-optimized resume matching for every job',
+              'Daily job alerts (higher volume)',
+              'Track applications in real time',
+              'Access to upcoming features first'
+            ]
+          };
+        } else {
+          // Default to Premium for any other plans
+          newPlan = {
+            id: plan.id,
+            name: 'Premium',
+            price_monthly: 79,
+            price_yearly: 349,
+            stripe_price_id_monthly: 'price_1RxwFEFdjOQFWIuBp1e14nIj',
+            stripe_price_id_yearly: 'price_1RxwFEFdjOQFWIuBGW44l7c8',
+            features: [
+              'Unlimited auto-applies',
+              'Everything in Pro',
+              'Personalized resume feedback (AI-driven)',
+              'Priority queue for job applications (faster processing)',
+              'Dedicated email + chat support',
+              'Access to premium beta features'
+            ]
+          };
+        }
+        
+        return newPlan;
+      });
       setPlans(convertedPlans);
       if (convertedPlans.length > 0) {
         setSelectedPlan(convertedPlans[0].stripe_price_id_monthly);
