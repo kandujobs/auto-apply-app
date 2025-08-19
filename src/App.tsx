@@ -1019,12 +1019,24 @@ function App() {
           email: session.user.email || ''
         });
         
-        // For OAuth users, always show onboarding first
-        // The profile will be created during the onboarding process
-        console.log('[handleHostedAuthCallback] OAuth user, showing onboarding flow');
-        setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
-        setShowOnboarding(true);
-        setShowSignIn(false);
+        // Check if user has completed onboarding
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('onboarding_complete')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileData && profileData.onboarding_complete) {
+          console.log('[handleHostedAuthCallback] User has completed onboarding, proceeding to main app');
+          // User has completed onboarding, proceed to main app
+          await fetchProfileAndJobs();
+        } else {
+          console.log('[handleHostedAuthCallback] OAuth user, showing onboarding flow');
+          setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
+          setShowOnboarding(true);
+          setShowSignIn(false);
+        }
+        
         setCheckingAuth(false);
         setOauthProcessing(false);
         return;
@@ -1091,12 +1103,23 @@ function App() {
           email: data.user.email || ''
         });
         
-        // For OAuth users, always show onboarding first
-        // The profile will be created during the onboarding process
-        console.log('[handleOAuthCallback] OAuth user, showing onboarding flow');
-        setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
-        setShowOnboarding(true);
-        setShowSignIn(false);
+        // Check if user has completed onboarding
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('onboarding_complete')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (profileData && profileData.onboarding_complete) {
+          console.log('[handleOAuthCallback] User has completed onboarding, proceeding to main app');
+          // User has completed onboarding, proceed to main app
+          await fetchProfileAndJobs();
+        } else {
+          console.log('[handleOAuthCallback] OAuth user, showing onboarding flow');
+          setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
+          setShowOnboarding(true);
+          setShowSignIn(false);
+        }
         setCheckingAuth(false);
         setOauthProcessing(false);
         return;
