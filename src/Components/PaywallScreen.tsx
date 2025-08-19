@@ -102,7 +102,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
     ];
     
     setPlans(newPlans);
-    setSelectedPlan(newPlans[0].stripe_price_id_monthly);
+    // Set Pro plan (most popular) as default
+    setSelectedPlan(newPlans[1].stripe_price_id_monthly);
     
     // TODO: Re-enable API call once backend is updated with new pricing
     /*
@@ -220,7 +221,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           ]
         }
       ]);
-      setSelectedPlan('price_1Rxw90FdjOQFWIuBLKpOYFNt');
+      // Set Pro plan (most popular) as default
+      setSelectedPlan('price_1RxwCpFdjOQFWIuBnwyoFzpN');
     }
     */
   };
@@ -519,7 +521,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 </span>
               </div>
               <p className="text-gray-600 mb-4 text-sm">
-                No credit card required • Cancel anytime • Full access to all features
+                Credit card required • Cancel anytime • Full access to all features
               </p>
               
               <button
