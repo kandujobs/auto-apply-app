@@ -1717,6 +1717,7 @@ function App() {
               goToApplied={goTo("applied")}
               goToProfile={goTo("profile")}
               goToFilters={goTo("filters")}
+              showPaywall={() => setShowPaywall(true)}
             />
           )}
           {screen === "filters" && (

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from '../supabaseClient';
-import UpgradeScreen from './UpgradeScreen';
 import LinkedInCredentialsSection from './LinkedInCredentialsSection';
 import SessionManager from './SessionManager';
 import { applyToLinkedInJob, validateAutoApplySetup, getUserProfile } from '../services/autoApplyBridge';
@@ -64,6 +63,7 @@ interface AutoApplyScreenProps {
   goToProfile?: () => void;
   goToFilters?: () => void;
   goToNotifications?: () => void;
+  showPaywall?: () => void;
 }
 
 const noop = () => {};
@@ -75,6 +75,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   goToProfile = noop,
   goToNotifications = noop,
   goToFilters = noop,
+  showPaywall = noop,
 }) => {
   // Load from localStorage for instant UI, fallback to defaults
   const [streak, setStreak] = useState(() => Number(localStorage.getItem('aa_streak')) || 0);
@@ -94,7 +95,6 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   const [autoAppliesUsed, setAutoAppliesUsed] = useState(() => Number(localStorage.getItem('aa_used')) || 0);
   const [usageDate, setUsageDate] = useState<string | null>(() => localStorage.getItem('aa_usageDate'));
   const [blacklistEditMode, setBlacklistEditMode] = useState(false);
-  const [showUpgradeScreen, setShowUpgradeScreen] = useState(false);
   const [linkedInCredentials, setLinkedInCredentials] = useState<{ email: string; password: string } | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -347,18 +347,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   useEffect(() => { localStorage.setItem('aa_streak', String(streak)); }, [streak]);
   useEffect(() => { localStorage.setItem('aa_claimedToday', String(claimedToday)); }, [claimedToday]);
 
-  if (showUpgradeScreen) {
-    return (
-      <UpgradeScreen
-        goBack={() => setShowUpgradeScreen(false)}
-        goToHome={goToHome}
-        goToSaved={goToSaved}
-        goToApplied={goToApplied}
-        goToProfile={goToProfile}
-        goToNotifications={goToNotifications}
-      />
-    );
-  }
+
 
   return (
     <div className="bg-gray-100 pt-40 pb-40 px-4 h-[calc(100vh-8rem)] overflow-y-auto">
@@ -497,7 +486,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
               <span className="text-sm text-gray-600 font-medium">{autoAppliesUsed}/{applicationLimit} used</span>
               <button
                 className="ml-2 bg-gradient-to-r from-[#984DE0] to-[#7300FF] text-white text-xs font-semibold px-4 py-1 rounded-full shadow hover:scale-105 transition-all duration-200"
-                onClick={() => setShowUpgradeScreen(true)}
+                onClick={showPaywall}
               >
                 Upgrade Now
               </button>
