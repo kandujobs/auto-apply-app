@@ -816,7 +816,7 @@ function App() {
     const userId = userData.user.id;
     const { data, error: profileError } = await supabase
       .from('profiles')
-      .select('*, salary_min, salary_max, latitude, longitude')
+      .select('*, salary_min, salary_max, latitude, longitude, onboarding_complete')
       .eq('id', userId)
       .single();
     if (profileError || !data) {
@@ -838,6 +838,7 @@ function App() {
         salary_max: 0,
         latitude: 0,
         longitude: 0,
+        onboarding_complete: false,
         statistics: {
           applied: 0,
           pending: 0,
@@ -971,6 +972,21 @@ function App() {
           email: session.user.email || ''
         });
         
+        // Check if user has completed onboarding
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('onboarding_complete')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError || !profileData || !profileData.onboarding_complete) {
+          console.log('[handleHostedAuthCallback] User has not completed onboarding, showing onboarding flow');
+          setShowOnboarding(true);
+          setShowSignIn(false);
+          setCheckingAuth(false);
+          return;
+        }
+        
         // Check user's payment access
         try {
           const access = await paymentService.checkUserAccess(session.user.id);
@@ -1039,6 +1055,21 @@ function App() {
           email: data.user.email || ''
         });
         
+        // Check if user has completed onboarding
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('onboarding_complete')
+          .eq('id', data.user.id)
+          .single();
+        
+        if (profileError || !profileData || !profileData.onboarding_complete) {
+          console.log('[handleOAuthCallback] User has not completed onboarding, showing onboarding flow');
+          setShowOnboarding(true);
+          setShowSignIn(false);
+          setCheckingAuth(false);
+          return;
+        }
+        
         // Check user's payment access
         try {
           const access = await paymentService.checkUserAccess(data.user.id);
@@ -1099,6 +1130,21 @@ function App() {
         // Clear the incomplete onboarding step since user is authenticated
         localStorage.removeItem('onboarding_step');
         console.log('[checkAuth] Cleared incomplete onboarding step');
+      }
+      
+      // Check if user has completed onboarding
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('onboarding_complete')
+        .eq('id', userData.user.id)
+        .single();
+      
+      if (profileError || !profileData || !profileData.onboarding_complete) {
+        console.log('[checkAuth] User has not completed onboarding, showing onboarding flow');
+        setShowOnboarding(true);
+        setShowSignIn(false);
+        setCheckingAuth(false);
+        return;
       }
       
       setShowOnboarding(false);
