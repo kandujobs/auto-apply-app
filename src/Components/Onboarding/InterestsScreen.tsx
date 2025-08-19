@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../../supabaseClient";
 
 interface InterestsScreenProps {
   onContinue: (info: { skills: string[]; interests: string[] }) => void;
@@ -13,6 +14,32 @@ const InterestsScreen: React.FC<InterestsScreenProps> = ({ onContinue, onBack, p
   const [interests, setInterests] = useState<string[]>([]);
 
   React.useEffect(() => {
+    // Load existing skills and interests data if available
+    const loadProfileData = async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user?.id) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('skills, interests')
+            .eq('id', userData.user.id)
+            .single();
+          
+          if (profileData && !error) {
+            if (profileData.skills && Array.isArray(profileData.skills)) {
+              setSkills(profileData.skills);
+            }
+            if (profileData.interests && Array.isArray(profileData.interests)) {
+              setInterests(profileData.interests);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile data:', error);
+      }
+    };
+
+    // First try to load from prefill (resume parsing)
     if (prefill && Array.isArray(prefill)) {
       const skillsSection = prefill.find(s => s.title && s.title.toLowerCase() === 'skills');
       if (skillsSection && Array.isArray(skillsSection.fields)) {
@@ -29,6 +56,9 @@ const InterestsScreen: React.FC<InterestsScreenProps> = ({ onContinue, onBack, p
         setInterests((interestsSection.fields as any[]).map((f: any) => f.value).filter(Boolean));
       }
     }
+
+    // Then load from existing profile data
+    loadProfileData();
   }, [prefill]);
 
   const addSkill = () => {
