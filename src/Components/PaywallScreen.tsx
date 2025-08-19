@@ -47,7 +47,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           id: '1',
           name: 'Starter',
           price_monthly: 19,
-          price_yearly: 190,
+          price_yearly: 160,
           stripe_price_id: 'starter_monthly',
           features: [
             'Up to 50 auto-applies per month',
@@ -60,10 +60,10 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           id: '2',
           name: 'Pro',
           price_monthly: 39,
-          price_yearly: 390,
+          price_yearly: 235,
           stripe_price_id: 'pro_monthly',
           features: [
-            'Unlimited auto-applies',
+            'Up to 200 auto-applies per month',
             'AI-optimized resume matching for every job',
             'Daily job alerts (higher volume)',
             'Track applications in real time',
@@ -74,13 +74,15 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           id: '3',
           name: 'Premium',
           price_monthly: 79,
-          price_yearly: 790,
+          price_yearly: 349,
           stripe_price_id: 'premium_monthly',
           features: [
+            'Unlimited auto-applies',
             'Everything in Pro',
             'Personalized resume feedback (AI-driven)',
             'Priority queue for job applications (faster processing)',
-            'Dedicated email + chat support'
+            'Dedicated email + chat support',
+            'Access to premium beta features'
           ]
         }
       ]);
@@ -234,7 +236,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 >
                   Yearly
                   <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                    Save 17%
+                    Save up to 63%
                   </span>
                 </button>
               </div>
@@ -264,7 +266,7 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                                  {plan.name === 'Pro' && (
                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                      <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                       Most Popular
+                       Most Popular ⭐
                      </span>
                    </div>
                  )}
@@ -272,9 +274,14 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 <div className="text-center mb-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
                    {plan.name === 'Starter' && 'Starter Plan – Kickstart Your Job Hunt'}
-                   {plan.name === 'Pro' && 'Pro Plan – Land Interviews Faster'}
-                   {plan.name === 'Premium' && 'Premium Plan – Go All In on Your Career'}
+                   {plan.name === 'Pro' && 'Pro Plan – Land Interviews Faster ⭐'}
+                   {plan.name === 'Premium' && 'Premium Plan – Go All In on Your Career 🚀'}
                  </h3>
+                 <p className="text-gray-600 text-sm mb-4">
+                   {plan.name === 'Starter' && 'For students or early professionals who want a boost in their applications without breaking the bank.'}
+                   {plan.name === 'Pro' && 'For serious job seekers who want consistent applications, better matching, and faster results.'}
+                   {plan.name === 'Premium' && 'Designed for ambitious job seekers who want the fastest route to interviews and personal support.'}
+                 </p>
                                      <div className="mb-4">
                      <span className="text-2xl font-bold text-gray-900">
                        ${billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly}
@@ -285,7 +292,9 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                    </div>
                                      {billingCycle === 'yearly' && (
                      <div className="text-green-600 text-xs font-semibold">
-                       Save ${calculateSavings(plan).toFixed(0)} per year
+                       {plan.name === 'Starter' && 'Save 30% (Equivalent to $13/mo)'}
+                       {plan.name === 'Pro' && 'Save 50% (Equivalent to $19.50/mo)'}
+                       {plan.name === 'Premium' && 'Save 63% (Equivalent to $29/mo)'}
                      </div>
                    )}
                 </div>
