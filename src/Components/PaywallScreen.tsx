@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiZap, FiTrendingUp, FiUsers, FiShield, FiStar, FiArrowRight } from 'react-icons/fi';
+import { FiZap, FiTrendingUp, FiUsers, FiShield, FiStar, FiArrowRight, FiX } from 'react-icons/fi';
 import { paymentService } from '../services/paymentService';
 import { supabase } from '../supabaseClient';
 
@@ -130,7 +130,18 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-purple-50 to-blue-50 overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="h-screen overflow-y-auto">
+      {/* Close Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <button
+          onClick={onBack}
+          className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all duration-200"
+        >
+          <FiX className="w-5 h-5 text-gray-600" />
+        </button>
+      </div>
+      
       <div className="max-w-4xl mx-auto p-4 py-8">
           {/* Progress bar */}
           {loading && (
