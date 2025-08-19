@@ -1415,11 +1415,7 @@ function App() {
     if (onboardingStep === 'experience') {
       return (
         <ExperienceScreen
-          onContinue={({ experience: exp, education: edu }) => {
-            setExperience(exp);
-            setEducation(edu);
-            setOnboardingStep('interests');
-          }}
+          onContinue={handleExperienceContinue}
           onBack={handleExperienceBack}
         />
       );
