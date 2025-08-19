@@ -5,12 +5,12 @@ const { createClient } = require('@supabase/supabase-js');
 let supabase = null;
 function getSupabaseClient() {
   if (!supabase) {
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
       throw new Error('Supabase environment variables are not configured');
     }
     supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_KEY
     );
   }
   return supabase;
