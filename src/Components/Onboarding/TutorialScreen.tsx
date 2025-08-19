@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiZap, FiUser, FiTrendingUp, FiX, FiCheckCircle, FiBell, FiFilter } from "react-icons/fi";
+import { FiZap, FiUser, FiTrendingUp, FiX, FiCheckCircle, FiBell, FiFilter, FiBookmark } from "react-icons/fi";
 
 interface TutorialScreenProps {
   onContinue: () => void;
@@ -14,7 +14,7 @@ const steps = [
   },
   {
     label: "Navigation",
-    description: "Use the top bar for notifications and settings. Use the bottom bar to switch between AutoApply, Profile, and SmartFeed.",
+    description: "Use the bottom bar to navigate between Saved, Applied jobs, and Discover new ones. Use the top nav bar to access AutoApply, Profile, and SmartFeed sections.",
     icon: "🧭",
     highlight: "navigation"
   },
@@ -76,22 +76,25 @@ const TutorialScreen: React.FC<TutorialScreenProps> = ({ onContinue }) => {
             <div className="w-full max-w-xs mb-8">
               {current.highlight === 'navigation' && (
                 <div className="bg-gray-100 rounded-2xl p-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <FiBell className="w-5 h-5 text-gray-600" />
+                  {/* Top Navigation Bar */}
+                  <div className="flex justify-between items-center mb-4 p-2 bg-white rounded-lg">
+                    <FiZap className="w-5 h-5 text-purple-600" />
                     <FiUser className="w-5 h-5 text-gray-600" />
+                    <FiTrendingUp className="w-5 h-5 text-gray-600" />
                   </div>
-                  <div className="flex justify-around items-center">
+                  {/* Bottom Navigation Bar */}
+                  <div className="flex justify-around items-center p-2 bg-white rounded-lg">
                     <div className="text-center">
-                      <FiZap className="w-6 h-6 text-purple-600 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">AutoApply</span>
+                      <FiBookmark className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">Saved</span>
                     </div>
                     <div className="text-center">
-                      <FiUser className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Profile</span>
+                      <FiUser className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">Applied</span>
                     </div>
                     <div className="text-center">
-                      <FiTrendingUp className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">SmartFeed</span>
+                      <FiTrendingUp className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+                      <span className="text-xs text-gray-600">Discover</span>
                     </div>
                   </div>
                 </div>
