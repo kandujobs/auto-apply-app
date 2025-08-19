@@ -564,7 +564,7 @@ function App() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'https://app.kandujobs.com/auth/callback'
+          redirectTo: 'https://auth.kandujobs.com/auth/callback'
         }
       });
       
