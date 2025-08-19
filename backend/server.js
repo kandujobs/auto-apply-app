@@ -3412,6 +3412,23 @@ app.post('/api/payment/create-subscription', checkPaymentService, async (req, re
   }
 });
 
+app.post('/api/payment/create-trial-checkout', checkPaymentService, async (req, res) => {
+  try {
+    const { customerId, priceId, successUrl, cancelUrl, trialDays = 2 } = req.body;
+    
+    if (!customerId || !priceId || !successUrl || !cancelUrl) {
+      return res.status(400).json({ error: 'Customer ID, Price ID, Success URL, and Cancel URL are required' });
+    }
+    
+    const session = await paymentService.createTrialCheckoutSession(customerId, priceId, successUrl, cancelUrl, trialDays);
+    
+    res.json({ session });
+  } catch (error) {
+    console.error('Error creating trial checkout session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/payment/create-payment-intent', checkPaymentService, async (req, res) => {
   try {
     const { amount, currency = 'usd', customerId } = req.body;

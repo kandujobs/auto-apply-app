@@ -38,20 +38,49 @@ class PaymentService {
     }
   }
 
-  // Create a subscription
+  // Create a subscription with payment method collection
   async createSubscription(customerId, priceId, trialDays = 2) {
     try {
       const subscription = await this.stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
         trial_period_days: trialDays,
-        // Remove payment_behavior to allow trial to start without payment method
+        payment_behavior: 'default_incomplete',
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
       });
       return subscription;
     } catch (error) {
       console.error('Error creating subscription:', error);
+      throw error;
+    }
+  }
+
+  // Create a checkout session for trial with payment method collection
+  async createTrialCheckoutSession(customerId, priceId, successUrl, cancelUrl, trialDays = 2) {
+    try {
+      const session = await this.stripe.checkout.sessions.create({
+        customer: customerId,
+        payment_method_types: ['card'],
+        line_items: [{
+          price: priceId,
+          quantity: 1,
+        }],
+        mode: 'subscription',
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        subscription_data: {
+          trial_period_days: trialDays,
+          metadata: {
+            trial_type: 'free_trial'
+          }
+        },
+        allow_promotion_codes: true,
+        billing_address_collection: 'auto',
+      });
+      return session;
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
       throw error;
     }
   }

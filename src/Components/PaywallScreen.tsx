@@ -282,9 +282,9 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
       const customerData = await customerResponse.json();
       const stripeCustomerId = customerData.customer.id;
 
-      // Step 2: Create subscription with the Stripe customer ID
-      console.log('Creating subscription with customer ID:', stripeCustomerId);
-      const subscriptionResponse = await fetch(`${getBackendUrl()}/api/payment/create-subscription`, {
+      // Step 2: Create checkout session to collect payment method
+      console.log('Creating checkout session for customer ID:', stripeCustomerId);
+      const checkoutResponse = await fetch(`${getBackendUrl()}/api/payment/create-trial-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -292,23 +292,22 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
         body: JSON.stringify({
           customerId: stripeCustomerId,
           priceId: stripePriceId,
-          userId: userId,
+          successUrl: `${window.location.origin}/trial-success?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${window.location.origin}/trial-cancel`,
           trialDays: 2
         }),
       });
 
-      if (!subscriptionResponse.ok) {
-        const errorData = await subscriptionResponse.json();
-        throw new Error(errorData.error || 'Failed to start trial');
+      if (!checkoutResponse.ok) {
+        const errorData = await checkoutResponse.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
-      const subscriptionData = await subscriptionResponse.json();
-      console.log('Subscription created successfully:', subscriptionData);
+      const checkoutData = await checkoutResponse.json();
+      console.log('Checkout session created successfully:', checkoutData);
 
-      setProgress(100);
-      setTimeout(() => {
-        onComplete();
-      }, 500);
+      // Redirect to Stripe Checkout to collect payment method
+      window.location.href = checkoutData.session.url;
 
     } catch (error) {
       console.error('Error starting trial:', error);
