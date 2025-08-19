@@ -17,14 +17,14 @@ import ExperienceScreen from "./Components/Onboarding/ExperienceScreen";
 import InterestsScreen from "./Components/Onboarding/InterestsScreen";
 import NotificationsPrivacyScreen from "./Components/NotificationsPrivacyScreen";
 import AccountSettingsScreen from "./Components/AccountSettingsScreen";
-import PrivacyPolicyScreen from "./Components/PrivacyPolicyScreen";
-import TermsOfServiceScreen from "./Components/TermsOfServiceScreen";
 import PaywallScreen from "./Components/PaywallScreen";
 import TrialExpiryBanner from "./Components/TrialExpiryBanner";
 import UpgradeModal from "./Components/UpgradeModal";
 import { BadgeAchievementNotification, useBadgeManager } from "./Components/SmartFeedSections/Badges";
 import { Job } from "./types/Job";
 import { paymentService, UserAccess } from "./services/paymentService";
+import PrivacyPolicy from "./Components/PrivacyPolicy";
+import TermsOfService from "./Components/TermsOfService";
 
 
 import { Experience, Education, UserProfile } from "./types/Profile";
@@ -43,7 +43,7 @@ import { getBackendEndpoint } from './utils/backendUrl';
 
 function App() {
   const [screen, setScreen] = useState<
-    "home" | "applied" | "profile" | "saved" | "notifications" | "filters" | "notificationsPrivacy" | "accountSettings" | "upgrade" | "privacyPolicy" | "termsOfService"
+    "home" | "applied" | "profile" | "saved" | "notifications" | "filters" | "notificationsPrivacy" | "accountSettings" | "upgrade"
   >("home");
 
   // Onboarding/sign-in state
@@ -1547,8 +1547,6 @@ function App() {
               goToFilters={goTo("filters")}
               goToNotificationsPrivacy={goTo("notificationsPrivacy")}
               goToAccountSettings={goTo("accountSettings")}
-              goToPrivacyPolicy={goTo("privacyPolicy")}
-              goToTermsOfService={goTo("termsOfService")}
               goToQuestions={() => {}}
               appliedJobs={appliedJobs}
             />
@@ -1594,16 +1592,6 @@ function App() {
           )}
           {screen === "accountSettings" && (
             <AccountSettingsScreen 
-              goBack={goTo("profile")}
-            />
-          )}
-          {screen === "privacyPolicy" && (
-            <PrivacyPolicyScreen 
-              goBack={goTo("profile")}
-            />
-          )}
-          {screen === "termsOfService" && (
-            <TermsOfServiceScreen 
               goBack={goTo("profile")}
             />
           )}

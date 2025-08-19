@@ -24,8 +24,6 @@ interface ProfileScreenProps {
   goToFilters?: () => void;
   goToNotificationsPrivacy?: () => void;
   goToAccountSettings?: () => void;
-  goToPrivacyPolicy?: () => void;
-  goToTermsOfService?: () => void;
   goToQuestions: () => void;
   appliedJobs: Job[];
 }
@@ -41,8 +39,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
   goToFilters,
   goToNotificationsPrivacy,
   goToAccountSettings,
-  goToPrivacyPolicy,
-  goToTermsOfService,
   goToQuestions,
   appliedJobs
 }) => {
@@ -796,18 +792,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({
                   className="w-full bg-gray-50 text-gray-700 px-4 py-3 rounded-xl font-semibold text-base shadow-sm hover:bg-gray-100 transition-colors border border-gray-200"
                 >
                   Account Settings
-                </button>
-                <button
-                  onClick={goToPrivacyPolicy}
-                  className="w-full bg-gray-50 text-gray-700 px-4 py-3 rounded-xl font-semibold text-base shadow-sm hover:bg-gray-100 transition-colors border border-gray-200"
-                >
-                  Privacy Policy
-                </button>
-                <button
-                  onClick={goToTermsOfService}
-                  className="w-full bg-gray-50 text-gray-700 px-4 py-3 rounded-xl font-semibold text-base shadow-sm hover:bg-gray-100 transition-colors border border-gray-200"
-                >
-                  Terms of Service
                 </button>
                 <button
                   onClick={handleLogout}

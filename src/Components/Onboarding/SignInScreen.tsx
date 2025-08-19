@@ -180,6 +180,29 @@ const SignInScreen: React.FC<{
           >
             Don't have an account?
           </button>
+          
+          {/* Legal Links */}
+          <div className="mt-6 text-center">
+            <div className="flex justify-center gap-4 text-xs">
+              <a
+                href="https://kandujobs.com/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7300FF] hover:underline"
+              >
+                Terms of Service
+              </a>
+              <span className="text-gray-400">•</span>
+              <a
+                href="https://kandujobs.com/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7300FF] hover:underline"
+              >
+                Privacy Policy
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

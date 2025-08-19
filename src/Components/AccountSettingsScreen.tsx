@@ -227,6 +227,31 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
           }}
         />
 
+        {/* Legal Links Section */}
+        <div className="w-full bg-white rounded-[2rem] border-4 border-gray-200 p-6 shadow-lg">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-[18px] font-bold text-gray-700">Legal</h2>
+          </div>
+          <div className="space-y-3">
+            <a
+              href="https://kandujobs.com/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors text-center"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="https://kandujobs.com/terms-of-service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full px-4 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors text-center"
+            >
+              Terms of Service
+            </a>
+          </div>
+        </div>
+
         {/* Delete Account Section */}
         <div className="w-full bg-white rounded-[2rem] border-4 border-red-300 p-6 shadow-lg">
           <div className="flex justify-between items-center mb-4">

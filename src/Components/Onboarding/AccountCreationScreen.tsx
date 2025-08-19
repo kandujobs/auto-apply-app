@@ -80,6 +80,32 @@ const AccountCreationScreen: React.FC<AccountCreationScreenProps> = ({ onGoogle,
               Back to Sign In
             </button>
           )}
+          
+          {/* Legal Links */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-gray-500 mb-2">
+              By creating an account, you agree to our
+            </p>
+            <div className="flex justify-center gap-4 text-xs">
+              <a
+                href="https://kandujobs.com/terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7300FF] hover:underline"
+              >
+                Terms of Service
+              </a>
+              <span className="text-gray-400">and</span>
+              <a
+                href="https://kandujobs.com/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#7300FF] hover:underline"
+              >
+                Privacy Policy
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
