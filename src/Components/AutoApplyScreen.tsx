@@ -393,7 +393,10 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       <div className="w-full max-w-lg mx-auto flex flex-col gap-y-8 items-center justify-center pb-32 overflow-y-auto">
         {/* Application Session Card */}
         <div className={`w-full ${themeBg} rounded-3xl ${themeShadow} border-4 ${themeBorder} ${electricClass} p-6`}>
-          <SessionManager onSessionChange={setIsSessionActive} />
+          <SessionManager 
+            onSessionChange={setIsSessionActive} 
+            onShowPaywall={goToPaywall}
+          />
         </div>
         
         {/* Daily Login Rewards Card */}

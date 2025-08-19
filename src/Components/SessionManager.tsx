@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { supabase } from '../supabaseClient';
+import { paymentService } from '../services/paymentService';
 
 interface SessionManagerProps {
   onSessionChange?: (isActive: boolean) => void;
   onSessionStarted?: () => void; // New callback for when session starts
+  onShowPaywall?: () => void; // Callback to show paywall when needed
 }
 
-export default function SessionManager({ onSessionChange, onSessionStarted }: SessionManagerProps) {
+export default function SessionManager({ onSessionChange, onSessionStarted, onShowPaywall }: SessionManagerProps) {
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>({ isActive: false });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +113,43 @@ export default function SessionManager({ onSessionChange, onSessionStarted }: Se
     setError(null);
 
     try {
+      // First, check if user has LinkedIn credentials
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        setError('User not authenticated');
+        return;
+      }
+
+      const { data: credentials, error: credentialsError } = await supabase
+        .from('linkedin_credentials')
+        .select('id')
+        .eq('id', userData.user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (credentialsError || !credentials) {
+        setError('LinkedIn credentials not found. Please add your LinkedIn credentials first.');
+        return;
+      }
+
+      // If we have credentials, check payment access
+      try {
+        const access = await paymentService.checkUserAccess(userData.user.id);
+        
+        if (!access.hasAccess) {
+          // User doesn't have payment access, show paywall
+          console.log('[SessionManager] User has no payment access, showing paywall');
+          onShowPaywall?.();
+          return;
+        }
+      } catch (error) {
+        console.error('[SessionManager] Error checking payment access:', error);
+        // If there's an error checking payment, show paywall as fallback
+        onShowPaywall?.();
+        return;
+      }
+
+      // If we get here, user has both credentials and payment access
       const result = await sessionService.startSession();
       if (result.success) {
         // Wait a moment for WebSocket to connect, then check status

@@ -34,6 +34,7 @@ interface HomeScreenProps {
   goToSaved: () => void;
   goToFilters: () => void;
   goToNotifications: () => void;
+  goToPaywall: () => void;
   onApplyJob: (job: Job) => Promise<void>;
   onAnswerQuestion: (question: string, answer: string) => Promise<void>;
   onSaveJob: (job: Job) => Promise<void>;
@@ -66,6 +67,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   goToSaved,
   goToFilters,
   goToNotifications,
+  goToPaywall,
   onApplyJob,
   onAnswerQuestion,
   onSaveJob,
@@ -812,6 +814,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       <div style={{ display: 'none' }}>
         <SessionManager 
           onSessionChange={setIsSessionActive}
+          onShowPaywall={goToPaywall}
           onSessionStarted={async () => {
             console.log('[HomeScreen] Session started, triggering automatic job fetch...');
             

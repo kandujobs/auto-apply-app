@@ -647,38 +647,10 @@ function App() {
     setShowOnboarding(false);
     setShowSignIn(false);
     
-    console.log('[handleTutorialContinue] Tutorial completed, checking user access');
+    console.log('[handleTutorialContinue] Tutorial completed, proceeding to main app');
     
-    // Get current user and check their payment access
-    const { data: userData } = await supabase.auth.getUser();
-    if (userData?.user) {
-      console.log('[handleTutorialContinue] User found:', userData.user.id);
-      
-      try {
-        // Check user's payment access
-        const access = await paymentService.checkUserAccess(userData.user.id);
-        console.log('[handleTutorialContinue] User access:', access);
-        setUserAccess(access);
-        
-        if (!access.hasAccess) {
-          console.log('[handleTutorialContinue] User has no access, showing paywall');
-          setScreen("paywall");
-        } else {
-          console.log('[handleTutorialContinue] User has access, proceeding to main app');
-          // User has access, proceed to main app
-          await fetchProfileAndJobs();
-        }
-      } catch (error) {
-        console.error('[handleTutorialContinue] Error checking user access:', error);
-        // If there's an error checking access, show paywall as fallback
-        // This handles cases where the payment API is down or returns errors
-        console.log('[handleTutorialContinue] Payment API error, showing paywall as fallback');
-        setScreen("paywall");
-      }
-    } else {
-      console.log('[handleTutorialContinue] No user found, showing paywall');
-      setScreen("paywall");
-    }
+    // After tutorial, just proceed to main app - paywall will be triggered when user tries to start session
+    await fetchProfileAndJobs();
   };
 
   // Payment handlers
@@ -1571,6 +1543,7 @@ function App() {
             goToSaved={goTo("saved")}
             goToFilters={goTo("filters")}
             goToNotifications={goTo("notifications")}
+            goToPaywall={goTo("paywall")}
             onApplyJob={async (job: Job) => {
               console.log('[App] onApplyJob called for job:', { id: job.id, title: job.title, company: job.company });
               
