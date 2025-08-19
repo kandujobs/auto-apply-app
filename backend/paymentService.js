@@ -61,7 +61,7 @@ class PaymentService {
     try {
       const session = await this.stripe.checkout.sessions.create({
         customer: customerId,
-        payment_method_types: ['card'],
+        payment_method_types: ['card', 'apple_pay', 'google_pay'],
         line_items: [{
           price: priceId,
           quantity: 1,
@@ -77,6 +77,16 @@ class PaymentService {
         },
         allow_promotion_codes: true,
         billing_address_collection: 'auto',
+        payment_method_collection: 'always',
+        // Enable automatic tax calculation if needed
+        automatic_tax: {
+          enabled: true,
+        },
+        // Enable customer updates
+        customer_update: {
+          address: 'auto',
+          name: 'auto',
+        },
       });
       return session;
     } catch (error) {
