@@ -45,22 +45,46 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
       setPlans([
         {
           id: '1',
-          name: 'Basic',
-          price_monthly: 9.99,
-          price_yearly: 99.99,
-          stripe_price_id: 'basic_monthly',
-          features: ['Up to 50 job applications per month', 'Basic job matching', 'Email support']
+          name: 'Starter',
+          price_monthly: 19,
+          price_yearly: 190,
+          stripe_price_id: 'starter_monthly',
+          features: [
+            'Up to 50 auto-applies per month',
+            'Daily job matches tailored to your profile',
+            'Save & track jobs in-app',
+            'Priority email support'
+          ]
         },
         {
           id: '2',
-          name: 'Professional',
-          price_monthly: 19.99,
-          price_yearly: 199.99,
+          name: 'Pro',
+          price_monthly: 39,
+          price_yearly: 390,
           stripe_price_id: 'pro_monthly',
-          features: ['Unlimited job applications', 'Advanced job matching', 'Priority support']
+          features: [
+            'Unlimited auto-applies',
+            'AI-optimized resume matching for every job',
+            'Daily job alerts (higher volume)',
+            'Track applications in real time',
+            'Access to upcoming features first'
+          ]
+        },
+        {
+          id: '3',
+          name: 'Premium',
+          price_monthly: 79,
+          price_yearly: 790,
+          stripe_price_id: 'premium_monthly',
+          features: [
+            'Everything in Pro',
+            'Personalized resume feedback (AI-driven)',
+            'Priority queue for job applications (faster processing)',
+            'Dedicated email + chat support'
+          ]
         }
       ]);
-      setSelectedPlan('basic_monthly');
+      setSelectedPlan('starter_monthly');
     }
   };
 
@@ -237,27 +261,31 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
                 }`}
                 onClick={() => setSelectedPlan(plan.stripe_price_id)}
               >
-                {plan.name === 'Professional' && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
+                                 {plan.name === 'Pro' && (
+                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                     <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                       Most Popular
+                     </span>
+                   </div>
+                 )}
 
                 <div className="text-center mb-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{plan.name} Plan</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">
+                   {plan.name === 'Starter' && 'Starter Plan – Kickstart Your Job Hunt'}
+                   {plan.name === 'Pro' && 'Pro Plan – Land Interviews Faster'}
+                   {plan.name === 'Premium' && 'Premium Plan – Go All In on Your Career'}
+                 </h3>
                                      <div className="mb-4">
                      <span className="text-2xl font-bold text-gray-900">
                        ${billingCycle === 'monthly' ? plan.price_monthly : plan.price_yearly}
                      </span>
                      <span className="text-gray-600 ml-2 text-sm">
-                       /{billingCycle === 'monthly' ? 'mo' : 'year'}
+                       /{billingCycle === 'monthly' ? 'month' : 'year'}
                      </span>
                    </div>
                                      {billingCycle === 'yearly' && (
                      <div className="text-green-600 text-xs font-semibold">
-                       Save ${calculateSavings(plan).toFixed(2)} per year
+                       Save ${calculateSavings(plan).toFixed(0)} per year
                      </div>
                    )}
                 </div>
