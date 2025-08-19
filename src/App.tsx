@@ -953,17 +953,21 @@ function App() {
         console.log('[handleHostedAuthCallback] Hosted auth successful:', session.user.email);
         
         // Check if user is an employer
-        const { data: employerData, error: employerError } = await supabase
-          .from('employers')
-          .select('id')
-          .eq('contact_email', session.user.email)
-          .single();
-        
-        if (employerData && !employerError) {
-          console.log('[handleHostedAuthCallback] Employer found, setting isEmployer true');
-          setIsEmployer(true);
-          setCheckingAuth(false);
-          return;
+        try {
+          const { data: employerData, error: employerError } = await supabase
+            .from('employers')
+            .select('id')
+            .eq('contact_email', session.user.email)
+            .single();
+          
+          if (employerData && !employerError) {
+            console.log('[handleHostedAuthCallback] Employer found, setting isEmployer true');
+            setIsEmployer(true);
+            setCheckingAuth(false);
+            return;
+          }
+        } catch (error) {
+          console.log('[handleHostedAuthCallback] Error checking employers table, proceeding as regular user:', error);
         }
         
         // Set current user for payment checks
@@ -975,6 +979,7 @@ function App() {
         // For OAuth users, always show onboarding first
         // The profile will be created during the onboarding process
         console.log('[handleHostedAuthCallback] OAuth user, showing onboarding flow');
+        setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
@@ -1029,17 +1034,21 @@ function App() {
         window.history.replaceState({}, document.title, window.location.pathname);
         
         // Check if user is an employer
-        const { data: employerData, error: employerError } = await supabase
-          .from('employers')
-          .select('id')
-          .eq('contact_email', data.user.email)
-          .single();
-        
-        if (employerData && !employerError) {
-          console.log('[handleOAuthCallback] Employer found, setting isEmployer true');
-          setIsEmployer(true);
-          setCheckingAuth(false);
-          return;
+        try {
+          const { data: employerData, error: employerError } = await supabase
+            .from('employers')
+            .select('id')
+            .eq('contact_email', data.user.email)
+            .single();
+          
+          if (employerData && !employerError) {
+            console.log('[handleOAuthCallback] Employer found, setting isEmployer true');
+            setIsEmployer(true);
+            setCheckingAuth(false);
+            return;
+          }
+        } catch (error) {
+          console.log('[handleOAuthCallback] Error checking employers table, proceeding as regular user:', error);
         }
         
         // Set current user for payment checks
@@ -1051,6 +1060,7 @@ function App() {
         // For OAuth users, always show onboarding first
         // The profile will be created during the onboarding process
         console.log('[handleOAuthCallback] OAuth user, showing onboarding flow');
+        setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
@@ -1079,17 +1089,21 @@ function App() {
     } else {
       // Check if user is an employer by contact_email
       console.log('[checkAuth] Checking employers table for contact_email:', userData.user.email);
-      const { data: employerData, error: employerError } = await supabase
-        .from('employers')
-        .select('id')
-        .eq('contact_email', userData.user.email)
-        .single();
-      console.log('[checkAuth] employerData:', employerData, 'employerError:', employerError);
-      if (employerData && !employerError) {
-        console.log('[checkAuth] Employer found, setting isEmployer true');
-        setIsEmployer(true);
-        setCheckingAuth(false);
-        return;
+      try {
+        const { data: employerData, error: employerError } = await supabase
+          .from('employers')
+          .select('id')
+          .eq('contact_email', userData.user.email)
+          .single();
+        console.log('[checkAuth] employerData:', employerData, 'employerError:', employerError);
+        if (employerData && !employerError) {
+          console.log('[checkAuth] Employer found, setting isEmployer true');
+          setIsEmployer(true);
+          setCheckingAuth(false);
+          return;
+        }
+      } catch (error) {
+        console.log('[checkAuth] Error checking employers table, proceeding as regular user:', error);
       }
       console.log('[checkAuth] Not an employer, proceeding to user flow');
       
@@ -1111,6 +1125,7 @@ function App() {
       
       if (profileError || !profileData || !profileData.onboarding_complete) {
         console.log('[checkAuth] User has not completed onboarding, showing onboarding flow');
+        setOnboardingStep('basicInfo'); // Start with basic info since user is authenticated
         setShowOnboarding(true);
         setShowSignIn(false);
         setCheckingAuth(false);
