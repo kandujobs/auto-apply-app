@@ -671,6 +671,8 @@ function App() {
       } catch (error) {
         console.error('[handleTutorialContinue] Error checking user access:', error);
         // If there's an error checking access, show paywall as fallback
+        // This handles cases where the payment API is down or returns errors
+        console.log('[handleTutorialContinue] Payment API error, showing paywall as fallback');
         setShowPaywall(true);
       }
     } else {
