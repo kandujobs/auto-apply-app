@@ -66,25 +66,9 @@ async function getUserSearchCriteria(userId: string): Promise<UserSearchCriteria
 }
 
 /**
- * Simple decryption function (matching the frontend encryption)
+ * Import secure encryption module
  */
-function decrypt(encryptedText: string): string {
-  const ENCRYPTION_KEY = 'your-secret-key-here'; // Must match frontend key
-  
-  try {
-    // Decode from base64
-    const decoded = Buffer.from(encryptedText, 'base64').toString();
-    let result = '';
-    for (let i = 0; i < decoded.length; i++) {
-      const charCode = decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length);
-      result += String.fromCharCode(charCode);
-    }
-    return result;
-  } catch (error) {
-    console.error('Decryption error:', error);
-    throw new Error('Failed to decrypt data');
-  }
-}
+import { decrypt } from './encryption';
 
 /**
  * Get user's LinkedIn credentials from database

@@ -21,19 +21,13 @@ if (!supabaseUrl || !supabaseKey) {
 }
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Decryption function that matches the encryption implementation
-function decryptPassword(encryptedPassword) {
+// Import the secure decryption function
+const { decrypt } = require('./src/encryption');
+
+// Decryption function that uses the secure encryption implementation
+async function decryptPassword(encryptedPassword) {
   try {
-    const ENCRYPTION_KEY = 'your-secret-key-here';
-    
-    // Decode from base64
-    const decoded = Buffer.from(encryptedPassword, 'base64').toString();
-    let result = '';
-    for (let i = 0; i < decoded.length; i++) {
-      const charCode = decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length);
-      result += String.fromCharCode(charCode);
-    }
-    return result;
+    return await decrypt(encryptedPassword);
   } catch (error) {
     console.log('❌ Failed to decrypt password:', error);
     return null;

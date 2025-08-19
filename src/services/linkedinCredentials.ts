@@ -36,8 +36,8 @@ export async function saveLinkedInCredentials(credentials: LinkedInCredentials):
       return { success: false, error: 'User not authenticated' };
     }
 
-    // Encrypt password
-    const encryptedPassword = encrypt(credentials.password);
+    // Encrypt password (now async)
+    const encryptedPassword = await encrypt(credentials.password);
 
     // Save to database
     const { error } = await supabase
@@ -124,8 +124,8 @@ export async function updateLinkedInCredentials(credentials: LinkedInCredentials
       return { success: false, error: 'User not authenticated' };
     }
 
-    // Encrypt password
-    const encryptedPassword = encrypt(credentials.password);
+    // Encrypt password (now async)
+    const encryptedPassword = await encrypt(credentials.password);
 
     // Update in database
     const { error } = await supabase

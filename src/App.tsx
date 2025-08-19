@@ -547,6 +547,44 @@ function App() {
     alert("Forgot password clicked");
   };
 
+  const handleGoogleSignUp = async () => {
+    setSignUpError(null);
+    setCheckingAuth(true);
+    
+    // Add timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      console.log('[handleGoogleSignUp] Timeout reached, forcing completion');
+      setCheckingAuth(false);
+      setSignUpError('Google sign-up timed out. Please try again.');
+    }, 10000); // 10 second timeout
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) {
+        console.error('Google sign-up error:', error);
+        setSignUpError(error.message);
+        setCheckingAuth(false);
+        return;
+      }
+      
+      // The OAuth flow will redirect the user, so we don't need to handle the success case here
+      console.log('Google OAuth initiated:', data);
+      
+    } catch (err) {
+      console.error('Google sign-up exception:', err);
+      setSignUpError('Failed to initiate Google sign-up. Please try again.');
+      setCheckingAuth(false);
+    }
+    
+    clearTimeout(timeout);
+  };
+
   const handleSignUp = async (emailOrPhone: string, password: string) => {
     setSignUpError(null);
     setCheckingAuth(true);
@@ -868,74 +906,154 @@ function App() {
 
 
   useEffect(() => {
-    async function checkAuth() {
-      setCheckingAuth(true);
-      console.log('[checkAuth] Starting auth check');
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      console.log('[checkAuth] userData:', userData, 'userError:', userError);
-      if (userError || !userData.user) {
-        console.log('[checkAuth] No user found, showing onboarding');
-        setShowOnboarding(true);
-        setShowSignIn(false);
-        setProfileLoading(false); // Ensure spinner doesn't hang on failed auth
+    // Check if we're returning from an OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+    
+    if (accessToken && refreshToken) {
+      // Handle OAuth callback
+      handleOAuthCallback(accessToken, refreshToken);
+    } else {
+      // Normal auth check
+      checkAuth();
+    }
+  }, []);
+
+  const handleOAuthCallback = async (accessToken: string, refreshToken: string) => {
+    setCheckingAuth(true);
+    console.log('[handleOAuthCallback] Processing OAuth callback');
+    
+    try {
+      // Set the session with the tokens from the callback
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      
+      if (error) {
+        console.error('[handleOAuthCallback] Error setting session:', error);
+        setSignUpError('Failed to complete Google sign-in. Please try again.');
         setCheckingAuth(false);
         return;
-      } else {
-        // Check if user is an employer by contact_email
-        console.log('[checkAuth] Checking employers table for contact_email:', userData.user.email);
+      }
+      
+      if (data.user) {
+        console.log('[handleOAuthCallback] OAuth sign-in successful:', data.user.email);
+        
+        // Clear the URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Check if user is an employer
         const { data: employerData, error: employerError } = await supabase
           .from('employers')
           .select('id')
-          .eq('contact_email', userData.user.email)
+          .eq('contact_email', data.user.email)
           .single();
-        console.log('[checkAuth] employerData:', employerData, 'employerError:', employerError);
+        
         if (employerData && !employerError) {
-          console.log('[checkAuth] Employer found, setting isEmployer true');
+          console.log('[handleOAuthCallback] Employer found, setting isEmployer true');
           setIsEmployer(true);
           setCheckingAuth(false);
           return;
         }
-        console.log('[checkAuth] Not an employer, proceeding to user flow');
-        
-        // Check if user has incomplete onboarding - but only for new users
-        const onboardingStep = localStorage.getItem('onboarding_step');
-        if (onboardingStep && onboardingStep !== 'home') {
-          console.log('[checkAuth] Found incomplete onboarding step:', onboardingStep);
-          // Clear the incomplete onboarding step since user is authenticated
-          localStorage.removeItem('onboarding_step');
-          console.log('[checkAuth] Cleared incomplete onboarding step');
-        }
-        
-        setShowOnboarding(false);
-        setShowSignIn(false);
         
         // Set current user for payment checks
         setCurrentUser({
-          id: userData.user.id,
-          email: userData.user.email || ''
+          id: data.user.id,
+          email: data.user.email || ''
         });
         
         // Check user's payment access
         try {
-          const access = await paymentService.checkUserAccess(userData.user.id);
+          const access = await paymentService.checkUserAccess(data.user.id);
           setUserAccess(access);
           
-          // If user doesn't have access, show paywall after onboarding
           if (!access.hasAccess) {
             setShowPaywall(true);
           }
         } catch (error) {
-          console.error('[checkAuth] Error checking payment access:', error);
-          // Continue with app even if payment check fails
+          console.error('[handleOAuthCallback] Error checking payment access:', error);
         }
         
-        await fetchProfileAndJobs(); // Load profile after successful auth
+        await fetchProfileAndJobs();
+        setShowOnboarding(false);
+        setShowSignIn(false);
       }
-      setCheckingAuth(false);
-      console.log('[checkAuth] Auth check complete');
+    } catch (err) {
+      console.error('[handleOAuthCallback] Exception:', err);
+      setSignUpError('Failed to complete Google sign-in. Please try again.');
     }
-    checkAuth();
-  }, []);
+    
+    setCheckingAuth(false);
+  };
+
+  async function checkAuth() {
+    setCheckingAuth(true);
+    console.log('[checkAuth] Starting auth check');
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    console.log('[checkAuth] userData:', userData, 'userError:', userError);
+    if (userError || !userData.user) {
+      console.log('[checkAuth] No user found, showing onboarding');
+      setShowOnboarding(true);
+      setShowSignIn(false);
+      setProfileLoading(false); // Ensure spinner doesn't hang on failed auth
+      setCheckingAuth(false);
+      return;
+    } else {
+      // Check if user is an employer by contact_email
+      console.log('[checkAuth] Checking employers table for contact_email:', userData.user.email);
+      const { data: employerData, error: employerError } = await supabase
+        .from('employers')
+        .select('id')
+        .eq('contact_email', userData.user.email)
+        .single();
+      console.log('[checkAuth] employerData:', employerData, 'employerError:', employerError);
+      if (employerData && !employerError) {
+        console.log('[checkAuth] Employer found, setting isEmployer true');
+        setIsEmployer(true);
+        setCheckingAuth(false);
+        return;
+      }
+      console.log('[checkAuth] Not an employer, proceeding to user flow');
+      
+      // Check if user has incomplete onboarding - but only for new users
+      const onboardingStep = localStorage.getItem('onboarding_step');
+      if (onboardingStep && onboardingStep !== 'home') {
+        console.log('[checkAuth] Found incomplete onboarding step:', onboardingStep);
+        // Clear the incomplete onboarding step since user is authenticated
+        localStorage.removeItem('onboarding_step');
+        console.log('[checkAuth] Cleared incomplete onboarding step');
+      }
+      
+      setShowOnboarding(false);
+      setShowSignIn(false);
+      
+      // Set current user for payment checks
+      setCurrentUser({
+        id: userData.user.id,
+        email: userData.user.email || ''
+      });
+      
+      // Check user's payment access
+      try {
+        const access = await paymentService.checkUserAccess(userData.user.id);
+        setUserAccess(access);
+        
+        // If user doesn't have access, show paywall after onboarding
+        if (!access.hasAccess) {
+          setShowPaywall(true);
+        }
+      } catch (error) {
+        console.error('[checkAuth] Error checking payment access:', error);
+        // Continue with app even if payment check fails
+      }
+      
+      await fetchProfileAndJobs(); // Load profile after successful auth
+    }
+    setCheckingAuth(false);
+    console.log('[checkAuth] Auth check complete');
+  }
 
 
 
@@ -1206,10 +1324,12 @@ function App() {
     return (
       <SignInScreen
         onSignIn={handleSignIn}
+        onGoogle={handleGoogleSignUp}
         onForgotPassword={handleForgotPassword}
         onGoToOnboarding={handleGoToOnboarding}
         onGoToSignUp={handleGoToSignUp}
         error={signInError}
+        loading={checkingAuth}
       />
     );
   }
@@ -1217,10 +1337,7 @@ function App() {
   if (showSignUp) {
     return (
       <AccountCreationScreen
-        onGoogle={() => {
-          // Handle Google sign-up
-          console.log('Google sign-up clicked');
-        }}
+        onGoogle={handleGoogleSignUp}
         onLinkedIn={() => {
           // Handle LinkedIn sign-up
           console.log('LinkedIn sign-up clicked');

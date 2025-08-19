@@ -1973,25 +1973,10 @@ app.post('/api/test-apply', async (req, res) => {
       });
     }
 
-    // Decrypt the password (using the same XOR encryption as the frontend)
-    const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-secret-key-here';
+    // Import secure encryption module
+    const { decrypt } = require('./encryption');
     
-    function decrypt(encryptedText) {
-      try {
-        // Decode from base64
-        const decoded = Buffer.from(encryptedText, 'base64').toString();
-        let result = '';
-        for (let i = 0; i < decoded.length; i++) {
-          const charCode = decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length);
-          result += String.fromCharCode(charCode);
-        }
-        return result;
-      } catch (error) {
-        console.error('Decryption error:', error);
-        throw new Error('Failed to decrypt data');
-      }
-    }
-    
+    // Decrypt the password using secure AES-256-GCM encryption
     const decryptedPassword = decrypt(credentials.password_encrypted);
 
     // Check if job is already being processed in the database
@@ -2807,24 +2792,7 @@ app.post('/api/session/start', async (req, res) => {
       });
     }
     
-    // Decrypt password
-    const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-secret-key-here';
-    function decrypt(encryptedText) {
-      try {
-        // Decode from base64
-        const decoded = Buffer.from(encryptedText, 'base64').toString();
-        let result = '';
-        for (let i = 0; i < decoded.length; i++) {
-          const charCode = decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length);
-          result += String.fromCharCode(charCode);
-        }
-        return result;
-      } catch (error) {
-        console.error('Decryption error:', error);
-        throw new Error('Failed to decrypt data');
-      }
-    }
-    
+    // Decrypt password using secure AES-256-GCM encryption
     const decryptedPassword = decrypt(credentials.password_encrypted);
     
     // Create new session

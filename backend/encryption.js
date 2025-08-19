@@ -1,20 +1,20 @@
-// Secure encryption utility for storing sensitive data
-// Uses AES-256-GCM encryption with Web Crypto API and PBKDF2 key derivation
+const crypto = require('crypto');
 
 // Get encryption key from environment or use a secure default
-const getEncryptionKey = (): string => {
-  // In production, this should come from environment variables
-  return import.meta.env.VITE_ENCRYPTION_KEY || 'your-secret-key-here-32-chars-long';
+const getEncryptionKey = () => {
+  return process.env.ENCRYPTION_KEY || 'your-secret-key-here-32-chars-long';
 };
 
 /**
- * Convert a string key to a CryptoKey for AES-256-CBC using PBKDF2
+ * Derive a key from the master encryption key using PBKDF2
  */
-async function deriveKey(password: string): Promise<CryptoKey> {
-  const encoder = new TextEncoder();
+async function deriveKey(password) {
+  const salt = Buffer.from('linkedin-credentials-salt-v2', 'utf8');
+  
+  // Use the modern async crypto API
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    encoder.encode(password),
+    Buffer.from(password, 'utf8'),
     { name: 'PBKDF2' },
     false,
     ['deriveBits', 'deriveKey']
@@ -23,8 +23,8 @@ async function deriveKey(password: string): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: encoder.encode('linkedin-credentials-salt-v2'),
-      iterations: 200000, // Increased from 100000 for better security
+      salt,
+      iterations: 200000,
       hash: 'SHA-256'
     },
     keyMaterial,
@@ -38,20 +38,16 @@ async function deriveKey(password: string): Promise<CryptoKey> {
  * Secure encryption function using AES-256-CBC
  * Returns a JSON string with version, IV, and encrypted data
  */
-export async function encrypt(text: string): Promise<string> {
+async function encrypt(text) {
   try {
     const key = await deriveKey(getEncryptionKey());
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
+    const iv = crypto.randomBytes(16); // Use 16 bytes for AES
     
-    // Generate a random IV (16 bytes for AES-CBC)
-    const iv = crypto.getRandomValues(new Uint8Array(16));
-    
-    // Encrypt the data
+    // Use the modern async crypto API
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-CBC', iv },
       key,
-      data
+      Buffer.from(text, 'utf8')
     );
     
     // Create encrypted object with version and metadata
@@ -63,7 +59,7 @@ export async function encrypt(text: string): Promise<string> {
     };
     
     // Convert to base64 for storage
-    return btoa(JSON.stringify(encryptedObject));
+    return Buffer.from(JSON.stringify(encryptedObject)).toString('base64');
   } catch (error) {
     console.error('Encryption error:', error);
     throw new Error('Failed to encrypt data');
@@ -74,11 +70,11 @@ export async function encrypt(text: string): Promise<string> {
  * Secure decryption function using AES-256-CBC
  * Supports both new v2 format and legacy XOR format
  */
-export async function decrypt(encryptedText: string): Promise<string> {
+async function decrypt(encryptedText) {
   try {
     // First, try to parse as JSON (new v2 format)
     try {
-      const encryptedObject = JSON.parse(atob(encryptedText));
+      const encryptedObject = JSON.parse(Buffer.from(encryptedText, 'base64').toString());
       
       if (encryptedObject.version === 'v2') {
         return await decryptV2(encryptedObject);
@@ -99,29 +95,32 @@ export async function decrypt(encryptedText: string): Promise<string> {
 /**
  * Decrypt v2 format (AES-256-CBC)
  */
-async function decryptV2(encryptedObject: any): Promise<string> {
-  const key = await deriveKey(getEncryptionKey());
-  
-  // Convert arrays back to Uint8Array
-  const iv = new Uint8Array(encryptedObject.iv);
-  const encrypted = new Uint8Array(encryptedObject.data);
-  
-  // Decrypt the data
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-CBC', iv },
-    key,
-    encrypted
-  );
-  
-  // Convert back to string
-  const decoder = new TextDecoder();
-  return decoder.decode(decrypted);
+async function decryptV2(encryptedObject) {
+  try {
+    const key = await deriveKey(getEncryptionKey());
+    
+    // Convert arrays back to Buffer
+    const iv = Buffer.from(encryptedObject.iv);
+    const encrypted = Buffer.from(encryptedObject.data);
+    
+    // Use the modern async crypto API
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-CBC', iv },
+      key,
+      encrypted
+    );
+    
+    return Buffer.from(decrypted).toString('utf8');
+  } catch (error) {
+    console.error('V2 decryption error:', error);
+    throw new Error('Failed to decrypt v2 data');
+  }
 }
 
 /**
  * Decrypt legacy XOR format (for backward compatibility)
  */
-function decryptLegacy(encryptedText: string): string {
+function decryptLegacy(encryptedText) {
   try {
     const ENCRYPTION_KEY = getEncryptionKey();
     
@@ -134,7 +133,13 @@ function decryptLegacy(encryptedText: string): string {
       result += String.fromCharCode(charCode);
     }
     
-    return result;
+    // The legacy method stored base64-encoded passwords, so decode it
+    try {
+      return Buffer.from(result, 'base64').toString('utf8');
+    } catch {
+      // If base64 decode fails, return the raw result
+      return result;
+    }
   } catch (error) {
     console.error('Legacy decryption error:', error);
     throw new Error('Failed to decrypt legacy data');
@@ -144,9 +149,9 @@ function decryptLegacy(encryptedText: string): string {
 /**
  * Check if encrypted data is in legacy format
  */
-export function isLegacyFormat(encryptedText: string): boolean {
+function isLegacyFormat(encryptedText) {
   try {
-    JSON.parse(atob(encryptedText));
+    JSON.parse(Buffer.from(encryptedText, 'base64').toString());
     return false; // It's v2 format
   } catch {
     return true; // It's legacy format
@@ -156,7 +161,7 @@ export function isLegacyFormat(encryptedText: string): boolean {
 /**
  * Migrate legacy encrypted data to new format
  */
-export async function migrateLegacyCredentials(encryptedText: string): Promise<string> {
+async function migrateLegacyCredentials(encryptedText) {
   try {
     // Decrypt using legacy method
     const decrypted = decryptLegacy(encryptedText);
@@ -172,30 +177,21 @@ export async function migrateLegacyCredentials(encryptedText: string): Promise<s
 /**
  * Hash a string (one-way encryption) - improved implementation
  */
-export async function hash(text: string): Promise<string> {
+function hash(text) {
   try {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return crypto.createHash('sha256').update(text).digest('hex');
   } catch (error) {
     console.error('Hashing error:', error);
     throw new Error('Failed to hash data');
   }
 }
 
-/**
- * Validate if a string looks like an email
- */
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Validate if a string looks like a password
- */
-export function isValidPassword(password: string): boolean {
-  return password.length >= 6; // Basic validation
-} 
+module.exports = {
+  encrypt,
+  decrypt,
+  decryptV2,
+  decryptLegacy,
+  isLegacyFormat,
+  migrateLegacyCredentials,
+  hash
+};
