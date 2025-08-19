@@ -199,7 +199,8 @@ class PaymentService {
         .single();
 
       if (subError && subError.code !== 'PGRST116') {
-        throw subError;
+        console.log('Subscription table error (non-critical):', subError);
+        // Don't throw error, just log it and continue
       }
 
       if (subscription) {
@@ -221,7 +222,8 @@ class PaymentService {
         .single();
 
       if (trialError && trialError.code !== 'PGRST116') {
-        throw trialError;
+        console.log('Free trials table error (non-critical):', trialError);
+        // Don't throw error, just log it and continue
       }
 
       if (trial) {
@@ -233,6 +235,7 @@ class PaymentService {
         };
       }
 
+      // Default: no access (show paywall)
       return {
         hasAccess: false,
         type: null,
@@ -241,7 +244,13 @@ class PaymentService {
       };
     } catch (error) {
       console.error('Error checking user access:', error);
-      throw error;
+      // Return default no-access response instead of throwing
+      return {
+        hasAccess: false,
+        type: null,
+        data: null,
+        expiresAt: null
+      };
     }
   }
 
