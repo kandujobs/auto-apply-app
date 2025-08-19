@@ -88,8 +88,8 @@ const PaywallScreen: React.FC<PaywallScreenProps> = ({ onComplete, onBack, userI
           name: 'Pro',
           price_monthly: 39,
           price_yearly: 235,
-          stripe_price_id_monthly: 'price_1Rxw90FdjOQFWIuBLKpOYFNt',
-          stripe_price_id_yearly: 'price_1Rxw90FdjOQFWIuBtcrtKwYH',
+          stripe_price_id_monthly: 'price_1RxwCpFdjOQFWIuBnwyoFzpN',
+          stripe_price_id_yearly: 'price_1RxwCpFdjOQFWIuBIAtb3f0C',
           features: [
             'Up to 200 auto-applies per month',
             'AI-optimized resume matching for every job',
