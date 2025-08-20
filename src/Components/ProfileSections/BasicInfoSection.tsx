@@ -37,7 +37,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-[2rem] border-4 border-gray-300 p-6 shadow-lg">
+    <div className="w-full">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-[18px] font-bold">Basic Information</h2>
         {!isEditing ? (
