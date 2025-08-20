@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { FiBell, FiShield, FiEye, FiEyeOff, FiMail, FiSmartphone, FiZap, FiUsers, FiSearch, FiLock, FiUnlock, FiSave, FiTrash2, FiDownload, FiUpload } from 'react-icons/fi';
+import { FiBell, FiShield, FiEye, FiEyeOff, FiMail, FiSmartphone, FiZap, FiUsers, FiSearch, FiLock, FiUnlock, FiSave } from 'react-icons/fi';
 
 interface NotificationsPrivacyScreenProps {
   goBack?: () => void;
@@ -49,11 +49,6 @@ interface PrivacySettings {
   twoFactorAuthentication: boolean;
   sessionTimeout: number; // minutes
   loginNotifications: boolean;
-  
-  // Data Management
-  allowDataExport: boolean;
-  allowDataDeletion: boolean;
-  autoDeleteInactive: boolean;
 }
 
 const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({ goBack }) => {
@@ -100,14 +95,9 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
     twoFactorAuthentication: false,
     sessionTimeout: 30,
     loginNotifications: true,
-    
-    // Data Management
-    allowDataExport: true,
-    allowDataDeletion: true,
-    autoDeleteInactive: false,
   });
 
-  const [activeTab, setActiveTab] = useState<'notifications' | 'privacy' | 'security' | 'data'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'privacy' | 'security'>('notifications');
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
 
   // Load settings from database
@@ -265,8 +255,7 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
               {[
                 { id: 'notifications', label: 'Notifications', icon: FiBell },
                 { id: 'privacy', label: 'Privacy', icon: FiEye },
-                { id: 'security', label: 'Security', icon: FiShield },
-                { id: 'data', label: 'Data', icon: FiSave }
+                { id: 'security', label: 'Security', icon: FiShield }
               ].map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
@@ -344,8 +333,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('employerMessages', !notificationSettings.employerMessages)}
                       icon={FiUsers}
                       disabled={!notificationSettings.emailNotifications}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -384,8 +373,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('pushMessages', !notificationSettings.pushMessages)}
                       icon={FiUsers}
                       disabled={!notificationSettings.pushNotifications}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -424,8 +413,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('autoApplyDaily', !notificationSettings.autoApplyDaily)}
                       icon={FiMail}
                       disabled={!notificationSettings.autoApplyNotifications}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -456,15 +445,15 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       onChange={() => updateNotificationSetting('linkedInMessages', !notificationSettings.linkedInMessages)}
                       icon={FiMail}
                       disabled={!notificationSettings.linkedInNotifications}
-            />
-          </div>
-        </div>
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
             {activeTab === 'privacy' && (
               <div className="space-y-6 sm:space-y-8">
-        <div>
+                <div>
                   <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                     <FiEye className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                     <span>Profile Visibility</span>
@@ -497,8 +486,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.showResume}
                       onChange={() => updatePrivacySetting('showResume', !privacySettings.showResume)}
                       icon={FiSave}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -527,8 +516,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.allowThirdPartySharing}
                       onChange={() => updatePrivacySetting('allowThirdPartySharing', !privacySettings.allowThirdPartySharing)}
                       icon={FiUsers}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
               </div>
             )}
@@ -554,8 +543,8 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       checked={privacySettings.loginNotifications}
                       onChange={() => updatePrivacySetting('loginNotifications', !privacySettings.loginNotifications)}
                       icon={FiBell}
-            />
-          </div>
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -576,60 +565,6 @@ const NotificationsPrivacyScreen: React.FC<NotificationsPrivacyScreenProps> = ({
                       <option value={0}>Never</option>
                     </select>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'data' && (
-              <div className="space-y-6 sm:space-y-8">
-                <div>
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                    <FiSave className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-                    <span>Data Management</span>
-                  </h2>
-                  <div className="space-y-3">
-                    <SettingItem
-                      title="Allow Data Export"
-                      description="Allow you to export your personal data"
-                      checked={privacySettings.allowDataExport}
-                      onChange={() => updatePrivacySetting('allowDataExport', !privacySettings.allowDataExport)}
-                      icon={FiDownload}
-                    />
-                    <SettingItem
-                      title="Allow Data Deletion"
-                      description="Allow you to delete your account and data"
-                      checked={privacySettings.allowDataDeletion}
-                      onChange={() => updatePrivacySetting('allowDataDeletion', !privacySettings.allowDataDeletion)}
-                      icon={FiTrash2}
-                    />
-                    <SettingItem
-                      title="Auto-Delete Inactive"
-                      description="Automatically delete data from inactive accounts"
-                      checked={privacySettings.autoDeleteInactive}
-                      onChange={() => updatePrivacySetting('autoDeleteInactive', !privacySettings.autoDeleteInactive)}
-                      icon={FiTrash2}
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <h3 className="text-sm font-medium text-blue-900 mb-2">Data Export</h3>
-                  <p className="text-sm text-blue-700 mb-3">
-                    Download a copy of all your personal data including profile, job applications, and preferences.
-                  </p>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                    Export My Data
-                  </button>
-                </div>
-
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                  <h3 className="text-sm font-medium text-red-900 mb-2">Delete Account</h3>
-                  <p className="text-sm text-red-700 mb-3">
-                    Permanently delete your account and all associated data. This action cannot be undone.
-                  </p>
-                  <button className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
-                    Delete Account
-                  </button>
                 </div>
               </div>
             )}
