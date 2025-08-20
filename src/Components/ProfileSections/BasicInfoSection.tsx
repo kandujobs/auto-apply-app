@@ -38,8 +38,7 @@ const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-[18px] font-bold">Basic Information</h2>
+      <div className="flex justify-end mb-4">
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
