@@ -3,6 +3,7 @@ import { Job } from "../types/Job";
 import SwipeCard from "./SwipeCard";
 import AdditionalQuestionsModal from "./AdditionalQuestionsModal";
 import Notification from "./Notification";
+import Logo from "./Logo";
 
 
 import { supabase } from '../supabaseClient';
@@ -992,15 +993,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         ) : availableJobs.length === 0 && !linkedInJobsLoading ? (
           <div className="flex flex-col items-center justify-center text-center max-w-md">
             <div className="mb-6">
-              <svg className="w-24 h-24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <text x="16" y="22" fontFamily="Arial, sans-serif" fontSize="24" fontWeight="bold" textAnchor="middle" fill="url(#gradient)">K</text>
-                <defs>
-                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#7C3AED"/>
-                    <stop offset="100%" stopColor="#2563EB"/>
-                  </linearGradient>
-                </defs>
-              </svg>
+              <Logo size="xl" showText={false} />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               {isSessionActive ? 'No Jobs Available' : 'Start Your Job Search Session'}
@@ -1015,7 +1008,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               <>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <p className="text-blue-800 text-sm">
-                    💡 <strong>Tip:</strong> Jobs are automatically fetched when you need them. No manual fetching required!
+                    💡 <strong>Tip:</strong> Jobs are automatically fetched when you need them. (meaning fresh job opportunities every time!)
                   </p>
                 </div>
                 <button 

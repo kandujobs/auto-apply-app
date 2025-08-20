@@ -125,6 +125,7 @@ const LinkedInCredentialsSection: React.FC<LinkedInCredentialsSectionProps> = ({
         setHasCredentials(true);
         setIsEditing(false);
         setShowModal(false);
+        setSavedCredentials({ email: email.trim(), password: password.trim() });
         setMessage({ type: 'success', text: 'LinkedIn credentials saved successfully!' });
         
         if (onCredentialsSaved) {
