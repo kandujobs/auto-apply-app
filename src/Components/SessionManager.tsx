@@ -201,12 +201,22 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
 
       // If we get here, user has both credentials and payment access
       const result = await sessionService.startSession();
+      console.log('🚀 [REGULAR] Session start result:', result);
+      
       if (result.success) {
+        console.log('🚀 [REGULAR] Session started successfully');
+        
+        // Check WebSocket connection status immediately
+        const wsConnected = sessionService.isSessionActive();
+        console.log('🚀 [REGULAR] WebSocket connection status after session start:', wsConnected);
+        
         // Wait a moment for WebSocket to connect, then check status
         setTimeout(() => {
+          console.log('🚀 [REGULAR] Checking session status after timeout...');
           checkSessionStatus();
         }, 1000);
       } else {
+        console.log('🚀 [REGULAR] Session start failed:', result.error);
         setError(result.error || 'Failed to start session');
       }
     } catch (error) {
@@ -249,13 +259,22 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
 
       // Start session directly
       const result = await sessionService.startSession();
+      console.log('🔓 [DEBUG] Session start result:', result);
+      
       if (result.success) {
         console.log('🔓 [DEBUG] Session started successfully with payment bypass');
+        
+        // Check WebSocket connection status immediately
+        const wsConnected = sessionService.isSessionActive();
+        console.log('🔓 [DEBUG] WebSocket connection status after session start:', wsConnected);
+        
         // Wait a moment for WebSocket to connect, then check status
         setTimeout(() => {
+          console.log('🔓 [DEBUG] Checking session status after timeout...');
           checkSessionStatus();
         }, 1000);
       } else {
+        console.log('🔓 [DEBUG] Session start failed:', result.error);
         setError(result.error || 'Failed to start session');
       }
     } catch (error) {
