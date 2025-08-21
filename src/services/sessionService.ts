@@ -133,50 +133,64 @@ class SessionService {
   }
 
   private async connectWebSocket(): Promise<void> {
+    console.log('🔌 [CONNECT] Starting connectWebSocket method...');
+    
     return new Promise((resolve, reject) => {
+      console.log('🔌 [CONNECT] Inside Promise constructor...');
+      
       // Use the same host as the backend URL but with ws:// protocol
       const backendUrl = getBackendUrl();
       const wsUrl = backendUrl.replace('https://', 'wss://').replace('http://', 'ws://');
       
-      console.log('🔌 Connecting to WebSocket:', wsUrl);
-      console.log('🔌 Backend URL:', backendUrl);
+      console.log('🔌 [CONNECT] Connecting to WebSocket:', wsUrl);
+      console.log('🔌 [CONNECT] Backend URL:', backendUrl);
       
       try {
+        console.log('🔌 [CONNECT] Creating WebSocket object...');
         this.websocket = new WebSocket(wsUrl);
-        console.log('🔌 WebSocket object created');
+        console.log('🔌 [CONNECT] WebSocket object created successfully');
       } catch (error) {
-        console.error('❌ Error creating WebSocket:', error);
+        console.error('❌ [CONNECT] Error creating WebSocket:', error);
         reject(error);
         return;
       }
 
+      console.log('🔌 [CONNECT] Setting up WebSocket event handlers...');
+
       this.websocket.onopen = () => {
-        console.log('🔌 WebSocket connected, sending session connect message');
-        console.log('🔌 Session ID:', this.sessionId);
-        this.websocket!.send(JSON.stringify({
-          type: 'session_connect',
-          userId: this.sessionId
-        }));
-        console.log('📤 Session connect message sent');
-        resolve();
+        console.log('🔌 [CONNECT] WebSocket onopen event fired');
+        console.log('🔌 [CONNECT] WebSocket connected, sending session connect message');
+        console.log('🔌 [CONNECT] Session ID:', this.sessionId);
+        
+        try {
+          this.websocket!.send(JSON.stringify({
+            type: 'session_connect',
+            userId: this.sessionId
+          }));
+          console.log('📤 [CONNECT] Session connect message sent successfully');
+          resolve();
+        } catch (error) {
+          console.error('❌ [CONNECT] Error sending session connect message:', error);
+          reject(error);
+        }
       };
 
       this.websocket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log('📤 Received WebSocket message:', data);
+          console.log('📤 [CONNECT] Received WebSocket message:', data);
 
           if (data.type === 'session_connected') {
-            console.log('🔐 Session connected successfully');
+            console.log('🔐 [CONNECT] Session connected successfully');
           } else if (data.type === 'session_error') {
-            console.error('❌ Session error:', data.error);
+            console.error('❌ [CONNECT] Session error:', data.error);
           } else if (data.type === 'progress') {
-            console.log('📊 Progress update:', data.data);
+            console.log('📊 [CONNECT] Progress update:', data.data);
             
             // Prevent duplicate progress messages within 100ms
             const now = Date.now();
             if (this.lastProgressMessage === data.data && (now - this.lastProgressTime) < 100) {
-              console.log('⏭️ Skipping duplicate progress message:', data.data);
+              console.log('⏭️ [CONNECT] Skipping duplicate progress message:', data.data);
               return;
             }
             
@@ -187,22 +201,22 @@ class SessionService {
               this.onProgressUpdate(data.data);
             }
           } else if (data.type === 'question') {
-            console.log('❓ Question received:', data.data);
+            console.log('❓ [CONNECT] Question received:', data.data);
             if (this.onQuestionUpdate) {
               this.onQuestionUpdate(data.data);
             }
           } else if (data.type === 'application_completed') {
-            console.log('✅ Application completed:', data.data);
+            console.log('✅ [CONNECT] Application completed:', data.data);
             if (this.onApplicationCompleted) {
               this.onApplicationCompleted(data.data);
             }
           } else if (data.type === 'application_error') {
-            console.log('❌ Application error:', data.data);
+            console.log('❌ [CONNECT] Application error:', data.data);
             if (this.onApplicationCompleted) {
               this.onApplicationCompleted(data.data);
             }
           } else if (data.type === 'browser_portal_ready') {
-            console.log('🖥️ Browser portal ready:', data.message);
+            console.log('🖥️ [CONNECT] Browser portal ready:', data.message);
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -210,7 +224,7 @@ class SessionService {
               this.onProgressUpdate(`browser_portal_ready: ${data.message}`);
             }
           } else if (data.type === 'browser_portal_closed') {
-            console.log('🖥️ Browser portal closed:', data.message);
+            console.log('🖥️ [CONNECT] Browser portal closed:', data.message);
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -218,7 +232,7 @@ class SessionService {
               this.onProgressUpdate(`browser_portal_closed: ${data.message}`);
             }
           } else if (data.type === 'browser_screenshot') {
-            console.log('📸 Browser screenshot received');
+            console.log('📸 [CONNECT] Browser screenshot received');
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -226,7 +240,7 @@ class SessionService {
               this.onProgressUpdate(`browser_screenshot: ${data.timestamp}`);
             }
           } else if (data.type === 'click_confirmed') {
-            console.log('✅ Click confirmed:', data);
+            console.log('✅ [CONNECT] Click confirmed:', data);
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -234,7 +248,7 @@ class SessionService {
               this.onProgressUpdate(`click_confirmed: ${data.x},${data.y}`);
             }
           } else if (data.type === 'input_confirmed') {
-            console.log('✅ Input confirmed:', data);
+            console.log('✅ [CONNECT] Input confirmed:', data);
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -242,7 +256,7 @@ class SessionService {
               this.onProgressUpdate(`input_confirmed: ${data.selector}`);
             }
           } else if (data.type === 'keypress_confirmed') {
-            console.log('✅ Key press confirmed:', data);
+            console.log('✅ [CONNECT] Key press confirmed:', data);
             if (this.onBrowserPortalUpdate) {
               this.onBrowserPortalUpdate(data);
             }
@@ -251,23 +265,25 @@ class SessionService {
             }
           }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
+          console.error('❌ [CONNECT] Error parsing WebSocket message:', error);
         }
       };
 
       this.websocket.onerror = (error) => {
-        console.error('❌ WebSocket connection error:', error);
+        console.error('❌ [CONNECT] WebSocket connection error:', error);
         reject(error);
       };
 
       this.websocket.onclose = (event) => {
-        console.log('🔌 WebSocket connection closed:', event.code, event.reason);
+        console.log('🔌 [CONNECT] WebSocket connection closed:', event.code, event.reason);
         // Reset session state when WebSocket disconnects
         this.sessionId = null;
         this.websocket = null;
         // Don't auto-reconnect to prevent multiple connections
         // The session will handle reconnection when needed
       };
+
+      console.log('🔌 [CONNECT] WebSocket event handlers set up, waiting for connection...');
     });
   }
 
