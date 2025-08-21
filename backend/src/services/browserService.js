@@ -15,6 +15,64 @@ try {
   console.log('🔧 Auto-apply features will be disabled');
 }
 
+// Function to ensure WebSocket connection is established
+async function ensureWebSocketConnection(userId) {
+  try {
+    console.log(`🔌 Ensuring WebSocket connection for user: ${userId}`);
+    
+    // Check if there's already an active WebSocket connection
+    const { connectedClients } = require('../config/websocket');
+    let hasConnection = false;
+    
+    connectedClients.forEach(client => {
+      if (client.userId === userId && client.readyState === 1) {
+        hasConnection = true;
+        console.log(`✅ Found existing WebSocket connection for user: ${userId}`);
+      }
+    });
+    
+    if (hasConnection) {
+      return true;
+    }
+    
+    // If no connection exists, we need to wait for the frontend to establish one
+    // Send a message to the frontend to establish WebSocket connection
+    console.log(`📡 Broadcasting WebSocket connection request to user: ${userId}`);
+    broadcastToUser(userId, {
+      type: 'establish_websocket_connection',
+      message: 'Please establish WebSocket connection for browser portal'
+    });
+    
+    // Wait for connection to be established (with timeout)
+    const maxWaitTime = 10000; // 10 seconds
+    const checkInterval = 500; // Check every 500ms
+    let waitedTime = 0;
+    
+    while (waitedTime < maxWaitTime) {
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+      waitedTime += checkInterval;
+      
+      // Check again for connection
+      connectedClients.forEach(client => {
+        if (client.userId === userId && client.readyState === 1) {
+          hasConnection = true;
+          console.log(`✅ WebSocket connection established for user: ${userId}`);
+        }
+      });
+      
+      if (hasConnection) {
+        return true;
+      }
+    }
+    
+    console.log(`❌ Timeout waiting for WebSocket connection for user: ${userId}`);
+    return false;
+  } catch (error) {
+    console.error('Error ensuring WebSocket connection:', error);
+    return false;
+  }
+}
+
 // Global variables to track application status
 let currentApplicationStatus = 'idle';
 let currentApplicationProgress = '';
@@ -243,6 +301,15 @@ async function initializeBrowserSession(userId, credentials) {
       if (hasSecurityCheckpoint) {
         console.log('🛡️ LinkedIn security checkpoint detected. Please complete it manually...');
         console.log('⏳ Starting browser portal for user interaction...');
+        
+        // Ensure WebSocket connection is established for browser portal
+        console.log('🔌 Ensuring WebSocket connection for browser portal...');
+        const wsConnected = await ensureWebSocketConnection(userId);
+        if (!wsConnected) {
+          console.log('❌ Failed to establish WebSocket connection for browser portal');
+          throw new Error('Failed to establish WebSocket connection for browser portal');
+        }
+        console.log('✅ WebSocket connection established for browser portal');
         
         // Start browser portal for user interaction
         await browserPortalService.startPortal(userId, page);
