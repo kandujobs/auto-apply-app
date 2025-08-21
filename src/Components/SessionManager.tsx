@@ -258,24 +258,30 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       console.log('🔓 [DEBUG] Skipping payment check, proceeding with session start...');
 
       // Start session directly
-      const result = await sessionService.startSession();
-      console.log('🔓 [DEBUG] Session start result:', result);
-      
-      if (result.success) {
-        console.log('🔓 [DEBUG] Session started successfully with payment bypass');
+      try {
+        console.log('🔓 [DEBUG] About to call sessionService.startSession()...');
+        const result = await sessionService.startSession();
+        console.log('🔓 [DEBUG] Session start result:', result);
         
-        // Check WebSocket connection status immediately
-        const wsConnected = sessionService.isSessionActive();
-        console.log('🔓 [DEBUG] WebSocket connection status after session start:', wsConnected);
-        
-        // Wait a moment for WebSocket to connect, then check status
-        setTimeout(() => {
-          console.log('🔓 [DEBUG] Checking session status after timeout...');
-          checkSessionStatus();
-        }, 1000);
-      } else {
-        console.log('🔓 [DEBUG] Session start failed:', result.error);
-        setError(result.error || 'Failed to start session');
+        if (result.success) {
+          console.log('🔓 [DEBUG] Session started successfully with payment bypass');
+          
+          // Check WebSocket connection status immediately
+          const wsConnected = sessionService.isSessionActive();
+          console.log('🔓 [DEBUG] WebSocket connection status after session start:', wsConnected);
+          
+          // Wait a moment for WebSocket to connect, then check status
+          setTimeout(() => {
+            console.log('🔓 [DEBUG] Checking session status after timeout...');
+            checkSessionStatus();
+          }, 1000);
+        } else {
+          console.log('🔓 [DEBUG] Session start failed:', result.error);
+          setError(result.error || 'Failed to start session');
+        }
+      } catch (error) {
+        console.error('🔓 [DEBUG] Error calling sessionService.startSession():', error);
+        setError('Failed to start session: ' + (error instanceof Error ? error.message : String(error)));
       }
     } catch (error) {
       console.error('Error starting debug session:', error);
