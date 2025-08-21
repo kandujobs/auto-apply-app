@@ -135,20 +135,57 @@ async function initializeBrowserSession(userId, credentials) {
       await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(3000);
 
+      // Wait for login form to be visible
+      console.log('Waiting for login form...');
+      await page.waitForSelector('#username', { timeout: 10000 });
+      await page.waitForSelector('#password', { timeout: 10000 });
+
       // Fill in email
+      console.log('Filling email...');
+      await page.waitForSelector('#username', { state: 'visible' });
       await page.click('#username');
       await page.waitForTimeout(500);
       await page.fill('#username', email);
       await page.waitForTimeout(1000);
 
       // Fill in password
+      console.log('Filling password...');
+      await page.waitForSelector('#password', { state: 'visible' });
       await page.click('#password');
       await page.waitForTimeout(500);
       await page.fill('#password', password);
       await page.waitForTimeout(1000);
 
-      // Click sign in button
-      await page.click('button[type="submit"]');
+      // Click sign in button - try multiple selectors
+      console.log('Clicking sign in button...');
+      const signInSelectors = [
+        'button[type="submit"]',
+        'button:has-text("Sign in")',
+        'button:has-text("Sign In")',
+        'input[type="submit"]',
+        '[data-litms-control-urn="login-submit"]'
+      ];
+      
+      let signInClicked = false;
+      for (const selector of signInSelectors) {
+        try {
+          const button = await page.locator(selector).first();
+          if (await button.isVisible()) {
+            await button.click();
+            console.log(`Clicked sign in button with selector: ${selector}`);
+            signInClicked = true;
+            break;
+          }
+        } catch (error) {
+          console.log(`Selector ${selector} not found or not visible`);
+        }
+      }
+      
+      if (!signInClicked) {
+        console.log('Could not find sign in button, trying to press Enter...');
+        await page.keyboard.press('Enter');
+      }
+      
       await page.waitForTimeout(5000);
 
       // Check if login was successful - handle security checkpoints
@@ -159,6 +196,27 @@ async function initializeBrowserSession(userId, credentials) {
       
       const loginUrl = page.url();
       console.log(`Current URL after login: ${loginUrl}`);
+      
+      // Take a screenshot for debugging
+      try {
+        await page.screenshot({ path: '/tmp/linkedin-login-debug.png' });
+        console.log('📸 Screenshot saved for debugging');
+      } catch (error) {
+        console.log('Could not take screenshot:', error.message);
+      }
+      
+      // Check for error messages on the page
+      try {
+        const errorElements = await page.locator('.alert-error, .error, [role="alert"]').all();
+        if (errorElements.length > 0) {
+          for (const errorElement of errorElements) {
+            const errorText = await errorElement.textContent();
+            console.log(`⚠️ Login error detected: ${errorText}`);
+          }
+        }
+      } catch (error) {
+        console.log('No error elements found');
+      }
       
       // Check for security checkpoint pages and URLs
       const securityCheckpointSelectors = [
@@ -242,6 +300,14 @@ async function initializeBrowserSession(userId, credentials) {
         console.log('✅ Successfully logged into LinkedIn');
       } else {
         console.log('❌ Login failed - not on feed or mynetwork');
+        console.log('Current page title:', await page.title());
+        
+        // Check if we're still on the login page
+        if (loginUrl.includes('/login')) {
+          console.log('Still on login page - login may have failed');
+          throw new Error('Login failed - still on login page');
+        }
+        
         throw new Error('Login failed');
       }
       
