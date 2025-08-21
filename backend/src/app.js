@@ -1,51 +1,47 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const WebSocket = require('ws');
+const helmet = require('helmet');
 
 // Import routes
-const jobRoutes = require('./routes/jobRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
+const jobRoutes = require('./routes/jobRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const browserPortalRoutes = require('./routes/browserPortalRoutes');
 
 // Import middleware
-const { errorHandler } = require('./middlewares/errorHandler');
+const errorHandler = require('./middlewares/errorHandler');
+const paymentMiddleware = require('./middlewares/paymentMiddleware');
+
+// Import checkpoint portal
+const { registerCheckpointPortal } = require('./services/checkpointPortal');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Create WebSocket server on the same port as HTTP server
-const wss = new WebSocket.Server({ noServer: true });
 
 // Middleware
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json());
+app.use(cors({
+  origin: ['https://app.kandujobs.com', 'http://localhost:3000'],
+  credentials: true
+}));
+app.use(helmet());
+
+// Register checkpoint portal (must be after express.json())
+registerCheckpointPortal(app);
 
 // Routes
-app.use('/api', jobRoutes);
 app.use('/api/session', sessionRoutes);
+app.use('/api/jobs', jobRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api', healthRoutes);
 app.use('/api/browser-portal', browserPortalRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Kandu Auto-Apply Backend API',
-    version: '1.0.0',
-    status: 'running'
-  });
+  res.json({ message: 'Auto-Apply Backend API' });
 });
 
-// Error handling middleware
+// Error handling middleware (must be last)
 app.use(errorHandler);
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-module.exports = { app, wss, PORT };
+module.exports = app;
