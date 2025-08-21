@@ -61,8 +61,14 @@ class SessionService {
         return { success: false, error: error.error || 'Failed to start session' };
       }
 
-      const responseData = await response.json();
-      console.log('✅ Backend session started:', responseData);
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log('✅ Backend session started:', responseData);
+      } catch (error) {
+        console.log('⚠️ Response is not JSON, but status is OK. Response text:', await response.text());
+        responseData = { success: true };
+      }
 
       this.sessionId = userId;
       console.log('🔗 Session ID set to:', this.sessionId);
