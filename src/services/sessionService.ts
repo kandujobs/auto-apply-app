@@ -140,10 +140,15 @@ class SessionService {
       // Use the same host as the backend URL but with ws:// protocol
       const backendUrl = getBackendUrl();
       const wsUrl = backendUrl.replace('https://', 'wss://').replace('http://', 'ws://');
+      
+      console.log('🔌 Connecting to WebSocket:', wsUrl);
+      console.log('🔌 Backend URL:', backendUrl);
+      
       this.websocket = new WebSocket(wsUrl);
 
       this.websocket.onopen = () => {
         console.log('🔌 WebSocket connected, sending session connect message');
+        console.log('🔌 Session ID:', this.sessionId);
         this.websocket!.send(JSON.stringify({
           type: 'session_connect',
           userId: this.sessionId
@@ -246,12 +251,12 @@ class SessionService {
       };
 
       this.websocket.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        console.error('❌ WebSocket connection error:', error);
         reject(error);
       };
 
       this.websocket.onclose = () => {
-        console.log('🔌 WebSocket disconnected');
+        console.log('🔌 WebSocket connection closed');
         // Reset session state when WebSocket disconnects
         this.sessionId = null;
         this.websocket = null;
