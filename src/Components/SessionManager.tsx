@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { supabase } from '../supabaseClient';
 import { paymentService } from '../services/paymentService';
+import BrowserPortal from './BrowserPortal';
 
 interface SessionManagerProps {
   onSessionChange?: (isActive: boolean) => void;
@@ -13,6 +14,8 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>({ isActive: false });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isBrowserPortalOpen, setIsBrowserPortalOpen] = useState(false);
+  const [browserPortalData, setBrowserPortalData] = useState<any>(null);
   const [websocketConnected, setWebsocketConnected] = useState(false);
   const [jobFetchProgress, setJobFetchProgress] = useState<string>('');
   const [jobFetchPercentage, setJobFetchPercentage] = useState<number>(0);
@@ -32,6 +35,15 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       console.log('[SessionManager] Progress update:', progress);
       setJobFetchProgress(progress);
       
+      // Handle browser portal messages
+      if (progress.includes('browser_portal_ready')) {
+        console.log('[SessionManager] Browser portal ready - opening portal');
+        setIsBrowserPortalOpen(true);
+      } else if (progress.includes('browser_portal_closed')) {
+        console.log('[SessionManager] Browser portal closed');
+        setIsBrowserPortalOpen(false);
+      }
+      
       // Handle session closure detection
       if (progress.includes('Browser session was closed')) {
         console.log('[SessionManager] Browser session closed detected, resetting session state');
@@ -39,6 +51,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         setWebsocketConnected(false);
         setJobFetchProgress('');
         setJobFetchPercentage(0);
+        setIsBrowserPortalOpen(false); // Close portal if session ends
         onSessionChange?.(false);
         return;
       }
@@ -66,10 +79,26 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         setJobFetchPercentage(0);
       }
     });
+
+    // Set up browser portal callback
+    sessionService.setBrowserPortalCallback((data: any) => {
+      console.log('[SessionManager] Browser portal data:', data);
+      setBrowserPortalData(data);
+      
+      // Handle portal state changes
+      if (data.type === 'browser_portal_ready') {
+        console.log('[SessionManager] Browser portal ready - opening portal');
+        setIsBrowserPortalOpen(true);
+      } else if (data.type === 'browser_portal_closed') {
+        console.log('[SessionManager] Browser portal closed');
+        setIsBrowserPortalOpen(false);
+      }
+    });
     
     return () => {
       clearInterval(interval);
       sessionService.setProgressCallback(null);
+      sessionService.setBrowserPortalCallback(null);
     };
   }, []);
 
@@ -367,6 +396,14 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           )}
         </div>
       )}
+      
+      {/* Browser Portal */}
+      <BrowserPortal
+        isOpen={isBrowserPortalOpen}
+        onClose={() => setIsBrowserPortalOpen(false)}
+        userId={sessionStatus.session?.userId || ''}
+        portalData={browserPortalData}
+      />
     </div>
   );
 } 

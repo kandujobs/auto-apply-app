@@ -21,6 +21,7 @@ class SessionService {
   private onProgressUpdate: ((progress: string) => void) | null = null;
   private onQuestionUpdate: ((question: any) => void) | null = null;
   private onApplicationCompleted: ((data: any) => void) | null = null;
+  private onBrowserPortalUpdate: ((data: any) => void) | null = null;
   private lastProgressMessage: string | null = null;
   private lastProgressTime: number = 0;
 
@@ -190,6 +191,54 @@ class SessionService {
             if (this.onApplicationCompleted) {
               this.onApplicationCompleted(data.data);
             }
+          } else if (data.type === 'browser_portal_ready') {
+            console.log('🖥️ Browser portal ready:', data.message);
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`browser_portal_ready: ${data.message}`);
+            }
+          } else if (data.type === 'browser_portal_closed') {
+            console.log('🖥️ Browser portal closed:', data.message);
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`browser_portal_closed: ${data.message}`);
+            }
+          } else if (data.type === 'browser_screenshot') {
+            console.log('📸 Browser screenshot received');
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`browser_screenshot: ${data.timestamp}`);
+            }
+          } else if (data.type === 'click_confirmed') {
+            console.log('✅ Click confirmed:', data);
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`click_confirmed: ${data.x},${data.y}`);
+            }
+          } else if (data.type === 'input_confirmed') {
+            console.log('✅ Input confirmed:', data);
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`input_confirmed: ${data.selector}`);
+            }
+          } else if (data.type === 'keypress_confirmed') {
+            console.log('✅ Key press confirmed:', data);
+            if (this.onBrowserPortalUpdate) {
+              this.onBrowserPortalUpdate(data);
+            }
+            if (this.onProgressUpdate) {
+              this.onProgressUpdate(`keypress_confirmed: ${data.key}`);
+            }
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -232,6 +281,10 @@ class SessionService {
 
   setApplicationCompletedCallback(callback: ((data: any) => void) | null) {
     this.onApplicationCompleted = callback;
+  }
+
+  setBrowserPortalCallback(callback: ((data: any) => void) | null) {
+    this.onBrowserPortalUpdate = callback;
   }
 
   sendAnswer(answer: string): void {
