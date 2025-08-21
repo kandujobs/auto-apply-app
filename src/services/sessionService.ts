@@ -27,16 +27,23 @@ class SessionService {
 
   async startSession(): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log('🚀 Starting session...');
+      
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
+        console.log('❌ No authenticated user found');
         return { success: false, error: 'User not authenticated' };
       }
 
       const userId = user.id;
+      console.log('👤 User ID:', userId);
 
       // Start session on backend - let the backend handle credential retrieval and decryption
-      const response = await fetch(getBackendEndpoint('/api/session/start'), {
+      const backendUrl = getBackendEndpoint('/api/session/start');
+      console.log('🌐 Backend URL:', backendUrl);
+      
+      const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,19 +51,28 @@ class SessionService {
         body: JSON.stringify({ userId }),
       });
 
+      console.log('📡 Backend response status:', response.status);
+
       if (!response.ok) {
         const error = await response.json();
+        console.log('❌ Backend error:', error);
         return { success: false, error: error.error || 'Failed to start session' };
       }
 
+      const responseData = await response.json();
+      console.log('✅ Backend session started:', responseData);
+
       this.sessionId = userId;
+      console.log('🔗 Session ID set to:', this.sessionId);
 
       // Connect WebSocket
+      console.log('🔌 Connecting WebSocket...');
       await this.connectWebSocket();
+      console.log('✅ WebSocket connected successfully');
 
       return { success: true };
     } catch (error) {
-      console.error('Error starting session:', error);
+      console.error('❌ Error starting session:', error);
       return { success: false, error: 'Failed to start session' };
     }
   }
@@ -118,25 +134,6 @@ class SessionService {
 
   private async connectWebSocket(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (!this.sessionId) {
-        reject(new Error('No session ID'));
-        return;
-      }
-
-      // Prevent multiple connections for the same session
-      if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-        console.log('🔌 WebSocket already connected, skipping new connection');
-        resolve();
-        return;
-      }
-
-      // Close any existing connection before creating a new one
-      if (this.websocket) {
-        console.log('🔌 Closing existing WebSocket connection');
-        this.websocket.close();
-        this.websocket = null;
-      }
-
       // Use the same host as the backend URL but with ws:// protocol
       const backendUrl = getBackendUrl();
       const wsUrl = backendUrl.replace('https://', 'wss://').replace('http://', 'ws://');
@@ -144,7 +141,14 @@ class SessionService {
       console.log('🔌 Connecting to WebSocket:', wsUrl);
       console.log('🔌 Backend URL:', backendUrl);
       
-      this.websocket = new WebSocket(wsUrl);
+      try {
+        this.websocket = new WebSocket(wsUrl);
+        console.log('🔌 WebSocket object created');
+      } catch (error) {
+        console.error('❌ Error creating WebSocket:', error);
+        reject(error);
+        return;
+      }
 
       this.websocket.onopen = () => {
         console.log('🔌 WebSocket connected, sending session connect message');
@@ -153,6 +157,7 @@ class SessionService {
           type: 'session_connect',
           userId: this.sessionId
         }));
+        console.log('📤 Session connect message sent');
         resolve();
       };
 
@@ -255,8 +260,8 @@ class SessionService {
         reject(error);
       };
 
-      this.websocket.onclose = () => {
-        console.log('🔌 WebSocket connection closed');
+      this.websocket.onclose = (event) => {
+        console.log('🔌 WebSocket connection closed:', event.code, event.reason);
         // Reset session state when WebSocket disconnects
         this.sessionId = null;
         this.websocket = null;
