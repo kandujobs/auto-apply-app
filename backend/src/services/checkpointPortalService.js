@@ -53,7 +53,7 @@ class CheckpointPortalService {
     }
   }
 
-  async waitForCompletion(userId, timeoutMs = 300000) { // 5 minutes default
+  async waitForCompletion(userId, timeoutMs = 300000) {
     return new Promise((resolve, reject) => {
       const portalData = this.activePortals.get(userId);
       if (!portalData) {
@@ -64,32 +64,31 @@ class CheckpointPortalService {
       const startTime = Date.now();
       const checkInterval = setInterval(async () => {
         try {
-          // Check if portal is still active by trying to access it
+          console.log(`🖥️ Checking checkpoint portal status for user: ${userId}`);
           const response = await fetch(`http://localhost:${process.env.PORT || 3001}/checkpoint/${portalData.token}`, {
             headers: {
               'x-user-id': userId
             }
           });
 
+          console.log(`🖥️ Checkpoint portal status response: ${response.status}`);
+
           if (response.status === 404) {
-            // Portal was closed (user clicked Done)
             clearInterval(checkInterval);
             this.activePortals.delete(userId);
-            
             console.log(`✅ Checkpoint portal completed for user: ${userId}`);
-            
-            // Notify frontend
             broadcastToUser(userId, {
               type: 'checkpoint_portal_completed',
               message: 'Security checkpoint completed'
             });
-            
             resolve();
           } else if (Date.now() - startTime > timeoutMs) {
-            // Timeout
             clearInterval(checkInterval);
             this.activePortals.delete(userId);
+            console.log(`⏰ Checkpoint portal timeout for user: ${userId}`);
             reject(new Error('Checkpoint portal timeout'));
+          } else {
+            console.log(`⏳ Checkpoint portal still active for user: ${userId}, waiting...`);
           }
         } catch (error) {
           console.error('❌ Error checking portal status:', error);
@@ -97,7 +96,7 @@ class CheckpointPortalService {
           this.activePortals.delete(userId);
           reject(error);
         }
-      }, 2000); // Check every 2 seconds
+      }, 2000);
     });
   }
 

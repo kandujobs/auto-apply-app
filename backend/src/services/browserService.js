@@ -191,11 +191,53 @@ async function initializeBrowserSession(userId, credentials) {
         const currentUrl = page.url();
         console.log(`📍 Current URL after checkpoint: ${currentUrl}`);
         
-        if (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork')) {
+        // Wait a bit longer for any redirects to complete
+        await page.waitForTimeout(3000);
+        
+        // Check the URL again after waiting
+        const finalUrl = page.url();
+        console.log(`📍 Final URL after checkpoint wait: ${finalUrl}`);
+        
+        // Check if we're still on a checkpoint page
+        if (finalUrl.includes('/checkpoint/')) {
+          console.log('❌ Still on checkpoint page after completion attempt');
+          console.log('⚠️ This might indicate the checkpoint wasn\'t properly completed');
+          throw new Error('Checkpoint not completed - still on checkpoint page');
+        }
+        
+        // Check if we're now logged in (more comprehensive check)
+        if (finalUrl.includes('/feed') || finalUrl.includes('/mynetwork') || 
+            finalUrl.includes('/mynetwork/invite/') || finalUrl.includes('/messaging/') ||
+            finalUrl.includes('/jobs/') || finalUrl.includes('/company/')) {
           console.log('✅ Successfully logged into LinkedIn after security checkpoint');
         } else {
           console.log('❌ Still not logged in after security checkpoint');
-          throw new Error('Login failed after security checkpoint');
+          console.log('📍 Current page title:', await page.title());
+          
+          // Try to detect if we're logged in by checking for common logged-in elements
+          try {
+            const isLoggedIn = await page.evaluate(() => {
+              // Check for elements that indicate we're logged in
+              return !!(
+                document.querySelector('[data-control-name="identity_welcome_message"]') ||
+                document.querySelector('[data-control-name="nav.settings"]') ||
+                document.querySelector('[data-control-name="nav.messaging"]') ||
+                document.querySelector('[data-control-name="nav.notifications"]') ||
+                document.querySelector('.global-nav') ||
+                document.querySelector('[aria-label="LinkedIn"]')
+              );
+            });
+            
+            if (isLoggedIn) {
+              console.log('✅ Login detected via page elements');
+            } else {
+              console.log('❌ No login indicators found on page');
+              throw new Error('Login failed after security checkpoint - no login indicators found');
+            }
+          } catch (error) {
+            console.log('❌ Error checking login status:', error.message);
+            throw new Error('Login failed after security checkpoint');
+          }
         }
       } else {
         // Only check for error messages if we don't have a security checkpoint
