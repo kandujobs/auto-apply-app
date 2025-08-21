@@ -1,5 +1,8 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const { browserService } = require('./browserService');
+const { decrypt } = require('../utils/encryption');
+const { supabase } = require('../config/database');
 
 // Session management
 const activeSessions = new Map(); // userId -> sessionData
@@ -20,9 +23,7 @@ const applicationQueue = {
   },
   
   async startEasyApplyWorker(userId) {
-    // This would be implemented to start the worker process
-    // For now, return a mock response
-    return { success: true, message: 'Worker started' };
+    return await browserService.startEasyApplyWorker(userId);
   }
 };
 
@@ -113,6 +114,121 @@ function updateSessionActivity(userId) {
   }
 }
 
+// Function to start a session with browser initialization
+async function startSessionWithBrowser(userId) {
+  try {
+    console.log(`🚀 Starting session with browser for user: ${userId}`);
+    
+    // Check if session already exists
+    if (isSessionActive(userId)) {
+      console.log(`⚠️ Session already active for user: ${userId}`);
+      return {
+        success: true,
+        message: 'Session already active',
+        sessionActive: true,
+        browserRunning: isBrowserRunningForSession(userId)
+      };
+    }
+    
+    // Get LinkedIn credentials for this user
+    const { data: credentials, error: credentialsError } = await supabase
+      .from('linkedin_credentials')
+      .select('email, password_encrypted')
+      .eq('id', userId)
+      .eq('is_active', true)
+      .single();
+
+    if (credentialsError || !credentials) {
+      return {
+        success: false,
+        error: 'LinkedIn credentials not found. Please add your LinkedIn credentials first.'
+      };
+    }
+    
+    // Decrypt password
+    const decryptedPassword = await decrypt(credentials.password_encrypted);
+    
+    // Create new session
+    const session = createSession(userId, null);
+    
+    // Initialize browser session
+    try {
+      const initResult = await browserService.initializeBrowserSession(userId, {
+        email: credentials.email,
+        password: decryptedPassword
+      });
+      
+      if (initResult.success) {
+        // Store browser instance in session
+        session.browserInstance = initResult.browser;
+        session.browserContext = initResult.context;
+        session.browserPage = initResult.page;
+        session.isBrowserRunning = true;
+        session.isLoggedIn = true;
+        session.lastActivity = Date.now();
+        
+        console.log(`✅ Session started successfully for user: ${userId}`);
+        
+        // Send progress update
+        browserService.sendProgressToSession(userId, '✅ Session ready - browser is logged in and ready for applications');
+    
+        return {
+          success: true,
+          message: 'Session started successfully',
+          sessionActive: true,
+          browserRunning: true,
+          ready: initResult.ready || false
+        };
+      } else {
+        throw new Error('Browser initialization failed');
+      }
+    } catch (error) {
+      console.error(`❌ Failed to start session for user ${userId}:`, error);
+      
+      // Clean up any partial session
+      try {
+        await endSession(userId);
+      } catch (cleanupError) {
+        console.error('Error cleaning up session:', cleanupError);
+      }
+      
+      return {
+        success: false,
+        error: 'Failed to start session',
+        details: error.message
+      };
+    }
+    
+  } catch (error) {
+    console.error('Error in startSessionWithBrowser:', error);
+    return {
+      success: false,
+      error: 'Failed to start session',
+      details: error.message
+    };
+  }
+}
+
+// Function to fetch jobs using the session browser
+async function fetchJobsForSession(userId, searchParams = {}) {
+  try {
+    return await browserService.fetchJobsWithSessionBrowser(userId, searchParams);
+  } catch (error) {
+    console.error('Error fetching jobs for session:', error);
+    throw error;
+  }
+}
+
+// Function to answer application questions
+async function answerQuestionForSession(userId, answer) {
+  try {
+    return await browserService.answerApplicationQuestion(userId, answer);
+  } catch (error) {
+    console.error('Error answering question for session:', error);
+    throw error;
+  }
+}
+
 // Periodic cleanup of stale sessions
 setInterval(() => {
   const now = Date.now();
@@ -143,6 +259,9 @@ const sessionManager = {
   isSessionActive,
   isBrowserRunningForSession,
   updateSessionActivity,
+  startSessionWithBrowser,
+  fetchJobsForSession,
+  answerQuestionForSession,
   activeSessions,
   jobFetchInProgress,
   jobFetchQueue,

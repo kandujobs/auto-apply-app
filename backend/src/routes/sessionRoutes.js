@@ -3,8 +3,31 @@ const router = express.Router();
 const { sessionManager } = require('../services/sessionManager');
 const { broadcastToUser } = require('../config/websocket');
 
-// Start a new session
+// Start a new session with browser
 router.post('/start', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Start session with browser initialization
+    const result = await sessionManager.startSessionWithBrowser(userId);
+    
+    if (result.success) {
+      res.json(result);
+    } else {
+      res.status(500).json(result);
+    }
+  } catch (error) {
+    console.error('Error starting session:', error);
+    res.status(500).json({ error: 'Failed to start session' });
+  }
+});
+
+// Start a new session (legacy - without browser)
+router.post('/start-legacy', async (req, res) => {
   try {
     const { userId } = req.body;
     
@@ -90,6 +113,7 @@ router.get('/status/:userId', async (req, res) => {
     res.json({
       isActive: session.isActive,
       isBrowserRunning: session.isBrowserRunning,
+      isLoggedIn: session.isLoggedIn,
       applicationProgress: session.applicationProgress,
       currentQuestion: session.currentQuestion,
       totalQuestions: session.totalQuestions,

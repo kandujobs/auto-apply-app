@@ -135,21 +135,34 @@ router.post('/fetch-jobs', async (req, res) => {
       message: 'Starting job fetch from LinkedIn'
     });
 
-    // Simulate job fetching (this would be replaced with actual LinkedIn scraping)
-    setTimeout(() => {
+    // Use the new browser service to fetch jobs
+    try {
+      const result = await sessionManager.fetchJobsForSession(userId, searchParams);
+      
       sessionManager.jobFetchInProgress.set(userId, false);
       
       broadcastToUser(userId, {
         type: 'job_fetch_completed',
         message: 'Job fetch completed',
-        jobCount: 0 // This would be the actual count
+        jobCount: result.count || 0
       });
-    }, 5000);
 
-    res.json({ 
-      message: 'Job fetch started',
-      status: 'in_progress'
-    });
+      res.json({ 
+        message: 'Job fetch completed',
+        status: 'completed',
+        jobs: result.jobs,
+        count: result.count
+      });
+    } catch (error) {
+      sessionManager.jobFetchInProgress.set(userId, false);
+      
+      broadcastToUser(userId, {
+        type: 'job_fetch_error',
+        message: error.message
+      });
+
+      res.status(500).json({ error: error.message });
+    }
   } catch (error) {
     console.error('Error starting job fetch:', error);
     sessionManager.jobFetchInProgress.set(userId, false);
@@ -463,26 +476,10 @@ router.post('/answer-question', async (req, res) => {
       return res.status(400).json({ error: 'User ID and answer are required' });
     }
 
-    const session = sessionManager.getSession(userId);
+    // Use the new browser service to answer questions
+    const result = await sessionManager.answerQuestionForSession(userId, answer);
     
-    if (!session) {
-      return res.status(400).json({ error: 'No active session found' });
-    }
-
-    // Process the answer (this would be implemented with actual question handling logic)
-    session.currentQuestionIndex++;
-    
-    broadcastToUser(userId, {
-      type: 'question_answered',
-      message: 'Answer submitted successfully',
-      currentQuestionIndex: session.currentQuestionIndex,
-      totalQuestions: session.totalQuestions
-    });
-
-    res.json({ 
-      message: 'Answer submitted successfully',
-      currentQuestionIndex: session.currentQuestionIndex
-    });
+    res.json(result);
   } catch (error) {
     console.error('Error submitting answer:', error);
     res.status(500).json({ error: 'Failed to submit answer' });
