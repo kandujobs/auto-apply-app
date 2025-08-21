@@ -24,24 +24,35 @@ const BrowserPortal: React.FC<BrowserPortalProps> = ({ isOpen, onClose, userId, 
   useEffect(() => {
     if (!portalData) return;
 
-    console.log('[BrowserPortal] Received portal data:', portalData);
+    console.log('[BrowserPortal] 📥 Received portal data:', portalData);
 
     if (portalData.type === 'browser_screenshot') {
+      console.log('[BrowserPortal] 📸 Setting screenshot');
       setScreenshot(`data:image/jpeg;base64,${portalData.screenshot}`);
       setLastUpdate(new Date());
     } else if (portalData.type === 'browser_portal_ready') {
-      console.log('🖥️ Browser portal ready');
+      console.log('[BrowserPortal] 🖥️ Browser portal ready');
     } else if (portalData.type === 'browser_portal_closed') {
-      console.log('🖥️ Browser portal closed');
+      console.log('[BrowserPortal] 🖥️ Browser portal closed');
       onClose();
     } else if (portalData.type === 'click_confirmed') {
-      console.log('✅ Click confirmed');
+      console.log('[BrowserPortal] ✅ Click confirmed');
     } else if (portalData.type === 'input_confirmed') {
-      console.log('✅ Input confirmed');
+      console.log('[BrowserPortal] ✅ Input confirmed');
     } else if (portalData.type === 'keypress_confirmed') {
-      console.log('✅ Key press confirmed');
+      console.log('[BrowserPortal] ✅ Key press confirmed');
     }
   }, [portalData, onClose]);
+
+  // Debug: Log when component renders
+  useEffect(() => {
+    console.log('[BrowserPortal] 🎨 Component render state:', { 
+      isOpen, 
+      hasScreenshot: !!screenshot, 
+      hasPortalData: !!portalData,
+      portalDataType: portalData?.type 
+    });
+  }, [isOpen, screenshot, portalData]);
 
   // Handle image click
   const handleImageClick = async (event: React.MouseEvent<HTMLImageElement>) => {

@@ -21,14 +21,32 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [jobFetchPercentage, setJobFetchPercentage] = useState<number>(0);
   const hasTriggeredSessionStart = React.useRef(false);
 
+  // Debug: Monitor browser portal state changes
+  useEffect(() => {
+    console.log('[SessionManager] 🔍 Browser portal state changed:', { 
+      isBrowserPortalOpen, 
+      hasData: !!browserPortalData,
+      websocketConnected,
+      sessionActive: sessionStatus.isActive,
+      sessionLoggedIn: sessionStatus.session?.isLoggedIn
+    });
+  }, [isBrowserPortalOpen, browserPortalData, websocketConnected, sessionStatus]);
+
   useEffect(() => {
     // Check initial session status
     checkSessionStatus();
+    
+    // Check if WebSocket is connected
+    const wsConnected = sessionService.isSessionActive();
+    console.log('[SessionManager] 🔌 Initial WebSocket connection status:', wsConnected);
+    setWebsocketConnected(wsConnected);
     
     // Set up periodic status check
     const interval = setInterval(() => {
       checkSessionStatus();
     }, 3000); // Check every 3 seconds
+    
+    console.log('[SessionManager] 🔧 Setting up WebSocket callbacks...');
     
     // Set up WebSocket progress tracking
     sessionService.setProgressCallback((progress: string) => {
@@ -82,20 +100,23 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
 
     // Set up browser portal callback
     sessionService.setBrowserPortalCallback((data: any) => {
-      console.log('[SessionManager] Browser portal data:', data);
+      console.log('[SessionManager] Browser portal data received:', data);
       setBrowserPortalData(data);
       
       // Handle portal state changes
       if (data.type === 'browser_portal_ready') {
-        console.log('[SessionManager] Browser portal ready - opening portal');
+        console.log('[SessionManager] 🖥️ Browser portal ready - setting isBrowserPortalOpen = true');
         setIsBrowserPortalOpen(true);
       } else if (data.type === 'browser_portal_closed') {
-        console.log('[SessionManager] Browser portal closed');
+        console.log('[SessionManager] 🖥️ Browser portal closed - setting isBrowserPortalOpen = false');
         setIsBrowserPortalOpen(false);
       }
     });
     
+    console.log('[SessionManager] ✅ WebSocket callbacks set up successfully');
+    
     return () => {
+      console.log('[SessionManager] 🧹 Cleaning up WebSocket callbacks...');
       clearInterval(interval);
       sessionService.setProgressCallback(null);
       sessionService.setBrowserPortalCallback(null);
