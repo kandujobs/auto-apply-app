@@ -15,13 +15,34 @@ const { checkPaymentService } = require('./middlewares/paymentMiddleware');
 
 const app = express();
 
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'https://app.kandujobs.com',
+    'https://kandujobs.com',
+    'http://localhost:3000',
+    'http://localhost:5173'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-user-id',
+    'X-Requested-With'
+  ],
+  optionsSuccessStatus: 200
+};
+
 // Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cors({
-  origin: ['https://app.kandujobs.com', 'http://localhost:3000'],
-  credentials: true
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(helmet());
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 // Simple health check (always available)
 app.get('/api/health', (req, res) => {
