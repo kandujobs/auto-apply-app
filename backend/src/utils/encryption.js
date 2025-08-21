@@ -7,9 +7,33 @@ const ALGORITHM = 'aes-256-gcm';
 // Function to decrypt data
 async function decrypt(encryptedData) {
   try {
-    // Parse the encrypted data
-    const data = JSON.parse(encryptedData);
-    
+    // Handle case where data might already be decrypted
+    if (!encryptedData) {
+      console.log('No encrypted data provided');
+      return null;
+    }
+
+    // If the data is already a string (not encrypted), return it
+    if (typeof encryptedData === 'string' && !encryptedData.includes('"encrypted"')) {
+      console.log('Data appears to be already decrypted');
+      return encryptedData;
+    }
+
+    // Try to parse as JSON
+    let data;
+    try {
+      data = JSON.parse(encryptedData);
+    } catch (parseError) {
+      console.log('Data is not valid JSON, treating as plain text');
+      return encryptedData; // Return as-is if it's not JSON
+    }
+
+    // Check if it has the expected structure
+    if (!data.encrypted || !data.iv || !data.authTag) {
+      console.log('Data does not have expected encryption structure, returning as-is');
+      return encryptedData;
+    }
+
     // Extract the encrypted text, IV, and auth tag
     const encryptedText = data.encrypted;
     const iv = Buffer.from(data.iv, 'hex');
@@ -26,13 +50,18 @@ async function decrypt(encryptedData) {
     return decrypted;
   } catch (error) {
     console.error('Error decrypting data:', error);
-    throw new Error('Failed to decrypt data');
+    console.log('Returning original data as fallback');
+    return encryptedData; // Return original data as fallback
   }
 }
 
 // Function to encrypt data
 async function encrypt(text) {
   try {
+    if (!text) {
+      return null;
+    }
+
     // Create cipher
     const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY);
     

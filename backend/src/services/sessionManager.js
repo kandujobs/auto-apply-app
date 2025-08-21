@@ -139,14 +139,38 @@ async function startSessionWithBrowser(userId) {
       .single();
 
     if (credentialsError || !credentials) {
+      console.error('Credentials error:', credentialsError);
+      console.log('Credentials data:', credentials);
       return {
         success: false,
         error: 'LinkedIn credentials not found. Please add your LinkedIn credentials first.'
       };
     }
     
+    console.log('Found credentials, attempting to decrypt password...');
+    console.log('Password encrypted format:', typeof credentials.password_encrypted);
+    console.log('Password encrypted preview:', credentials.password_encrypted ? credentials.password_encrypted.substring(0, 50) + '...' : 'null');
+    
     // Decrypt password
-    const decryptedPassword = await decrypt(credentials.password_encrypted);
+    let decryptedPassword;
+    try {
+      decryptedPassword = await decrypt(credentials.password_encrypted);
+      console.log('Password decrypted successfully');
+    } catch (decryptError) {
+      console.error('Failed to decrypt password:', decryptError);
+      return {
+        success: false,
+        error: 'Failed to decrypt LinkedIn credentials. Please update your credentials.',
+        details: decryptError.message
+      };
+    }
+    
+    if (!decryptedPassword) {
+      return {
+        success: false,
+        error: 'LinkedIn password could not be decrypted. Please update your credentials.'
+      };
+    }
     
     // Create new session
     const session = createSession(userId, null);
