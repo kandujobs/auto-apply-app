@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 
 // Encryption key (should be in environment variables in production)
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'your-secret-key-here-make-it-32-chars-long';
+// Generate a proper 32-byte key for AES-256
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 const ALGORITHM = 'aes-256-gcm';
 
 // Function to decrypt data
@@ -54,7 +55,7 @@ async function decrypt(encryptedData) {
     const authTag = Buffer.from(data.authTag, 'hex');
     
     // Create decipher
-    const decipher = crypto.createDecipher(ALGORITHM, ENCRYPTION_KEY);
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
     decipher.setAuthTag(authTag);
     
     // Decrypt
@@ -92,15 +93,17 @@ async function encrypt(text) {
       return null;
     }
 
+    // Generate a random IV
+    const iv = crypto.randomBytes(16);
+    
     // Create cipher
-    const cipher = crypto.createCipher(ALGORITHM, ENCRYPTION_KEY);
+    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
     
     // Encrypt
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     
-    // Get IV and auth tag
-    const iv = cipher.getAuthTag();
+    // Get auth tag
     const authTag = cipher.getAuthTag();
     
     // Return encrypted data
