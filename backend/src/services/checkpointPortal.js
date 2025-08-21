@@ -43,9 +43,21 @@ const sessions = new Map(); // token -> { browser, userId, expiresAt }
 function startDisplayStackOnce() {
   if (stackStarted) return;
   
-  // Only start if we're in a Docker environment with the required tools
-  if (!fs.existsSync('/usr/bin/Xvfb')) {
-    console.log('⚠️ Xvfb not available, skipping display stack startup');
+  // Check if required packages are available
+  const requiredPackages = ['Xvfb', 'fluxbox', 'x11vnc', 'websockify'];
+  const missingPackages = [];
+  
+  for (const pkg of requiredPackages) {
+    try {
+      require('child_process').execSync(`which ${pkg}`, { stdio: 'ignore' });
+    } catch (error) {
+      missingPackages.push(pkg);
+    }
+  }
+  
+  if (missingPackages.length > 0) {
+    console.warn(`⚠️ Missing required packages: ${missingPackages.join(', ')}`);
+    console.warn('⚠️ Checkpoint portal will use manual mode only');
     return;
   }
   
@@ -54,18 +66,50 @@ function startDisplayStackOnce() {
   const env = { ...process.env, DISPLAY };
 
   try {
-    const xvfb = spawn("Xvfb", [DISPLAY, "-screen", "0", "1920x1080x24"], { stdio: "inherit" });
+    console.log('🖥️ Starting Xvfb...');
+    const xvfb = spawn("Xvfb", [DISPLAY, "-screen", "0", "1920x1080x24"], { 
+      stdio: "inherit",
+      env 
+    });
     procs.push(xvfb);
 
-    // lightweight WM (prevents weird menu focus)
-    const flux = spawn("fluxbox", [], { stdio: "inherit", env });
-    procs.push(flux);
+    // Wait a moment for Xvfb to start
+    setTimeout(() => {
+      console.log('🖥️ Starting fluxbox...');
+      const flux = spawn("fluxbox", [], { 
+        stdio: "inherit", 
+        env 
+      });
+      procs.push(flux);
 
-    const x11 = spawn("x11vnc", ["-display", DISPLAY, "-nopw", "-forever", "-shared", "-rfbport", String(VNC_PORT)], { stdio: "inherit" });
-    procs.push(x11);
+      setTimeout(() => {
+        console.log('🖥️ Starting x11vnc...');
+        const x11 = spawn("x11vnc", [
+          "-display", DISPLAY, 
+          "-nopw", 
+          "-forever", 
+          "-shared", 
+          "-rfbport", String(VNC_PORT)
+        ], { 
+          stdio: "inherit",
+          env 
+        });
+        procs.push(x11);
 
-    const novnc = spawn("websockify", ["--web=/usr/share/novnc", String(NOVNC_PORT), `localhost:${VNC_PORT}`], { stdio: "inherit" });
-    procs.push(novnc);
+        setTimeout(() => {
+          console.log('🖥️ Starting websockify...');
+          const novnc = spawn("websockify", [
+            "--web=/usr/share/novnc", 
+            String(NOVNC_PORT), 
+            `localhost:${VNC_PORT}`
+          ], { 
+            stdio: "inherit",
+            env 
+          });
+          procs.push(novnc);
+        }, 1000);
+      }, 1000);
+    }, 1000);
 
     console.log('✅ Display stack started successfully');
   } catch (error) {
@@ -126,6 +170,18 @@ function registerCheckpointPortal(app) {
       if (!url) return res.status(400).json({ error: "url required" });
 
       startDisplayStackOnce();
+      
+      // Check if display stack started successfully
+      if (!stackStarted) {
+        console.log('⚠️ Display stack not available, using manual checkpoint mode');
+        return res.json({
+          token: randomUUID(),
+          portalUrl: null, // null indicates manual mode
+          currentUrl: url,
+          mode: 'manual'
+        });
+      }
+      
       const token = randomUUID();
       const browser = await chromium.launch({
         headless: false,
@@ -143,10 +199,18 @@ function registerCheckpointPortal(app) {
       });
 
       const portalUrl = `${req.protocol}://${req.get("host")}/checkpoint/${token}`;
-      res.json({ token, portalUrl });
+      res.json({ token, portalUrl, mode: 'portal' });
     } catch (e) {
       console.error("checkpoint/start error", e);
-      res.status(500).json({ error: "failed_to_start_portal" });
+      
+      // Fallback to manual mode if portal fails
+      console.log('⚠️ Portal failed, falling back to manual mode');
+      res.json({
+        token: randomUUID(),
+        portalUrl: null,
+        currentUrl: req.body?.url,
+        mode: 'manual'
+      });
     }
   });
 
