@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
-const { browserPortalService } = require('./browserPortalService');
+const { checkpointPortalService } = require('./checkpointPortalService');
 
 // Load Playwright conditionally
 let chromium;
@@ -100,205 +100,102 @@ async function initializeBrowserSession(userId, credentials) {
       });
       
       context = await browser.newContext({
-        viewport: { width: 1366, height: 768 },
-        locale: 'en-US',
-        timezoneId: 'America/New_York',
         userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       });
       
-      console.log('Browser initialized successfully');
-      
-      // Create new page
       page = await context.newPage();
       
-      // Add stealth scripts
-      await page.addInitScript(() => {
-        Object.defineProperty(navigator, 'webdriver', {
-          get: () => undefined,
-        });
-        
-        Object.defineProperty(navigator, 'plugins', {
-          get: () => [1, 2, 3, 4, 5],
-        });
-        
-        Object.defineProperty(navigator, 'languages', {
-          get: () => ['en-US', 'en'],
-        });
-      });
+      // Navigate to LinkedIn login
+      console.log('🌐 Navigating to LinkedIn login...');
+      await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
       
-      // Login to LinkedIn
-      console.log('Logging into LinkedIn...');
-      const email = credentials.email;
-      const password = credentials.password;
-      
-      console.log(`Using email: ${email}`);
-      
-      await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForTimeout(3000);
-
-      // Wait for login form to be visible
-      console.log('Waiting for login form...');
+      // Wait for login form to load
+      console.log('⏳ Waiting for login form...');
       await page.waitForSelector('#username', { timeout: 10000 });
       await page.waitForSelector('#password', { timeout: 10000 });
-
-      // Fill in email
-      console.log('Filling email...');
-      await page.waitForSelector('#username', { state: 'visible' });
-      await page.click('#username');
-      await page.waitForTimeout(500);
-      await page.fill('#username', email);
-      await page.waitForTimeout(1000);
-
-      // Fill in password
-      console.log('Filling password...');
-      await page.waitForSelector('#password', { state: 'visible' });
-      await page.click('#password');
-      await page.waitForTimeout(500);
-      await page.fill('#password', password);
-      await page.waitForTimeout(1000);
-
-      // Click sign in button - try multiple selectors
-      console.log('Clicking sign in button...');
-      const signInSelectors = [
-        'button[type="submit"]',
-        'button:has-text("Sign in")',
-        'button:has-text("Sign In")',
-        'input[type="submit"]',
-        '[data-litms-control-urn="login-submit"]'
-      ];
       
-      let signInClicked = false;
-      for (const selector of signInSelectors) {
-        try {
-          const button = await page.locator(selector).first();
-          if (await button.isVisible()) {
-            await button.click();
-            console.log(`Clicked sign in button with selector: ${selector}`);
-            signInClicked = true;
-            break;
-          }
-        } catch (error) {
-          console.log(`Selector ${selector} not found or not visible`);
-        }
-      }
+      // Fill in credentials
+      console.log('🔐 Filling in credentials...');
+      await page.fill('#username', credentials.email);
+      await page.fill('#password', credentials.password);
       
-      if (!signInClicked) {
-        console.log('Could not find sign in button, trying to press Enter...');
-        await page.keyboard.press('Enter');
-      }
+      // Click sign in button
+      console.log('🔘 Clicking sign in...');
+      await page.click('button[type="submit"]');
       
-      await page.waitForTimeout(5000);
-
-      // Check if login was successful - handle security checkpoints
-      console.log('🔍 Checking login status...');
+      // Wait for navigation
+      console.log('⏳ Waiting for login response...');
+      await page.waitForLoadState('domcontentloaded');
       
-      // Wait a bit longer for potential security checkpoints
-      await page.waitForTimeout(5000);
-      
+      // Get current URL after login attempt
       const loginUrl = page.url();
-      console.log(`Current URL after login: ${loginUrl}`);
+      console.log(`📍 Current URL after login: ${loginUrl}`);
       
-      // Take a screenshot for debugging
-      try {
-        await page.screenshot({ path: '/tmp/linkedin-login-debug.png' });
-        console.log('📸 Screenshot saved for debugging');
-      } catch (error) {
-        console.log('Could not take screenshot:', error.message);
-      }
-      
-      // Check for security checkpoint pages and URLs FIRST (before error detection)
+      // Check for security checkpoints first (before checking for errors)
       const securityCheckpointSelectors = [
-        'input[name="captcha"]',
-        'input[name="challenge"]',
-        'input[name="verification"]',
-        'button:has-text("Verify")',
-        'button:has-text("Continue")',
-        'input[placeholder*="code"]',
-        'input[placeholder*="verification"]'
+        'div[data-test-id="challenge-dialog"]',
+        'div[data-test-id="security-verification"]',
+        'div[data-test-id="captcha-challenge"]',
+        'iframe[src*="recaptcha"]',
+        'div[data-test-id="challenge"]',
+        'div[data-test-id="verification"]',
+        'div[data-test-id="security"]',
+        'div[data-test-id="checkpoint"]',
+        'div[data-test-id="challenge-dialog"]',
+        'div[data-test-id="security-verification"]',
+        'div[data-test-id="captcha-challenge"]',
+        'iframe[src*="recaptcha"]',
+        'div[data-test-id="challenge"]',
+        'div[data-test-id="verification"]',
+        'div[data-test-id="security"]',
+        'div[data-test-id="checkpoint"]'
       ];
       
       let hasSecurityCheckpoint = false;
       
-      // Check if URL contains checkpoint
-      if (loginUrl.includes('/checkpoint/') || loginUrl.includes('/challenge/')) {
-        hasSecurityCheckpoint = true;
+      // Check URL for security checkpoint indicators
+      if (loginUrl.includes('/checkpoint') || loginUrl.includes('/challenge') || loginUrl.includes('/security')) {
         console.log(`🛡️ Security checkpoint detected in URL: ${loginUrl}`);
+        hasSecurityCheckpoint = true;
       }
       
-      // Also check for checkpoint elements
+      // Check for security checkpoint elements on the page
       for (const selector of securityCheckpointSelectors) {
         try {
           const element = await page.locator(selector).first();
           if (await element.isVisible()) {
-            hasSecurityCheckpoint = true;
             console.log(`🛡️ Security checkpoint detected: ${selector}`);
+            hasSecurityCheckpoint = true;
             break;
           }
         } catch (error) {
-          // Element not found, continue
+          // Element not found, continue checking
         }
       }
       
       // If we have a security checkpoint, handle it immediately (don't check for errors)
       if (hasSecurityCheckpoint) {
         console.log('🛡️ LinkedIn security checkpoint detected. Please complete it manually...');
-        console.log('⏳ Starting browser portal for user interaction...');
+        console.log('⏳ Starting checkpoint portal for user interaction...');
         
-        // Start browser portal for user interaction
-        await browserPortalService.startPortal(userId, page);
+        // Start checkpoint portal for user interaction
+        await checkpointPortalService.startPortal(userId, loginUrl);
         
         // Wait for user to complete security checkpoint
-        let attempts = 0;
-        const maxAttempts = 60; // Wait up to 5 minutes
+        console.log('⏳ Waiting for user to complete security checkpoint...');
+        await checkpointPortalService.waitForCompletion(userId, 300000); // 5 minutes timeout
         
-        while (attempts < maxAttempts) {
-          await page.waitForTimeout(5000); // Check every 5 seconds
-          attempts++;
-          
-          const currentUrl = page.url();
-          console.log(`Checking login status (attempt ${attempts}/${maxAttempts}): ${currentUrl}`);
-          
-          // Check if we're now on feed or mynetwork
-          if (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork')) {
-            console.log('✅ Successfully logged into LinkedIn after security checkpoint');
-            
-            // Stop the browser portal
-            await browserPortalService.stopPortal(userId);
-            
-            break;
-          }
-          
-          // Check if security checkpoint is still present
-          let stillHasCheckpoint = false;
-          for (const selector of securityCheckpointSelectors) {
-            try {
-              const element = await page.locator(selector).first();
-              if (await element.isVisible()) {
-                stillHasCheckpoint = true;
-                break;
-              }
-            } catch (error) {
-              // Element not found
-            }
-          }
-          
-          if (!stillHasCheckpoint && (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork'))) {
-            console.log('✅ Successfully logged into LinkedIn after security checkpoint');
-            
-            // Stop the browser portal
-            await browserPortalService.stopPortal(userId);
-            
-            break;
-          }
-          
-          if (attempts >= maxAttempts) {
-            console.log('⏰ Timeout waiting for security checkpoint completion');
-            
-            // Stop the browser portal
-            await browserPortalService.stopPortal(userId);
-            
-            throw new Error('Security checkpoint timeout');
-          }
+        console.log('✅ Security checkpoint completed by user');
+        
+        // Check if we're now logged in
+        const currentUrl = page.url();
+        console.log(`📍 Current URL after checkpoint: ${currentUrl}`);
+        
+        if (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork')) {
+          console.log('✅ Successfully logged into LinkedIn after security checkpoint');
+        } else {
+          console.log('❌ Still not logged in after security checkpoint');
+          throw new Error('Login failed after security checkpoint');
         }
       } else {
         // Only check for error messages if we don't have a security checkpoint
