@@ -155,9 +155,31 @@ async function startSessionWithBrowser(userId) {
     let decryptedPassword;
     try {
       decryptedPassword = await decrypt(credentials.password_encrypted);
+      console.log('Password decryption attempted');
+      
+      if (!decryptedPassword) {
+        console.error('❌ Password decryption returned null - likely wrong data format');
+        return {
+          success: false,
+          error: 'LinkedIn credentials are in an invalid format. Please update your credentials in the database.',
+          details: 'Password decryption failed - data format issue'
+        };
+      }
+      
       console.log('Password decrypted successfully');
-      console.log(`Password length: ${decryptedPassword ? decryptedPassword.length : 0} characters`);
-      console.log(`Password preview: ${decryptedPassword ? decryptedPassword.substring(0, 3) + '***' : 'null'}`);
+      console.log(`Password length: ${decryptedPassword.length} characters`);
+      console.log(`Password preview: ${decryptedPassword.substring(0, 3) + '***'}`);
+      
+      // Validate password length for LinkedIn
+      if (decryptedPassword.length > 50) {
+        console.error(`❌ Password is unreasonably long (${decryptedPassword.length} chars) - this is not a real password`);
+        return {
+          success: false,
+          error: 'LinkedIn credentials are corrupted. Please update your credentials.',
+          details: `Password is too long (${decryptedPassword.length} chars) - likely wrong data format`
+        };
+      }
+      
     } catch (decryptError) {
       console.error('Failed to decrypt password:', decryptError);
       return {
@@ -172,12 +194,6 @@ async function startSessionWithBrowser(userId) {
         success: false,
         error: 'LinkedIn password could not be decrypted. Please update your credentials.'
       };
-    }
-    
-    // Validate password length for LinkedIn
-    if (decryptedPassword.length > 200) {
-      console.log(`Password is too long (${decryptedPassword.length} chars), truncating to 200 characters`);
-      decryptedPassword = decryptedPassword.substring(0, 200);
     }
     
     // Create new session
