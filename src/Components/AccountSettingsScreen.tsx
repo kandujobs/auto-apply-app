@@ -331,13 +331,13 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <button 
-                  onClick={goBack} 
+          <button 
+            onClick={goBack} 
                   className="text-purple-600 hover:text-purple-700 font-medium flex items-center space-x-1 transition-colors text-sm"
                 >
                   <span className="text-base">←</span>
                   <span>Back</span>
-                </button>
+          </button>
                 <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Account Settings</h1>
               </div>
               {saveStatus === 'saving' && (
@@ -356,10 +356,10 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                   <span>✗ Error</span>
                 </div>
               )}
-            </div>
+        </div>
             
-            {/* Subtle refresh indicator */}
-            {isRefreshing && (
+        {/* Subtle refresh indicator */}
+        {isRefreshing && (
               <div className="text-xs text-gray-500 flex items-center space-x-2 mb-4">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-purple-600"></div>
                 <span>Refreshing...</span>
@@ -387,10 +387,10 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                     description="Manage your personal details and contact information"
                     icon={FiUser}
                   >
-                    <BasicInfoSection
-                      profile={profile}
-                      editingProfile={editingProfile}
-                      onUpdate={(field, value) => setEditingProfile(prev => prev ? { ...prev, [field]: value } : prev)}
+        <BasicInfoSection
+          profile={profile}
+          editingProfile={editingProfile}
+          onUpdate={(field, value) => setEditingProfile(prev => prev ? { ...prev, [field]: value } : prev)}
                       onSave={handleSaveProfile}
                     />
                   </SettingItem>
@@ -483,7 +483,7 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                     </SettingItem>
                   )}
                 </div>
-              </div>
+          </div>
 
               {/* Legal Section */}
               <div>
@@ -491,16 +491,16 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                   <FiFileText className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                   <span>Legal</span>
                 </h2>
-                <div className="space-y-3">
+          <div className="space-y-3">
                   <SettingItem
                     title="Privacy Policy"
                     description="Read our privacy policy to understand how we handle your data"
                     icon={FiFileText}
                   >
-                    <a
-                      href="https://kandujobs.com/privacy-policy"
-                      target="_blank"
-                      rel="noopener noreferrer"
+            <a
+              href="https://kandujobs.com/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
                     >
                       View Privacy Policy
@@ -512,17 +512,17 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                     description="Review our terms of service and user agreement"
                     icon={FiFileText}
                   >
-                    <a
-                      href="https://kandujobs.com/terms-of-service"
-                      target="_blank"
-                      rel="noopener noreferrer"
+            <a
+              href="https://kandujobs.com/terms-of-service"
+              target="_blank"
+              rel="noopener noreferrer"
                       className="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                    >
+            >
                       View Terms of Service
-                    </a>
+            </a>
                   </SettingItem>
-                </div>
-              </div>
+          </div>
+        </div>
 
               {/* Danger Zone Section */}
               <div>
@@ -530,68 +530,68 @@ const AccountSettingsScreen: React.FC<AccountSettingsScreenProps> = ({
                   <FiAlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                   <span>Danger Zone</span>
                 </h2>
-                <div className="space-y-3">
+          <div className="space-y-3">
                   <SettingItem
                     title="Delete Account"
                     description="Permanently delete your account and all associated data. This action cannot be undone."
                     icon={FiTrash2}
                     className="border-red-200 bg-red-50"
                   >
-                    <button
-                      onClick={() => setShowDeleteConfirmation(true)}
-                      disabled={isDeleting}
+            <button
+              onClick={() => setShowDeleteConfirmation(true)}
+              disabled={isDeleting}
                       className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors"
-                    >
+            >
                       <FiTrash2 className="w-4 h-4 mr-2" />
-                      {isDeleting ? 'Deleting Account...' : 'Delete Account'}
-                    </button>
+              {isDeleting ? 'Deleting Account...' : 'Delete Account'}
+            </button>
                   </SettingItem>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <Notification
-        message="Account info saved!"
-        isVisible={showEditNotification}
-        onClose={() => setShowEditNotification(false)}
-        duration={2000}
-      />
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirmation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <FiAlertTriangle className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900">Delete Account</h3>
-            </div>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirmation(false)}
-                disabled={isDeleting}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
           </div>
         </div>
-      )}
+
+        <Notification
+          message="Account info saved!"
+          isVisible={showEditNotification}
+          onClose={() => setShowEditNotification(false)}
+          duration={2000}
+        />
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <FiAlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900">Delete Account</h3>
+              </div>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={isDeleting}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

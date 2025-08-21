@@ -285,6 +285,19 @@ class PaymentService {
 
   // Get user access level
   async getUserAccess(userId) {
+    // Bypass access checks in development mode for testing
+    if (process.env.NODE_ENV === 'development' || process.env.BYPASS_PAYMENT_CHECKS === 'true') {
+      console.log('🔓 Bypassing user access check for development/testing - granting access to user:', userId);
+      return { 
+        hasAccess: true, 
+        subscription: {
+          id: 'dev-mock-subscription',
+          status: 'active',
+          trial_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+        }
+      };
+    }
+
     try {
       const { data: profile } = await supabase
         .from('profiles')

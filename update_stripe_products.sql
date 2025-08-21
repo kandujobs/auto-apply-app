@@ -55,3 +55,4 @@ SELECT
     priority_support
 FROM subscription_plans 
 ORDER BY price_monthly ASC;
+

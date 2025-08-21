@@ -161,6 +161,21 @@ class PaymentService {
 
   // Check user access
   async checkUserAccess(userId: string): Promise<UserAccess> {
+    // Temporary bypass for development/testing
+    if (process.env.NODE_ENV === 'development' || process.env.VITE_BYPASS_PAYMENT_CHECKS === 'true') {
+      console.log('🔓 Frontend: Bypassing user access check for development/testing - granting access to user:', userId);
+      return {
+        hasAccess: true,
+        type: 'trial',
+        data: {
+          id: 'dev-mock-subscription',
+          status: 'active',
+          trial_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+        },
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+    }
+
     try {
       const response = await fetch(`${this.backendUrl}/api/payment/user-access/${userId}`);
       if (!response.ok) {

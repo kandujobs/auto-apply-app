@@ -132,3 +132,4 @@ If you encounter issues:
 1. Check Supabase documentation: https://supabase.com/docs/guides/auth/social-login/auth-google
 2. Review Google OAuth documentation: https://developers.google.com/identity/protocols/oauth2
 3. Check browser console and Supabase logs for detailed error messages
+
