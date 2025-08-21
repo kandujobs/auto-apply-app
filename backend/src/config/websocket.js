@@ -34,7 +34,7 @@ function setupWebSocket(wss) {
             ws.userId = userId;
             console.log(`✅ Client connected to session for user: ${userId}, ws.userId set to: ${ws.userId}`);
             
-            // Send current status
+            // Send session status to confirm connection
             ws.send(JSON.stringify({
               type: 'session_status',
               status: session.isActive ? 'active' : 'inactive',
@@ -44,7 +44,7 @@ function setupWebSocket(wss) {
               totalQuestions: session.totalQuestions
             }));
             
-            console.log(`✅ Client connected to session for user: ${userId}`);
+            console.log(`✅ Session status sent to client for user: ${userId}`);
           } else {
             console.log(`❌ Session not found for user: ${userId}`);
             ws.send(JSON.stringify({
