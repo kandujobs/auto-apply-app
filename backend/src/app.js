@@ -12,6 +12,9 @@ const healthRoutes = require('./routes/healthRoutes');
 const { errorHandler } = require('./middlewares/errorHandler');
 const { checkPaymentService } = require('./middlewares/paymentMiddleware');
 
+// Import checkpoint portal
+const { registerCheckpointPortal } = require('../checkpoint-portal.js');
+
 const app = express();
 
 // Request logging middleware
@@ -80,6 +83,9 @@ app.post('/api/test-cors', (req, res) => {
     body: req.body
   });
 });
+
+// Register checkpoint portal
+registerCheckpointPortal(app);
 
 // Routes
 app.use('/api/session', sessionRoutes);

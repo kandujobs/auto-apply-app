@@ -139,36 +139,75 @@ async function initializeBrowserSession(userId, credentials) {
     // Check if we're on a checkpoint page
     if (currentUrl.includes('/checkpoint/')) {
       console.log('🛡️ LinkedIn security checkpoint detected');
-      console.log('⚠️ Manual intervention required - please complete the checkpoint in the browser');
+      console.log('🖥️ Starting checkpoint portal for user interaction...');
       
-      // Wait for user to complete checkpoint manually
-      console.log('⏳ Waiting for manual checkpoint completion...');
+      // Start checkpoint portal
+      const response = await fetch(`http://localhost:${process.env.PORT || 3001}/checkpoint/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId
+        },
+        body: JSON.stringify({
+          url: currentUrl
+        })
+      });
       
-      // Wait up to 5 minutes for the user to complete the checkpoint
+      if (!response.ok) {
+        throw new Error('Failed to start checkpoint portal');
+      }
+      
+      const portalData = await response.json();
+      console.log('✅ Checkpoint portal started:', portalData.portalUrl);
+      
+      // Notify frontend about checkpoint portal
+      broadcastToUser(userId, {
+        type: 'checkpoint_portal_ready',
+        portalUrl: portalData.portalUrl,
+        message: 'Security checkpoint portal is ready'
+      });
+      
+      // Wait for user to complete checkpoint
+      console.log('⏳ Waiting for user to complete security checkpoint...');
+      
+      // Poll for portal completion
       const startTime = Date.now();
       const timeout = 5 * 60 * 1000; // 5 minutes
       
       while (Date.now() - startTime < timeout) {
-        await page.waitForTimeout(5000); // Check every 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds
         
-        const url = page.url();
-        console.log(`📍 Current URL: ${url}`);
-        
-        // Check if we're no longer on a checkpoint page
-        if (!url.includes('/checkpoint/')) {
-          console.log('✅ Checkpoint appears to be completed');
-          break;
+        try {
+          const statusResponse = await fetch(`http://localhost:${process.env.PORT || 3001}/checkpoint/${portalData.token}`, {
+            headers: {
+              'x-user-id': userId
+            }
+          });
+          
+          if (statusResponse.status === 404) {
+            console.log('✅ Checkpoint portal completed');
+            break;
+          }
+        } catch (error) {
+          console.log('⏳ Still waiting for checkpoint completion...');
         }
       }
       
-      // Final check after timeout or completion
+      // Check if we're still on a checkpoint page
+      await page.waitForTimeout(3000);
       const finalUrl = page.url();
-      console.log(`📍 Final URL after checkpoint wait: ${finalUrl}`);
+      console.log(`📍 Final URL after checkpoint: ${finalUrl}`);
       
       if (finalUrl.includes('/checkpoint/')) {
-        console.log('❌ Still on checkpoint page after timeout');
-        throw new Error('Checkpoint not completed within timeout period');
+        console.log('❌ Still on checkpoint page after completion attempt');
+        throw new Error('Checkpoint not completed - still on checkpoint page');
       }
+      
+      // Notify frontend that checkpoint is completed
+      broadcastToUser(userId, {
+        type: 'checkpoint_portal_completed',
+        message: 'Security checkpoint completed'
+      });
     }
     
     // Verify we're logged in
