@@ -165,12 +165,12 @@ async function endSession(userId) {
 
 function isSessionActive(userId) {
   const session = activeSessions.get(userId);
-  return session && session.isActive;
+  return !!(session && session.isActive);
 }
 
 function isBrowserRunningForSession(userId) {
   const session = activeSessions.get(userId);
-  return session && session.isBrowserRunning;
+  return !!(session && session.isBrowserRunning);
 }
 
 // WebSocket connection handling
@@ -1977,7 +1977,7 @@ app.post('/api/test-apply', async (req, res) => {
     const { decrypt } = require('./encryption');
     
     // Decrypt the password using secure AES-256-GCM encryption
-    const decryptedPassword = decrypt(credentials.password_encrypted);
+    const decryptedPassword = await decrypt(credentials.password_encrypted);
 
     // Check if job is already being processed in the database
     const { data: existingJob, error: checkError } = await supabase
@@ -2793,7 +2793,7 @@ app.post('/api/session/start', async (req, res) => {
     }
     
     // Decrypt password using secure AES-256-GCM encryption
-    const decryptedPassword = decrypt(credentials.password_encrypted);
+    const decryptedPassword = await decrypt(credentials.password_encrypted);
     
     // Create new session
     const session = createSession(userId, null);
@@ -2960,10 +2960,10 @@ app.get('/api/session/status/:userId', async (req, res) => {
       session: session ? {
         userId: session.userId,
         isLoggedIn: session.isLoggedIn,
-        lastActivity: new Date(session.lastActivity).toISOString(),
-        applicationProgress: session.applicationProgress,
-        currentQuestionIndex: session.currentQuestionIndex,
-        totalQuestions: session.totalQuestions
+        lastActivity: session.lastActivity ? new Date(session.lastActivity).toISOString() : null,
+        applicationProgress: session.applicationProgress || '',
+        currentQuestionIndex: session.currentQuestionIndex || 0,
+        totalQuestions: session.totalQuestions || 0
       } : null,
       message: sessionActive ? 'Session is active' : 'No active session'
     });
@@ -3006,10 +3006,10 @@ app.post('/api/session/status', async (req, res) => {
       session: session ? {
         userId: session.userId,
         isLoggedIn: session.isLoggedIn,
-        lastActivity: new Date(session.lastActivity).toISOString(),
-        applicationProgress: session.applicationProgress,
-        currentQuestionIndex: session.currentQuestionIndex,
-        totalQuestions: session.totalQuestions
+        lastActivity: session.lastActivity ? new Date(session.lastActivity).toISOString() : null,
+        applicationProgress: session.applicationProgress || '',
+        currentQuestionIndex: session.currentQuestionIndex || 0,
+        totalQuestions: session.totalQuestions || 0
       } : null,
       message: sessionActive ? 'Session is active' : 'No active session'
     });
