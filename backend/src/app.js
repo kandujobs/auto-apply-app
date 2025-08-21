@@ -7,7 +7,6 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const healthRoutes = require('./routes/healthRoutes');
-const browserPortalRoutes = require('./routes/browserPortalRoutes');
 
 // Import middleware
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -82,22 +81,11 @@ app.post('/api/test-cors', (req, res) => {
   });
 });
 
-// Register checkpoint portal with error handling
-try {
-  const { registerCheckpointPortal } = require('./services/checkpointPortal');
-  registerCheckpointPortal(app);
-  console.log('✅ Checkpoint portal registered successfully');
-} catch (error) {
-  console.warn('⚠️ Failed to register checkpoint portal:', error.message);
-  console.log('⚠️ Continuing without checkpoint portal functionality');
-}
-
 // Routes
 app.use('/api/session', sessionRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api', healthRoutes);
-app.use('/api/browser-portal', browserPortalRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
