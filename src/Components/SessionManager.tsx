@@ -291,17 +291,15 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
               >
                 {isLoading ? 'Starting...' : 'Start Session'}
               </button>
-              {/* Debug button - only show in development */}
-              {(process.env.NODE_ENV === 'development' || process.env.VITE_BYPASS_PAYMENT_CHECKS === 'true') && (
-                <button
-                  onClick={handleDebugStartSession}
-                  disabled={isLoading || isInitializing}
-                  className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
-                  title="Debug mode: Bypasses payment checks"
-                >
-                  {isLoading ? 'Starting...' : '🔓 Debug Start'}
-                </button>
-              )}
+              {/* Debug button - always show for testing */}
+              <button
+                onClick={handleDebugStartSession}
+                disabled={isLoading || isInitializing}
+                className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                title="Debug mode: Bypasses payment checks"
+              >
+                {isLoading ? 'Starting...' : '🔓 Debug Start'}
+              </button>
             </>
           ) : (
             <button
