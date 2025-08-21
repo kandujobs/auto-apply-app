@@ -136,6 +136,9 @@ class SessionService {
   private async connectWebSocket(): Promise<void> {
     console.log('🔌 [CONNECT] Starting connectWebSocket method...');
     
+    // Log the environment variable directly
+    console.log('🔌 [CONNECT] VITE_BACKEND_URL from env:', import.meta.env.VITE_BACKEND_URL);
+    
     return new Promise((resolve, reject) => {
       console.log('🔌 [CONNECT] Inside Promise constructor...');
       
