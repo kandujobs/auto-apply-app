@@ -156,6 +156,8 @@ async function startSessionWithBrowser(userId) {
     try {
       decryptedPassword = await decrypt(credentials.password_encrypted);
       console.log('Password decrypted successfully');
+      console.log(`Password length: ${decryptedPassword ? decryptedPassword.length : 0} characters`);
+      console.log(`Password preview: ${decryptedPassword ? decryptedPassword.substring(0, 3) + '***' : 'null'}`);
     } catch (decryptError) {
       console.error('Failed to decrypt password:', decryptError);
       return {
@@ -170,6 +172,12 @@ async function startSessionWithBrowser(userId) {
         success: false,
         error: 'LinkedIn password could not be decrypted. Please update your credentials.'
       };
+    }
+    
+    // Validate password length for LinkedIn
+    if (decryptedPassword.length > 200) {
+      console.log(`Password is too long (${decryptedPassword.length} chars), truncating to 200 characters`);
+      decryptedPassword = decryptedPassword.substring(0, 200);
     }
     
     // Create new session

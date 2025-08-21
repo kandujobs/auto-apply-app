@@ -16,6 +16,11 @@ async function decrypt(encryptedData) {
     // If the data is already a string (not encrypted), return it
     if (typeof encryptedData === 'string' && !encryptedData.includes('"encrypted"')) {
       console.log('Data appears to be already decrypted');
+      // Ensure it's not too long for LinkedIn (max 200 chars)
+      if (encryptedData.length > 200) {
+        console.log('Decrypted data is too long, truncating to first 200 characters');
+        return encryptedData.substring(0, 200);
+      }
       return encryptedData;
     }
 
@@ -25,12 +30,21 @@ async function decrypt(encryptedData) {
       data = JSON.parse(encryptedData);
     } catch (parseError) {
       console.log('Data is not valid JSON, treating as plain text');
+      // If it's not JSON, it might be plain text password
+      if (encryptedData.length > 200) {
+        console.log('Plain text data is too long, truncating to first 200 characters');
+        return encryptedData.substring(0, 200);
+      }
       return encryptedData; // Return as-is if it's not JSON
     }
 
     // Check if it has the expected structure
     if (!data.encrypted || !data.iv || !data.authTag) {
       console.log('Data does not have expected encryption structure, returning as-is');
+      if (encryptedData.length > 200) {
+        console.log('Data is too long, truncating to first 200 characters');
+        return encryptedData.substring(0, 200);
+      }
       return encryptedData;
     }
 
@@ -47,11 +61,27 @@ async function decrypt(encryptedData) {
     let decrypted = decipher.update(encryptedText, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     
+    // Ensure the decrypted password is not too long for LinkedIn
+    if (decrypted.length > 200) {
+      console.log('Decrypted password is too long, truncating to first 200 characters');
+      decrypted = decrypted.substring(0, 200);
+    }
+    
+    console.log(`Decrypted password length: ${decrypted.length} characters`);
+    
     return decrypted;
   } catch (error) {
     console.error('Error decrypting data:', error);
     console.log('Returning original data as fallback');
-    return encryptedData; // Return original data as fallback
+    // If decryption fails, try to return a reasonable length string
+    if (encryptedData && typeof encryptedData === 'string') {
+      if (encryptedData.length > 200) {
+        console.log('Fallback data is too long, truncating to first 200 characters');
+        return encryptedData.substring(0, 200);
+      }
+      return encryptedData;
+    }
+    return null;
   }
 }
 
