@@ -167,6 +167,55 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     }
   };
 
+  // Debug function that bypasses payment checks
+  const handleDebugStartSession = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      console.log('🔓 [DEBUG] Starting session with payment bypass...');
+      
+      // First, check if user has LinkedIn credentials
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData?.user) {
+        setError('User not authenticated');
+        return;
+      }
+
+      const { data: credentials, error: credentialsError } = await supabase
+        .from('linkedin_credentials')
+        .select('id')
+        .eq('id', userData.user.id)
+        .eq('is_active', true)
+        .single();
+
+      if (credentialsError || !credentials) {
+        setError('LinkedIn credentials not found. Please add your LinkedIn credentials first.');
+        return;
+      }
+
+      // Skip payment check for debug mode
+      console.log('🔓 [DEBUG] Skipping payment check, proceeding with session start...');
+
+      // Start session directly
+      const result = await sessionService.startSession();
+      if (result.success) {
+        console.log('🔓 [DEBUG] Session started successfully with payment bypass');
+        // Wait a moment for WebSocket to connect, then check status
+        setTimeout(() => {
+          checkSessionStatus();
+        }, 1000);
+      } else {
+        setError(result.error || 'Failed to start session');
+      }
+    } catch (error) {
+      console.error('Error starting debug session:', error);
+      setError('Failed to start debug session');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleStopSession = async () => {
     setIsLoading(true);
     setError(null);
@@ -234,13 +283,26 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         <div className="flex space-x-2">
           {!isActuallyActive ? (
-            <button
-              onClick={handleStartSession}
-              disabled={isLoading || isInitializing}
-              className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              {isLoading ? 'Starting...' : 'Start Session'}
-            </button>
+            <>
+              <button
+                onClick={handleStartSession}
+                disabled={isLoading || isInitializing}
+                className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                {isLoading ? 'Starting...' : 'Start Session'}
+              </button>
+              {/* Debug button - only show in development */}
+              {(process.env.NODE_ENV === 'development' || process.env.VITE_BYPASS_PAYMENT_CHECKS === 'true') && (
+                <button
+                  onClick={handleDebugStartSession}
+                  disabled={isLoading || isInitializing}
+                  className="bg-purple-500 hover:bg-purple-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                  title="Debug mode: Bypasses payment checks"
+                >
+                  {isLoading ? 'Starting...' : '🔓 Debug Start'}
+                </button>
+              )}
+            </>
           ) : (
             <button
               onClick={handleStopSession}
