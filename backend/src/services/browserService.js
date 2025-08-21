@@ -4,17 +4,6 @@ const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
 const { chromium } = require('playwright');
 
-// Load Playwright conditionally
-let chromium;
-try {
-  const playwright = require('playwright');
-  chromium = playwright.chromium;
-  console.log('✅ Playwright loaded successfully');
-} catch (error) {
-  console.warn('⚠️ Playwright not available:', error.message);
-  console.log('🔧 Auto-apply features will be disabled');
-}
-
 // Global variables to track application status
 let currentApplicationStatus = 'idle';
 let currentApplicationProgress = '';
