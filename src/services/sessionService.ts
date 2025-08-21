@@ -26,6 +26,7 @@ class SessionService {
   private lastProgressTime: number = 0;
 
   async startSession(): Promise<{ success: boolean; error?: string }> {
+    console.log('🚀 [START] startSession method called');
     try {
       console.log('🚀 Starting session...');
       
@@ -66,7 +67,7 @@ class SessionService {
       console.log('🔗 Session ID set to:', this.sessionId);
 
       // Connect WebSocket
-      console.log('🔌 Connecting WebSocket...');
+      console.log('🔌 About to call connectWebSocket()...');
       await this.connectWebSocket();
       console.log('✅ WebSocket connected successfully');
 
