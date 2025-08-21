@@ -1,10 +1,10 @@
 // checkpoint-portal.js
-import fs from "fs";
-import path from "path";
-import { spawn } from "child_process";
-import { chromium } from "playwright";
-import { randomUUID } from "crypto";
-import { createProxyMiddleware } from "http-proxy-middleware";
+const fs = require("fs");
+const path = require("path");
+const { spawn } = require("child_process");
+const { chromium } = require("playwright");
+const { randomUUID } = require("crypto");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const DISPLAY=":99";
 const VNC_PORT=+process.env.VNC_PORT||5900;
@@ -27,7 +27,7 @@ function startDisplayStackOnce(){
 function profileDir(userId){ const d=path.join(DATA_ROOT,String(userId)); fs.mkdirSync(d,{recursive:true}); return d; }
 function requireAppAuth(req,res,next){ const uid=req.header("x-user-id"); if(!uid) return res.status(401).json({error:"unauthorized"}); req.userId=uid; next(); }
 
-export function registerCheckpointPortal(app){
+function registerCheckpointPortal(app){
   // proxy noVNC under same origin
   app.use("/_novnc", createProxyMiddleware({ target:`http://127.0.0.1:${NOVNC_PORT}`, changeOrigin:true, ws:true }));
 
@@ -73,3 +73,5 @@ document.getElementById('done').onclick=async()=>{await fetch('/checkpoint/${req
     }
   },30000);
 }
+
+module.exports = { registerCheckpointPortal };

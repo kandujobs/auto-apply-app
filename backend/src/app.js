@@ -59,6 +59,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Simple root health check for Railway
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // Test endpoint for CORS debugging
 app.get('/api/test-cors', (req, res) => {
   console.log('🧪 Test CORS endpoint called');
@@ -85,7 +95,13 @@ app.post('/api/test-cors', (req, res) => {
 });
 
 // Register checkpoint portal
-registerCheckpointPortal(app);
+try {
+  registerCheckpointPortal(app);
+  console.log('✅ Checkpoint portal registered successfully');
+} catch (error) {
+  console.warn('⚠️ Failed to register checkpoint portal:', error.message);
+  console.log('⚠️ Continuing without checkpoint portal functionality');
+}
 
 // Routes
 app.use('/api/session', sessionRoutes);
