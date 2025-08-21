@@ -10,11 +10,8 @@ const healthRoutes = require('./routes/healthRoutes');
 const browserPortalRoutes = require('./routes/browserPortalRoutes');
 
 // Import middleware
-const errorHandler = require('./middlewares/errorHandler');
-const paymentMiddleware = require('./middlewares/paymentMiddleware');
-
-// Import checkpoint portal
-const { registerCheckpointPortal } = require('./services/checkpointPortal');
+const { errorHandler } = require('./middlewares/errorHandler');
+const { checkPaymentService } = require('./middlewares/paymentMiddleware');
 
 const app = express();
 
@@ -26,8 +23,25 @@ app.use(cors({
 }));
 app.use(helmet());
 
-// Register checkpoint portal (must be after express.json())
-registerCheckpointPortal(app);
+// Simple health check (always available)
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Register checkpoint portal with error handling
+try {
+  const { registerCheckpointPortal } = require('./services/checkpointPortal');
+  registerCheckpointPortal(app);
+  console.log('✅ Checkpoint portal registered successfully');
+} catch (error) {
+  console.warn('⚠️ Failed to register checkpoint portal:', error.message);
+  console.log('⚠️ Continuing without checkpoint portal functionality');
+}
 
 // Routes
 app.use('/api/session', sessionRoutes);
