@@ -26,6 +26,7 @@ class SessionService {
   private lastProgressTime: number = 0;
 
   async startSession(): Promise<{ success: boolean; error?: string }> {
+    console.log('🚀 [START] startSession method called - BEGINNING');
     console.log('🚀 [START] startSession method called');
     try {
       console.log('🚀 Starting session...');
