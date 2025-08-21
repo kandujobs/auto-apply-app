@@ -2,45 +2,89 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
-const { chromium } = require("playwright");
 const { randomUUID } = require("crypto");
-const { createProxyMiddleware } = require("http-proxy-middleware");
+
+// Load Playwright conditionally to prevent startup failures
+let chromium;
+try {
+  const playwright = require("playwright");
+  chromium = playwright.chromium;
+  console.log('✅ Playwright loaded successfully for checkpoint portal');
+} catch (error) {
+  console.warn('⚠️ Playwright not available for checkpoint portal:', error.message);
+}
+
+// Load http-proxy-middleware conditionally
+let createProxyMiddleware;
+try {
+  const httpProxyMiddleware = require("http-proxy-middleware");
+  createProxyMiddleware = httpProxyMiddleware.createProxyMiddleware;
+  console.log('✅ http-proxy-middleware loaded successfully');
+} catch (error) {
+  console.warn('⚠️ http-proxy-middleware not available:', error.message);
+}
 
 const DISPLAY = ":99";
 const VNC_PORT = parseInt(process.env.VNC_PORT || "5900", 10);
 const NOVNC_PORT = parseInt(process.env.NOVNC_PORT || "6080", 10);
 const DATA_ROOT = process.env.DATA_ROOT || "/data/profiles"; // mount a volume in Railway
-fs.mkdirSync(DATA_ROOT, { recursive: true });
+
+// Create data directory safely
+try {
+  fs.mkdirSync(DATA_ROOT, { recursive: true });
+  console.log(`✅ Data directory created/verified: ${DATA_ROOT}`);
+} catch (error) {
+  console.warn(`⚠️ Could not create data directory: ${error.message}`);
+}
 
 let stackStarted = false;
 const sessions = new Map(); // token -> { browser, userId, expiresAt }
 
 function startDisplayStackOnce() {
   if (stackStarted) return;
+  
+  // Only start if we're in a Docker environment with the required tools
+  if (!fs.existsSync('/usr/bin/Xvfb')) {
+    console.log('⚠️ Xvfb not available, skipping display stack startup');
+    return;
+  }
+  
   stackStarted = true;
   const procs = [];
   const env = { ...process.env, DISPLAY };
 
-  const xvfb = spawn("Xvfb", [DISPLAY, "-screen", "0", "1920x1080x24"], { stdio: "inherit" });
-  procs.push(xvfb);
+  try {
+    const xvfb = spawn("Xvfb", [DISPLAY, "-screen", "0", "1920x1080x24"], { stdio: "inherit" });
+    procs.push(xvfb);
 
-  // lightweight WM (prevents weird menu focus)
-  const flux = spawn("fluxbox", [], { stdio: "inherit", env });
-  procs.push(flux);
+    // lightweight WM (prevents weird menu focus)
+    const flux = spawn("fluxbox", [], { stdio: "inherit", env });
+    procs.push(flux);
 
-  const x11 = spawn("x11vnc", ["-display", DISPLAY, "-nopw", "-forever", "-shared", "-rfbport", String(VNC_PORT)], { stdio: "inherit" });
-  procs.push(x11);
+    const x11 = spawn("x11vnc", ["-display", DISPLAY, "-nopw", "-forever", "-shared", "-rfbport", String(VNC_PORT)], { stdio: "inherit" });
+    procs.push(x11);
 
-  const novnc = spawn("websockify", ["--web=/usr/share/novnc", String(NOVNC_PORT), `localhost:${VNC_PORT}`], { stdio: "inherit" });
-  procs.push(novnc);
+    const novnc = spawn("websockify", ["--web=/usr/share/novnc", String(NOVNC_PORT), `localhost:${VNC_PORT}`], { stdio: "inherit" });
+    procs.push(novnc);
+
+    console.log('✅ Display stack started successfully');
+  } catch (error) {
+    console.error('❌ Failed to start display stack:', error);
+    stackStarted = false;
+  }
 
   process.on("exit", () => procs.forEach(p => p.kill("SIGTERM")));
 }
 
 function profileDir(userId) {
-  const dir = path.join(DATA_ROOT, String(userId));
-  fs.mkdirSync(dir, { recursive: true });
-  return dir;
+  try {
+    const dir = path.join(DATA_ROOT, String(userId));
+    fs.mkdirSync(dir, { recursive: true });
+    return dir;
+  } catch (error) {
+    console.error('❌ Failed to create profile directory:', error);
+    return path.join('/tmp', String(userId)); // fallback to /tmp
+  }
 }
 
 // replace with your real auth guard
@@ -52,6 +96,19 @@ function requireAppAuth(req, res, next) {
 }
 
 function registerCheckpointPortal(app) {
+  // Only register if dependencies are available
+  if (!chromium) {
+    console.warn('⚠️ Checkpoint portal not registered - Playwright not available');
+    return;
+  }
+
+  if (!createProxyMiddleware) {
+    console.warn('⚠️ Checkpoint portal not registered - http-proxy-middleware not available');
+    return;
+  }
+
+  console.log('✅ Registering checkpoint portal routes');
+
   // proxy noVNC under the same origin/port
   app.use(
     "/_novnc",
@@ -133,6 +190,8 @@ function registerCheckpointPortal(app) {
       }
     }
   }, 30_000);
+
+  console.log('✅ Checkpoint portal routes registered successfully');
 }
 
 module.exports = { registerCheckpointPortal };

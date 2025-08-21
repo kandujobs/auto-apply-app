@@ -1,5 +1,6 @@
-const { app, wss, PORT } = require('./app');
+const app = require('./app');
 const { createServer } = require('http');
+const WebSocket = require('ws');
 const { setupWebSocket } = require('./config/websocket');
 
 // Load environment variables
@@ -13,6 +14,8 @@ try {
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://xipjxcktpzanmhfrkbrm.supabase.co';
 process.env.SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcGp4Y2t0cHphbm1oZnJrYnJtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTExODA0MywiZXhwIjoyMDY2Njk0MDQzfQ.Dm73I66zlS1RXYcde6QHdTQt32ARu00K9pXeFuIruJE';
 
+const PORT = process.env.PORT || 3001;
+
 console.log('🔧 Starting server initialization...');
 console.log(`📁 Current directory: ${__dirname}`);
 console.log(`🔑 PORT environment: ${process.env.PORT}`);
@@ -20,6 +23,9 @@ console.log(`🔑 NODE_ENV: ${process.env.NODE_ENV}`);
 
 // Create HTTP server
 const server = createServer(app);
+
+// Create WebSocket server
+const wss = new WebSocket.Server({ noServer: true });
 
 // Setup WebSocket
 setupWebSocket(wss);
