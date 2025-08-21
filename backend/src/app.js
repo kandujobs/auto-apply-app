@@ -15,34 +15,37 @@ const { checkPaymentService } = require('./middlewares/paymentMiddleware');
 
 const app = express();
 
-// CORS configuration
-const corsOptions = {
-  origin: [
-    'https://app.kandujobs.com',
-    'https://kandujobs.com',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ],
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`🌐 ${req.method} ${req.path} - Origin: ${req.headers.origin} - User-Agent: ${req.headers['user-agent']?.substring(0, 50)}`);
+  next();
+});
+
+// CORS configuration - MUST be first!
+app.use(cors({
+  origin: true, // Allow all origins for now
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type',
     'Authorization',
     'x-user-id',
-    'X-Requested-With'
+    'X-Requested-With',
+    'Origin',
+    'Accept'
   ],
   optionsSuccessStatus: 200
-};
-
-// Middleware
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
 // Handle preflight requests
-app.options('*', cors(corsOptions));
+app.options('*', cors());
+
+// Other middleware
+app.use(express.json());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false // Disable CSP for now
+}));
 
 // Simple health check (always available)
 app.get('/api/health', (req, res) => {
@@ -51,6 +54,31 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Test endpoint for CORS debugging
+app.get('/api/test-cors', (req, res) => {
+  console.log('🧪 Test CORS endpoint called');
+  console.log('🧪 Headers:', req.headers);
+  res.json({
+    message: 'CORS test successful',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method
+  });
+});
+
+app.post('/api/test-cors', (req, res) => {
+  console.log('🧪 Test CORS POST endpoint called');
+  console.log('🧪 Headers:', req.headers);
+  console.log('🧪 Body:', req.body);
+  res.json({
+    message: 'CORS POST test successful',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin,
+    method: req.method,
+    body: req.body
   });
 });
 
