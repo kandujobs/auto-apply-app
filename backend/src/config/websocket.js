@@ -32,6 +32,7 @@ function setupWebSocket(wss) {
             session.websocket = ws;
             session.lastActivity = Date.now();
             ws.userId = userId;
+            console.log(`✅ Client connected to session for user: ${userId}, ws.userId set to: ${ws.userId}`);
             
             // Send current status
             ws.send(JSON.stringify({
@@ -45,6 +46,7 @@ function setupWebSocket(wss) {
             
             console.log(`✅ Client connected to session for user: ${userId}`);
           } else {
+            console.log(`❌ Session not found for user: ${userId}`);
             ws.send(JSON.stringify({
               type: 'error',
               message: 'Session not found'
@@ -77,11 +79,20 @@ function setupWebSocket(wss) {
 }
 
 function broadcastToUser(userId, message) {
+  console.log(`📡 Broadcasting to user ${userId}:`, message);
+  console.log(`📡 Connected clients: ${connectedClients.size}`);
+  
+  let sentCount = 0;
   connectedClients.forEach(client => {
+    console.log(`📡 Checking client: userId=${client.userId}, readyState=${client.readyState}`);
     if (client.userId === userId && client.readyState === 1) {
+      console.log(`📡 Sending message to client for user ${userId}`);
       client.send(JSON.stringify(message));
+      sentCount++;
     }
   });
+  
+  console.log(`📡 Message sent to ${sentCount} clients for user ${userId}`);
 }
 
 function broadcastToAll(message) {
