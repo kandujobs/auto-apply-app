@@ -8,6 +8,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const browserPortalRoutes = require('./routes/browserPortalRoutes');
 
 // Import middleware
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -28,6 +29,7 @@ app.use('/api', jobRoutes);
 app.use('/api/session', sessionRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api', healthRoutes);
+app.use('/api/browser-portal', browserPortalRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

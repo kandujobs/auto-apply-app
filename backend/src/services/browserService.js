@@ -2,6 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
+const { browserPortalService } = require('./browserPortalService');
 
 // Load Playwright conditionally
 let chromium;
@@ -241,7 +242,10 @@ async function initializeBrowserSession(userId, credentials) {
       // If we have a security checkpoint, handle it immediately (don't check for errors)
       if (hasSecurityCheckpoint) {
         console.log('🛡️ LinkedIn security checkpoint detected. Please complete it manually...');
-        console.log('⏳ Waiting for you to complete the security checkpoint...');
+        console.log('⏳ Starting browser portal for user interaction...');
+        
+        // Start browser portal for user interaction
+        await browserPortalService.startPortal(userId, page);
         
         // Wait for user to complete security checkpoint
         let attempts = 0;
@@ -257,6 +261,10 @@ async function initializeBrowserSession(userId, credentials) {
           // Check if we're now on feed or mynetwork
           if (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork')) {
             console.log('✅ Successfully logged into LinkedIn after security checkpoint');
+            
+            // Stop the browser portal
+            await browserPortalService.stopPortal(userId);
+            
             break;
           }
           
@@ -276,11 +284,19 @@ async function initializeBrowserSession(userId, credentials) {
           
           if (!stillHasCheckpoint && (currentUrl.includes('/feed') || currentUrl.includes('/mynetwork'))) {
             console.log('✅ Successfully logged into LinkedIn after security checkpoint');
+            
+            // Stop the browser portal
+            await browserPortalService.stopPortal(userId);
+            
             break;
           }
           
           if (attempts >= maxAttempts) {
             console.log('⏰ Timeout waiting for security checkpoint completion');
+            
+            // Stop the browser portal
+            await browserPortalService.stopPortal(userId);
+            
             throw new Error('Security checkpoint timeout');
           }
         }
