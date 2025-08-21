@@ -205,20 +205,7 @@ async function initializeBrowserSession(userId, credentials) {
         console.log('Could not take screenshot:', error.message);
       }
       
-      // Check for error messages on the page
-      try {
-        const errorElements = await page.locator('.alert-error, .error, [role="alert"]').all();
-        if (errorElements.length > 0) {
-          for (const errorElement of errorElements) {
-            const errorText = await errorElement.textContent();
-            console.log(`⚠️ Login error detected: ${errorText}`);
-          }
-        }
-      } catch (error) {
-        console.log('No error elements found');
-      }
-      
-      // Check for security checkpoint pages and URLs
+      // Check for security checkpoint pages and URLs FIRST (before error detection)
       const securityCheckpointSelectors = [
         'input[name="captcha"]',
         'input[name="challenge"]',
@@ -234,7 +221,7 @@ async function initializeBrowserSession(userId, credentials) {
       // Check if URL contains checkpoint
       if (loginUrl.includes('/checkpoint/') || loginUrl.includes('/challenge/')) {
         hasSecurityCheckpoint = true;
-        console.log(`⚠️ Security checkpoint detected in URL: ${loginUrl}`);
+        console.log(`🛡️ Security checkpoint detected in URL: ${loginUrl}`);
       }
       
       // Also check for checkpoint elements
@@ -243,7 +230,7 @@ async function initializeBrowserSession(userId, credentials) {
           const element = await page.locator(selector).first();
           if (await element.isVisible()) {
             hasSecurityCheckpoint = true;
-            console.log(`⚠️ Security checkpoint detected: ${selector}`);
+            console.log(`🛡️ Security checkpoint detected: ${selector}`);
             break;
           }
         } catch (error) {
@@ -251,6 +238,7 @@ async function initializeBrowserSession(userId, credentials) {
         }
       }
       
+      // If we have a security checkpoint, handle it immediately (don't check for errors)
       if (hasSecurityCheckpoint) {
         console.log('🛡️ LinkedIn security checkpoint detected. Please complete it manually...');
         console.log('⏳ Waiting for you to complete the security checkpoint...');
@@ -296,19 +284,35 @@ async function initializeBrowserSession(userId, credentials) {
             throw new Error('Security checkpoint timeout');
           }
         }
-      } else if (loginUrl.includes('/feed') || loginUrl.includes('/mynetwork')) {
-        console.log('✅ Successfully logged into LinkedIn');
       } else {
-        console.log('❌ Login failed - not on feed or mynetwork');
-        console.log('Current page title:', await page.title());
-        
-        // Check if we're still on the login page
-        if (loginUrl.includes('/login')) {
-          console.log('Still on login page - login may have failed');
-          throw new Error('Login failed - still on login page');
+        // Only check for error messages if we don't have a security checkpoint
+        try {
+          const errorElements = await page.locator('.alert-error, .error, [role="alert"]').all();
+          if (errorElements.length > 0) {
+            for (const errorElement of errorElements) {
+              const errorText = await errorElement.textContent();
+              console.log(`⚠️ Login error detected: ${errorText}`);
+            }
+          }
+        } catch (error) {
+          console.log('No error elements found');
         }
         
-        throw new Error('Login failed');
+        // Check if login was successful (only if no checkpoint)
+        if (loginUrl.includes('/feed') || loginUrl.includes('/mynetwork')) {
+          console.log('✅ Successfully logged into LinkedIn');
+        } else {
+          console.log('❌ Login failed - not on feed or mynetwork');
+          console.log('Current page title:', await page.title());
+          
+          // Check if we're still on the login page
+          if (loginUrl.includes('/login')) {
+            console.log('Still on login page - login may have failed');
+            throw new Error('Login failed - still on login page');
+          }
+          
+          throw new Error('Login failed');
+        }
       }
       
       // Wait like a human would
