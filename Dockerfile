@@ -25,5 +25,5 @@ COPY backend/ .
 # Expose port (Railway will override this)
 EXPOSE 3001
 
-# Start the application
-CMD ["./start.sh"]
+# Start the application with the new structure
+CMD ["npm", "start"]
