@@ -9,7 +9,7 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const DISPLAY=":99";
 const VNC_PORT=+process.env.VNC_PORT||5900;
 const NOVNC_PORT=+process.env.NOVNC_PORT||6080;
-const DATA_ROOT=process.env.DATA_ROOT||"/data/profiles"; // mount a volume on Railway
+const DATA_ROOT=process.env.DATA_ROOT||path.join(__dirname, "data", "profiles"); // use local directory for development
 fs.mkdirSync(DATA_ROOT,{recursive:true});
 
 let stackStarted=false;
