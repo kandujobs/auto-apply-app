@@ -75,3 +75,5 @@ FROM pg_policies
 WHERE tablename IN ('education', 'experience')
 ORDER BY tablename, policyname;
 
+
+

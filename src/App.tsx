@@ -1431,7 +1431,7 @@ function App() {
     }
     if (onboardingStep === 'basicInfo') {
       return (
-        <BasicInfoScreen onContinue={handleBasicInfoContinue} onBack={handleBasicInfoBack} />
+        <BasicInfoScreen onContinue={handleBasicInfoContinue} onBack={handleBasicInfoBack} prefill={parsedResume} />
       );
     }
     if (onboardingStep === 'experience') {
@@ -1439,12 +1439,13 @@ function App() {
         <ExperienceScreen
           onContinue={handleExperienceContinue}
           onBack={handleExperienceBack}
+          prefill={parsedResume}
         />
       );
     }
     if (onboardingStep === 'interests') {
       return (
-        <InterestsScreen onContinue={handleInterestsContinue} onBack={handleInterestsBack} />
+        <InterestsScreen onContinue={handleInterestsContinue} onBack={handleInterestsBack} prefill={parsedResume} />
       );
     }
     if (onboardingStep === 'tutorial') {

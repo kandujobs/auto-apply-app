@@ -250,6 +250,12 @@ const InterestsScreen: React.FC<InterestsScreenProps> = ({ onContinue, onBack, p
             const suggestions = getSuggestions(backgrounds);
             setSuggestedSkills(suggestions.skills);
             setSuggestedInterests(suggestions.interests);
+          } else {
+            // No existing profile data, use default suggestions
+            const defaultBackgrounds: string[] = [];
+            const defaultSuggestions = getSuggestions(defaultBackgrounds);
+            setSuggestedSkills(defaultSuggestions.skills);
+            setSuggestedInterests(defaultSuggestions.interests);
           }
         }
       } catch (error) {

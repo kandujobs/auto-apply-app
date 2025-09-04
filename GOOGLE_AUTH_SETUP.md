@@ -133,3 +133,6 @@ If you encounter issues:
 2. Review Google OAuth documentation: https://developers.google.com/identity/protocols/oauth2
 3. Check browser console and Supabase logs for detailed error messages
 
+
+
+

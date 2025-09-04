@@ -1,29 +1,30 @@
-FROM node:18-slim
+# Playwright w/Chrome + Ubuntu (includes fonts + drivers)
+FROM mcr.microsoft.com/playwright:v1.45.0-jammy
 
-# Install system dependencies for Playwright
+USER root
+
+# Install required packages for checkpoint portal
 RUN apt-get update && apt-get install -y \
-    wget \
-    gnupg \
-    ca-certificates \
-    procps \
-    libxss1 \
+    x11vnc \
+    xvfb \
+    fluxbox \
+    websockify \
+    novnc \
+    x11-utils \
+    xauth \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Set environment variables
+ENV DISPLAY=:99
+ENV VNC_PORT=5900
+ENV NOVNC_PORT=6080
+ENV NODE_ENV=production
+ENV DATA_ROOT=/data/profiles
+
 WORKDIR /app
-
-# Copy package files
 COPY backend/package*.json ./
-
-# Install dependencies and Playwright browsers
-RUN npm install
-RUN npx playwright install chromium --with-deps
-
-# Copy application code
+RUN npm ci --omit=dev
 COPY backend/ .
 
-# Expose port (Railway will override this)
 EXPOSE 3001
-
-# Start the application with the new structure
 CMD ["npm", "start"]
