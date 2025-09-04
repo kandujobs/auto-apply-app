@@ -394,8 +394,11 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
         {/* Application Session Card */}
         <div className={`w-full ${themeBg} rounded-3xl ${themeShadow} border-4 ${themeBorder} ${electricClass} p-6`}>
           <SessionManager 
-            onSessionChange={setIsSessionActive} 
+            onSessionChange={(session) => setIsSessionActive(session.isActive)} 
             onShowPaywall={goToPaywall}
+            onSessionStarted={() => {
+              console.log('[AutoApplyScreen] Session started');
+            }}
           />
         </div>
         

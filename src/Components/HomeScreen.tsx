@@ -814,7 +814,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       {/* Session Manager - Hidden but active for session management */}
       <div style={{ display: 'none' }}>
         <SessionManager 
-          onSessionChange={setIsSessionActive}
+          onSessionChange={(session) => setIsSessionActive(session.isActive)}
           onShowPaywall={goToPaywall}
           onSessionStarted={async () => {
             console.log('[HomeScreen] Session started, triggering automatic job fetch...');
