@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiZap, FiUser, FiTrendingUp, FiX, FiCheckCircle, FiBell, FiFilter, FiBookmark } from "react-icons/fi";
+import { FiZap, FiUser, FiTrendingUp, FiX, FiCheckCircle, FiBell, FiFilter } from "react-icons/fi";
 
 interface TutorialScreenProps {
   onContinue: () => void;
@@ -77,25 +77,10 @@ const TutorialScreen: React.FC<TutorialScreenProps> = ({ onContinue }) => {
               {current.highlight === 'navigation' && (
                 <div className="bg-gray-100 rounded-2xl p-4">
                   {/* Top Navigation Bar */}
-                  <div className="flex justify-between items-center mb-4 p-2 bg-white rounded-lg">
+                  <div className="flex justify-between items-center p-2 bg-white rounded-lg">
                     <FiZap className="w-5 h-5 text-purple-600" />
                     <FiUser className="w-5 h-5 text-gray-600" />
                     <FiTrendingUp className="w-5 h-5 text-gray-600" />
-                  </div>
-                  {/* Bottom Navigation Bar */}
-                  <div className="flex justify-around items-center p-2 bg-white rounded-lg">
-                    <div className="text-center">
-                      <FiBookmark className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Saved</span>
-                    </div>
-                    <div className="text-center">
-                      <FiUser className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Applied</span>
-                    </div>
-                    <div className="text-center">
-                      <FiTrendingUp className="w-5 h-5 text-purple-600 mx-auto mb-1" />
-                      <span className="text-xs text-gray-600">Discover</span>
-                    </div>
                   </div>
                 </div>
               )}
