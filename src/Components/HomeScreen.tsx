@@ -1000,7 +1000,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
             </h2>
             <p className="text-gray-600 text-lg mb-6 leading-relaxed">
               {isSessionActive 
-                ? 'You\'ve reviewed all available jobs! More jobs will be automatically fetched when you run out. Start a session to begin your job search.'
+                ? 'You\'ve reviewed all available jobs! Start a session to begin your job search.'
                 : 'To discover fresh job opportunities, you need to start an application session. This will open a browser and fetch the latest jobs from LinkedIn.'
               }
             </p>

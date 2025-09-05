@@ -140,11 +140,15 @@ async function initializeBrowserSession(userId, credentials) {
       console.log('🛡️ LinkedIn security checkpoint detected');
       console.log('⚠️ Checkpoint portal disabled for headless mode');
       
-      // Notify frontend about checkpoint detection
-      broadcastToUser(userId, {
-        type: 'checkpoint_detected',
-        message: 'LinkedIn security checkpoint detected - manual intervention may be required'
-      });
+      // Try to notify frontend about checkpoint detection (if WebSocket is connected)
+      try {
+        broadcastToUser(userId, {
+          type: 'checkpoint_detected',
+          message: 'LinkedIn security checkpoint detected - manual intervention may be required'
+        });
+      } catch (error) {
+        console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
+      }
       
       // For headless mode, we'll wait a bit and see if the checkpoint resolves automatically
       console.log('⏳ Waiting for checkpoint to resolve automatically...');
@@ -156,16 +160,20 @@ async function initializeBrowserSession(userId, credentials) {
       
       if (finalUrl.includes('/checkpoint/')) {
         console.log('❌ Still on checkpoint page - manual intervention required');
-        throw new Error('LinkedIn security checkpoint requires manual intervention - checkpoint portal disabled in headless mode');
+        throw new Error('LinkedIn security checkpoint detected. Please try again later or contact support if the issue persists.');
       }
       
       console.log('✅ Checkpoint resolved automatically');
       
-      // Notify frontend that checkpoint is completed
-      broadcastToUser(userId, {
-        type: 'checkpoint_completed',
-        message: 'Security checkpoint completed automatically'
-      });
+      // Try to notify frontend that checkpoint is completed (if WebSocket is connected)
+      try {
+        broadcastToUser(userId, {
+          type: 'checkpoint_completed',
+          message: 'Security checkpoint completed automatically'
+        });
+      } catch (error) {
+        console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
+      }
     }
     
     // Verify we're logged in
