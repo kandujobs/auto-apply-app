@@ -94,14 +94,15 @@ app.post('/api/test-cors', (req, res) => {
   });
 });
 
-// Register checkpoint portal
-try {
-  registerCheckpointPortal(app);
-  console.log('✅ Checkpoint portal registered successfully');
-} catch (error) {
-  console.warn('⚠️ Failed to register checkpoint portal:', error.message);
-  console.log('⚠️ Continuing without checkpoint portal functionality');
-}
+// Register checkpoint portal - DISABLED for headless mode
+// try {
+//   registerCheckpointPortal(app);
+//   console.log('✅ Checkpoint portal registered successfully');
+// } catch (error) {
+//   console.warn('⚠️ Failed to register checkpoint portal:', error.message);
+//   console.log('⚠️ Continuing without checkpoint portal functionality');
+// }
+console.log('⚠️ Checkpoint portal disabled for headless mode');
 
 // Routes
 app.use('/api/session', sessionRoutes);
