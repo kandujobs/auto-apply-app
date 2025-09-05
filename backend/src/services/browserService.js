@@ -67,13 +67,12 @@ async function initializeBrowserSession(userId, credentials) {
   try {
     console.log(`🚀 Starting browser session initialization for user: ${userId}`);
     
-    // Decrypt credentials
-    const { decrypt } = require('../utils/encryption');
-    const email = await decrypt(credentials.email_encrypted);
-    const password = await decrypt(credentials.password_encrypted);
+    // Credentials are already decrypted by session manager
+    const email = credentials.email;
+    const password = credentials.password;
     
     if (!email || !password) {
-      throw new Error('Failed to decrypt credentials');
+      throw new Error('Failed to get credentials');
     }
     
     console.log(`📧 Using email: ${email}`);
