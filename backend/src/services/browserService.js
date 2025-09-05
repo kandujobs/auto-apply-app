@@ -138,74 +138,33 @@ async function initializeBrowserSession(userId, credentials) {
     // Check if we're on a checkpoint page
     if (currentUrl.includes('/checkpoint/')) {
       console.log('🛡️ LinkedIn security checkpoint detected');
-      console.log('🖥️ Starting checkpoint portal for user interaction...');
+      console.log('⚠️ Checkpoint portal disabled for headless mode');
       
-      // Start checkpoint portal
-      const response = await fetch(`http://localhost:${process.env.PORT || 3001}/checkpoint/start`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': userId
-        },
-        body: JSON.stringify({
-          url: currentUrl
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to start checkpoint portal');
-      }
-      
-      const portalData = await response.json();
-      console.log('✅ Checkpoint portal started:', portalData.portalUrl);
-      
-      // Notify frontend about checkpoint portal
+      // Notify frontend about checkpoint detection
       broadcastToUser(userId, {
-        type: 'checkpoint_portal_ready',
-        portalUrl: portalData.portalUrl,
-        message: 'Security checkpoint portal is ready'
+        type: 'checkpoint_detected',
+        message: 'LinkedIn security checkpoint detected - manual intervention may be required'
       });
       
-      // Wait for user to complete checkpoint
-      console.log('⏳ Waiting for user to complete security checkpoint...');
-      
-      // Poll for portal completion
-      const startTime = Date.now();
-      const timeout = 5 * 60 * 1000; // 5 minutes
-      
-      while (Date.now() - startTime < timeout) {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Check every 2 seconds
-        
-        try {
-          const statusResponse = await fetch(`http://localhost:${process.env.PORT || 3001}/checkpoint/${portalData.token}`, {
-            headers: {
-              'x-user-id': userId
-            }
-          });
-          
-          if (statusResponse.status === 404) {
-            console.log('✅ Checkpoint portal completed');
-            break;
-          }
-        } catch (error) {
-          console.log('⏳ Still waiting for checkpoint completion...');
-        }
-      }
+      // For headless mode, we'll wait a bit and see if the checkpoint resolves automatically
+      console.log('⏳ Waiting for checkpoint to resolve automatically...');
+      await page.waitForTimeout(10000); // Wait 10 seconds
       
       // Check if we're still on a checkpoint page
-      await page.waitForTimeout(3000);
       const finalUrl = page.url();
-      console.log(`📍 Final URL after checkpoint: ${finalUrl}`);
+      console.log(`📍 Final URL after checkpoint wait: ${finalUrl}`);
       
       if (finalUrl.includes('/checkpoint/')) {
-        console.log('❌ Still on checkpoint page after completion attempt');
-        throw new Error('Checkpoint not completed - still on checkpoint page');
+        console.log('❌ Still on checkpoint page - manual intervention required');
+        throw new Error('LinkedIn security checkpoint requires manual intervention - checkpoint portal disabled in headless mode');
       }
+      
+      console.log('✅ Checkpoint resolved automatically');
       
       // Notify frontend that checkpoint is completed
       broadcastToUser(userId, {
-        type: 'checkpoint_portal_completed',
-        message: 'Security checkpoint completed'
+        type: 'checkpoint_completed',
+        message: 'Security checkpoint completed automatically'
       });
     }
     
