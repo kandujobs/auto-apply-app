@@ -4,8 +4,12 @@ FROM node:18-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Install system dependencies for Playwright
-RUN apt-get update && apt-get install -y \
+# Configure apt and install packages in one layer to avoid hanging
+RUN echo 'Acquire::http::Timeout "30";' > /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::ftp::Timeout "30";' >> /etc/apt/apt.conf.d/99timeout && \
+    echo 'Acquire::Retries "3";' >> /etc/apt/apt.conf.d/99timeout && \
+    apt-get update --fix-missing && \
+    apt-get install -y --no-install-recommends \
     wget \
     gnupg \
     ca-certificates \
@@ -13,7 +17,8 @@ RUN apt-get update && apt-get install -y \
     libxss1 \
     tzdata \
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    && apt-get autoremove -y
 
 # Set working directory
 WORKDIR /app
