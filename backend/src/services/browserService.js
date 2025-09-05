@@ -81,7 +81,7 @@ async function initializeBrowserSession(userId, credentials) {
     // Launch browser
     console.log('🌐 Launching browser...');
     browser = await chromium.launch({
-      headless: false,
+      headless: true,  // Changed from false to true for Railway compatibility
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -89,13 +89,24 @@ async function initializeBrowserSession(userId, credentials) {
         '--disable-accelerated-2d-canvas',
         '--no-first-run',
         '--no-zygote',
-        '--disable-gpu'
+        '--disable-gpu',
+        // Additional stealth arguments for better LinkedIn compatibility
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-background-timer-throttling',
+        '--disable-backgrounding-occluded-windows',
+        '--disable-renderer-backgrounding',
+        '--disable-ipc-flooding-protection'
       ]
     });
     
     const context = await browser.newContext({
       userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-      viewport: { width: 1280, height: 720 }
+      viewport: { width: 1280, height: 720 },
+      // Additional stealth context options
+      locale: 'en-US',
+      timezoneId: 'America/New_York',
+      permissions: ['geolocation']
     });
     
     const page = await context.newPage();
