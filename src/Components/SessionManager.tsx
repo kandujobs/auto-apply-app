@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { paymentService } from '../services/paymentService';
-import CheckpointPortal from './CheckpointPortal';
 import CheckpointModal from './CheckpointModal';
 
 interface SessionManagerProps {
@@ -14,8 +13,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>({ isActive: false });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isCheckpointPortalOpen, setIsCheckpointPortalOpen] = useState(false);
-  const [checkpointPortalUrl, setCheckpointPortalUrl] = useState<string>('');
   const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
   const [checkpointData, setCheckpointData] = useState<any>(null);
 
@@ -33,19 +30,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       console.log('[SessionManager] Application completed:', data);
     });
 
-    // Set up checkpoint portal callback
+    // Set up checkpoint callback
     sessionService.setCheckpointPortalCallback((data: any) => {
-      console.log('[SessionManager] Checkpoint portal data received:', data);
+      console.log('[SessionManager] Checkpoint data received:', data);
       
-      if (data.type === 'checkpoint_portal_ready') {
-        console.log('[SessionManager] 🖥️ Checkpoint portal ready');
-        setCheckpointPortalUrl(data.portalUrl);
-        setIsCheckpointPortalOpen(true);
-      } else if (data.type === 'checkpoint_portal_completed') {
-        console.log('[SessionManager] 🖥️ Checkpoint portal completed');
-        setIsCheckpointPortalOpen(false);
-        setCheckpointPortalUrl('');
-      } else if (data.type === 'checkpoint_detected') {
+      if (data.type === 'checkpoint_detected') {
         console.log('[SessionManager] 🛡️ Checkpoint detected with screenshot');
         setCheckpointData(data);
         setIsCheckpointModalOpen(true);
@@ -153,12 +142,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     }
   };
 
-  const handleCloseCheckpointPortal = () => {
-    console.log('[SessionManager] User manually closed checkpoint portal');
-    setIsCheckpointPortalOpen(false);
-    setCheckpointPortalUrl('');
-  };
-
   const handleCheckpointModalClose = () => {
     setIsCheckpointModalOpen(false);
     setCheckpointData(null);
@@ -219,14 +202,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         )}
       </div>
 
-      {/* Checkpoint Portal */}
-      <CheckpointPortal
-        isOpen={isCheckpointPortalOpen}
-        onClose={handleCloseCheckpointPortal}
-        portalUrl={checkpointPortalUrl}
-      />
-
-      {/* Checkpoint Modal for Screenshot-based Checkpoints */}
+      {/* Checkpoint Modal */}
       <CheckpointModal
         isOpen={isCheckpointModalOpen}
         onClose={handleCheckpointModalClose}
