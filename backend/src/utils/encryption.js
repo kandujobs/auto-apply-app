@@ -119,8 +119,9 @@ async function decrypt(encryptedData) {
     const iv = Buffer.from(data.iv, 'hex');
     const authTag = Buffer.from(data.authTag, 'hex');
     
-    // Create decipher
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    // Create decipher - use the key directly as a buffer (not hex)
+    const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'utf8');
+    const decipher = crypto.createDecipheriv(ALGORITHM, keyBuffer, iv);
     decipher.setAuthTag(authTag);
     
     // Decrypt
@@ -189,8 +190,9 @@ async function encrypt(text) {
     // Generate a random IV
     const iv = crypto.randomBytes(16);
     
-    // Create cipher
-    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
+    // Create cipher - use the key directly as a buffer (not hex)
+    const keyBuffer = Buffer.from(ENCRYPTION_KEY, 'utf8');
+    const cipher = crypto.createCipheriv(ALGORITHM, keyBuffer, iv);
     
     // Encrypt
     let encrypted = cipher.update(text, 'utf8', 'hex');
