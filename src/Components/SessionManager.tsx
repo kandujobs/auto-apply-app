@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { paymentService } from '../services/paymentService';
 import CheckpointPortal from './CheckpointPortal';
+import CheckpointModal from './CheckpointModal';
 
 interface SessionManagerProps {
   onSessionChange: (session: SessionStatus) => void;
@@ -15,6 +16,8 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [error, setError] = useState<string | null>(null);
   const [isCheckpointPortalOpen, setIsCheckpointPortalOpen] = useState(false);
   const [checkpointPortalUrl, setCheckpointPortalUrl] = useState<string>('');
+  const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
+  const [checkpointData, setCheckpointData] = useState<any>(null);
 
   useEffect(() => {
     // Set up session service callbacks
@@ -42,6 +45,14 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         console.log('[SessionManager] 🖥️ Checkpoint portal completed');
         setIsCheckpointPortalOpen(false);
         setCheckpointPortalUrl('');
+      } else if (data.type === 'checkpoint_detected') {
+        console.log('[SessionManager] 🛡️ Checkpoint detected with screenshot');
+        setCheckpointData(data);
+        setIsCheckpointModalOpen(true);
+      } else if (data.type === 'checkpoint_completed') {
+        console.log('[SessionManager] ✅ Checkpoint completed');
+        setIsCheckpointModalOpen(false);
+        setCheckpointData(null);
       }
     });
 
@@ -148,6 +159,17 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     setCheckpointPortalUrl('');
   };
 
+  const handleCheckpointModalClose = () => {
+    setIsCheckpointModalOpen(false);
+    setCheckpointData(null);
+  };
+
+  const handleCheckpointCompleted = () => {
+    console.log('[SessionManager] User completed checkpoint');
+    setIsCheckpointModalOpen(false);
+    setCheckpointData(null);
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-semibold mb-4">Session Management</h2>
@@ -202,6 +224,14 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         isOpen={isCheckpointPortalOpen}
         onClose={handleCloseCheckpointPortal}
         portalUrl={checkpointPortalUrl}
+      />
+
+      {/* Checkpoint Modal for Screenshot-based Checkpoints */}
+      <CheckpointModal
+        isOpen={isCheckpointModalOpen}
+        onClose={handleCheckpointModalClose}
+        checkpointData={checkpointData}
+        onCheckpointCompleted={handleCheckpointCompleted}
       />
     </div>
   );

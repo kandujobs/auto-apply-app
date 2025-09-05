@@ -138,41 +138,67 @@ async function initializeBrowserSession(userId, credentials) {
     // Check if we're on a checkpoint page
     if (currentUrl.includes('/checkpoint/')) {
       console.log('🛡️ LinkedIn security checkpoint detected');
-      console.log('⚠️ Checkpoint portal disabled for headless mode');
       
-      // Try to notify frontend about checkpoint detection (if WebSocket is connected)
+      // Take a screenshot of the checkpoint page
+      console.log('📸 Taking screenshot of checkpoint page...');
+      const screenshotPath = `/tmp/checkpoint_${userId}_${Date.now()}.png`;
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+      console.log('📸 Checkpoint screenshot saved:', screenshotPath);
+      
+      // Convert screenshot to base64 for frontend display
+      const fs = require('fs');
+      const screenshotBuffer = fs.readFileSync(screenshotPath);
+      const screenshotBase64 = screenshotBuffer.toString('base64');
+      
+      // Clean up the temporary file
+      fs.unlinkSync(screenshotPath);
+      
+      // Notify frontend about checkpoint with screenshot
       try {
         broadcastToUser(userId, {
           type: 'checkpoint_detected',
-          message: 'LinkedIn security checkpoint detected - manual intervention may be required'
+          message: 'LinkedIn security checkpoint detected - please complete the verification',
+          checkpointUrl: currentUrl,
+          screenshot: `data:image/png;base64,${screenshotBase64}`,
+          userId: userId
         });
+        console.log('📡 Checkpoint notification sent to frontend');
       } catch (error) {
         console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
       }
       
-      // For headless mode, we'll wait a bit and see if the checkpoint resolves automatically
-      console.log('⏳ Waiting for checkpoint to resolve automatically...');
-      await page.waitForTimeout(10000); // Wait 10 seconds
+      // Wait for user to complete checkpoint (polling approach)
+      console.log('⏳ Waiting for user to complete checkpoint...');
+      const startTime = Date.now();
+      const timeout = 5 * 60 * 1000; // 5 minutes timeout
       
-      // Check if we're still on a checkpoint page
+      while (Date.now() - startTime < timeout) {
+        await page.waitForTimeout(2000); // Check every 2 seconds
+        
+        const currentUrl = page.url();
+        console.log(`📍 Current URL during checkpoint wait: ${currentUrl}`);
+        
+        if (!currentUrl.includes('/checkpoint/')) {
+          console.log('✅ Checkpoint completed - user has moved past checkpoint page');
+          
+          // Notify frontend that checkpoint is completed
+          try {
+            broadcastToUser(userId, {
+              type: 'checkpoint_completed',
+              message: 'Security checkpoint completed successfully'
+            });
+          } catch (error) {
+            console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
+          }
+          break;
+        }
+      }
+      
+      // Final check - if still on checkpoint page after timeout
       const finalUrl = page.url();
-      console.log(`📍 Final URL after checkpoint wait: ${finalUrl}`);
-      
       if (finalUrl.includes('/checkpoint/')) {
-        console.log('❌ Still on checkpoint page - manual intervention required');
-        throw new Error('LinkedIn security checkpoint detected. Please try again later or contact support if the issue persists.');
-      }
-      
-      console.log('✅ Checkpoint resolved automatically');
-      
-      // Try to notify frontend that checkpoint is completed (if WebSocket is connected)
-      try {
-        broadcastToUser(userId, {
-          type: 'checkpoint_completed',
-          message: 'Security checkpoint completed automatically'
-        });
-      } catch (error) {
-        console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
+        console.log('❌ Checkpoint not completed within timeout');
+        throw new Error('LinkedIn security checkpoint was not completed within the time limit. Please try again.');
       }
     }
     
