@@ -3,6 +3,10 @@ FROM mcr.microsoft.com/playwright:v1.45.0-jammy
 
 USER root
 
+# Set timezone to prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Install required packages for checkpoint portal
 RUN apt-get update && apt-get install -y \
     x11vnc \
@@ -12,7 +16,9 @@ RUN apt-get update && apt-get install -y \
     novnc \
     x11-utils \
     xauth \
-    && rm -rf /var/lib/apt/lists/*
+    tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Set environment variables
 ENV DISPLAY=:99

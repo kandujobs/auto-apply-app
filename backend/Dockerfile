@@ -1,5 +1,9 @@
 FROM node:18-slim
 
+# Set timezone to prevent interactive prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Install system dependencies for Playwright
 RUN apt-get update && apt-get install -y \
     wget \
@@ -7,7 +11,9 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     procps \
     libxss1 \
-    && rm -rf /var/lib/apt/lists/*
+    tzdata \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Set working directory
 WORKDIR /app
