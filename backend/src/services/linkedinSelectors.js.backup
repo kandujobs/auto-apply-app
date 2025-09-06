@@ -10,34 +10,14 @@ class LinkedInSelectors {
    */
   static getJobTitleSelectors() {
     return [
-      // New artdeco selectors (most likely to work)
       '.artdeco-entity-lockup_title',
-      '.artdeco-entity-lockup__title',
-      
-      // Legacy selectors
       '.job-card-list__title',
       '.job-card-container__link .job-card-list__title',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-list__title',
       '.job-card-container__link h3',
       '.job-card-container__link .job-card-list__title--new',
       '.job-card-container__link .job-card-list__title--new-design',
-      '.job-card-container__link .job-card-list__title--new-design-v2',
-      
-      // Generic selectors as fallback
-      'h3',
-      'h4',
-      '.job-title',
-      '.title',
-      '[data-test-id="job-title"]',
-      '.job-card-title',
-      '.job-card__title',
-      '.job-card-container__title',
-      
-      // Text-based selectors (look for elements with job-like text)
-      'a[href*="/jobs/view/"] h3',
-      'a[href*="/jobs/view/"] h4',
-      'a[href*="/jobs/view/"] .title',
-      'a[href*="/jobs/view/"] .job-title'
+      '.job-card-container__link .job-card-list__title--new-design-v2'
     ];
   }
 
@@ -65,32 +45,14 @@ class LinkedInSelectors {
    */
   static getCompanyNameSelectors() {
     return [
-      // New artdeco selectors (most likely to work)
       '.artdeco-entity-lockup__subtitle',
-      '.artdeco-entity-lockup_subtitle',
-      
-      // Legacy selectors
       '.job-card-container__company-name',
       '.job-card-container__link .job-card-container__company-name',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-container__company-name',
       '.job-card-container__link .job-card-container__company-name--new',
       '.job-card-container__link h4',
       '.job-card-container__link .job-card-container__company-name--new-design',
-      '.job-card-container__link .job-card-container__company-name--new-design-v2',
-      
-      // Generic selectors as fallback
-      '.company-name',
-      '.company',
-      '.job-company',
-      '.job-card-company',
-      '.job-card__company',
-      '.job-card-container__company',
-      '[data-test-id="company-name"]',
-      
-      // Text-based selectors
-      'a[href*="/jobs/view/"] .company',
-      'a[href*="/jobs/view/"] .company-name',
-      'a[href*="/jobs/view/"] .job-company'
+      '.job-card-container__link .job-card-container__company-name--new-design-v2'
     ];
   }
 
@@ -118,33 +80,14 @@ class LinkedInSelectors {
    */
   static getLocationSelectors() {
     return [
-      // New artdeco selectors (most likely to work)
       '.artdeco-entity-lockup_caption',
-      '.artdeco-entity-lockup__caption',
-      
-      // Legacy selectors
       '.job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item--new',
       '.job-card-container__link .job-card-container__metadata-wrapper .job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item--new-design',
-      '.job-card-container__link .job-card-container__metadata-item--new-design-v2',
-      
-      // Generic selectors as fallback
-      '.location',
-      '.job-location',
-      '.job-card-location',
-      '.job-card__location',
-      '.job-card-container__location',
-      '[data-test-id="location"]',
-      '.metadata-item',
-      '.job-metadata',
-      
-      // Text-based selectors
-      'a[href*="/jobs/view/"] .location',
-      'a[href*="/jobs/view/"] .job-location',
-      'a[href*="/jobs/view/"] .metadata-item'
+      '.job-card-container__link .job-card-container__metadata-item--new-design-v2'
     ];
   }
 
