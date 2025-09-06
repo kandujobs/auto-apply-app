@@ -4,6 +4,7 @@ const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
 const { chromium } = require('playwright');
 const { setState, getState } = require('../checkpointStore');
+const LinkedInSelectors = require('./linkedinSelectors');
 
 // Global variables to track application status
 let currentApplicationStatus = 'idle';
@@ -447,14 +448,53 @@ async function extractJobsFromPage(page, userId) {
           if (index >= cards.length) return null;
           
           const card = cards[index];
-          const titleElement = card.querySelector('.job-card-list__title');
-          const companyElement = card.querySelector('.job-card-container__company-name');
-          const locationElement = card.querySelector('.job-card-container__metadata-item');
+          
+          // Try multiple selectors for each field as LinkedIn changes them frequently
+          const titleSelectors = [
+            '.job-card-list__title',
+            '.job-card-container__link .job-card-list__title',
+            '[data-control-name="jobsearch_job_resultcard"] .job-card-list__title',
+            '.job-card-container__link h3',
+            '.job-card-container__link .job-card-list__title--new',
+            '.job-card-container__link .job-card-list__title--new-design',
+            '.job-card-container__link .job-card-list__title--new-design-v2'
+          ];
+          
+          const companySelectors = [
+            '.job-card-container__company-name',
+            '.job-card-container__link .job-card-container__company-name',
+            '[data-control-name="jobsearch_job_resultcard"] .job-card-container__company-name',
+            '.job-card-container__link .job-card-container__company-name--new',
+            '.job-card-container__link h4',
+            '.job-card-container__link .job-card-container__company-name--new-design',
+            '.job-card-container__link .job-card-container__company-name--new-design-v2'
+          ];
+          
+          const locationSelectors = [
+            '.job-card-container__metadata-item',
+            '.job-card-container__link .job-card-container__metadata-item',
+            '[data-control-name="jobsearch_job_resultcard"] .job-card-container__metadata-item',
+            '.job-card-container__link .job-card-container__metadata-item--new',
+            '.job-card-container__link .job-card-container__metadata-wrapper .job-card-container__metadata-item',
+            '.job-card-container__link .job-card-container__metadata-item--new-design',
+            '.job-card-container__link .job-card-container__metadata-item--new-design-v2'
+          ];
+          
+          // Helper function to find element with multiple selectors
+          const findElement = (selectors) => {
+            for (const selector of selectors) {
+              const element = card.querySelector(selector);
+              if (element && element.textContent.trim()) {
+                return element.textContent.trim();
+              }
+            }
+            return 'Not available';
+          };
           
           return {
-            title: titleElement ? titleElement.textContent.trim() : 'Not available',
-            company: companyElement ? companyElement.textContent.trim() : 'Not available',
-            location: locationElement ? locationElement.textContent.trim() : 'Not available',
+            title: findElement(titleSelectors),
+            company: findElement(companySelectors),
+            location: findElement(locationSelectors),
             url: card.href
           };
         }, i);
@@ -470,7 +510,7 @@ async function extractJobsFromPage(page, userId) {
         
         // Wait for job details to load
         try {
-          await page.waitForSelector('.jobs-description__content, .job-details-jobs-unified-top-card__job-description__content, .jobs-unified-top-card__job-description__content', { timeout: 2000 });
+          await page.waitForSelector('.jobs-description__content, .job-details-jobs-unified-top-card__job-description__content, .jobs-unified-top-card__job-description__content, .jobs-description-content__text', { timeout: 2000 });
         } catch (error) {
           console.log(`Job details not loaded for job ${i}, skipping...`);
           continue;
@@ -478,8 +518,24 @@ async function extractJobsFromPage(page, userId) {
         
         // Extract detailed job information
         const jobDetails = await page.evaluate(() => {
-          const descriptionElement = document.querySelector('.jobs-description__content, .job-details-jobs-unified-top-card__job-description__content, .jobs-unified-top-card__job-description__content');
-          const description = descriptionElement ? descriptionElement.textContent.trim() : 'Not available';
+          // Try multiple selectors for job description
+          const descriptionSelectors = [
+            '.jobs-description__content',
+            '.job-details-jobs-unified-top-card__job-description__content',
+            '.jobs-unified-top-card__job-description__content',
+            '.jobs-description-content__text',
+            '.jobs-description-content__text--new',
+            '.jobs-description-content__text--new-design'
+          ];
+          
+          let description = 'Not available';
+          for (const selector of descriptionSelectors) {
+            const element = document.querySelector(selector);
+            if (element && element.textContent.trim()) {
+              description = element.textContent.trim();
+              break;
+            }
+          }
           
           // Check for Easy Apply button
           const easyApplyButton = document.querySelector('button[aria-label="Easy Apply"]') || 
