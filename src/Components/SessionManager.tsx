@@ -204,31 +204,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     }
   };
 
-  const handleDebugStartSession = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      console.log('[SessionManager] Starting debug session');
-      
-      // Start session with debug flag
-      const result = await sessionService.startSession();
-      
-      if (result.success) {
-        console.log('[SessionManager] Debug session started successfully');
-        setSessionStatus({ isActive: true });
-        onSessionStarted();
-      } else {
-        console.error('[SessionManager] Failed to start debug session:', result.error);
-        setError(result.error || 'Failed to start debug session');
-      }
-    } catch (error) {
-      console.error('[SessionManager] Error starting debug session:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start debug session');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCheckpointModalClose = () => {
     setIsCheckpointModalOpen(false);
@@ -317,30 +292,44 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
             )}
           </div>
           
-          <div className="flex space-x-2">
-            <button
-              onClick={handleStartSession}
-              disabled={isLoading || sessionStatus.isActive}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Starting...' : 'Start Session'}
-            </button>
-            
-            <button
-              onClick={handleDebugStartSession}
-              disabled={isLoading || sessionStatus.isActive}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Starting...' : 'Debug Start'}
-            </button>
-            
-            <button
-              onClick={handleStopSession}
-              disabled={isLoading || !sessionStatus.isActive}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Stopping...' : 'Stop Session'}
-            </button>
+          <div className="flex justify-center">
+            {sessionStatus.isActive ? (
+              <button
+                onClick={handleStopSession}
+                disabled={isLoading}
+                className="px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-full shadow-lg hover:from-red-600 hover:to-red-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Stopping...
+                  </span>
+                ) : (
+                  'Stop Session'
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleStartSession}
+                disabled={isLoading}
+                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-full shadow-lg hover:from-blue-600 hover:to-blue-700 hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Starting...
+                  </span>
+                ) : (
+                  'Start Session'
+                )}
+              </button>
+            )}
           </div>
         </div>
         
