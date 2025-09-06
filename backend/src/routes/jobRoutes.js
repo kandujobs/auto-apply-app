@@ -204,7 +204,7 @@ router.post('/easy-apply-jobs', async (req, res) => {
       .from('linkedin_fetched_jobs')
       .select('*')
       .eq('user_id', userId)
-      .eq('has_easy_apply', true);
+      .eq('easy_apply', true);
 
     // Apply filters
     if (filters.location) {

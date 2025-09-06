@@ -516,13 +516,12 @@ async function extractJobsFromPage(page, userId) {
             .from('linkedin_fetched_jobs')
             .insert({
               user_id: userId,
-              job_id: jobInfo.id,
               job_title: jobInfo.title,
               company_name: jobInfo.company,
               location: jobInfo.location,
               description: jobInfo.description,
               job_url: jobInfo.url,
-              has_easy_apply: jobInfo.hasEasyApply
+              easy_apply: jobInfo.hasEasyApply
             });
           
           if (error) {
