@@ -149,8 +149,11 @@ router.post('/:userId/complete', (req, res) => {
     const { userId } = req.params;
     
     const state = getState(userId);
+    
+    // If checkpoint is already completed or not required, that's fine - just return success
     if (state.state !== 'checkpoint_required') {
-      return res.status(409).json({ error: 'No checkpoint required' });
+      console.log(`[CheckpointComplete] Checkpoint already completed or not required for user ${userId}, state: ${state.state}`);
+      return res.json({ ok: true, message: 'Checkpoint already completed' });
     }
     
     // Clear the checkpoint state and resume

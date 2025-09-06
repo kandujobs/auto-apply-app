@@ -114,6 +114,7 @@ export default function CheckpointModal({
         throw new Error(result.error || 'Failed to complete checkpoint');
       }
       
+      console.log('[CheckpointModal] Checkpoint completion response:', result);
       onCheckpointCompleted();
       
     } catch (err) {
