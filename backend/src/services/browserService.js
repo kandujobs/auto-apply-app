@@ -451,6 +451,7 @@ async function extractJobsFromPage(page, userId) {
           
           // Try multiple selectors for each field as LinkedIn changes them frequently
           const titleSelectors = [
+            '.artdeco-entity-lockup_title',
             '.job-card-list__title',
             '.job-card-container__link .job-card-list__title',
             '[data-control-name="jobsearch_job_resultcard"] .job-card-list__title',
@@ -461,6 +462,7 @@ async function extractJobsFromPage(page, userId) {
           ];
           
           const companySelectors = [
+            '.artdeco-entity-lockup__subtitle',
             '.job-card-container__company-name',
             '.job-card-container__link .job-card-container__company-name',
             '[data-control-name="jobsearch_job_resultcard"] .job-card-container__company-name',
@@ -471,6 +473,7 @@ async function extractJobsFromPage(page, userId) {
           ];
           
           const locationSelectors = [
+            '.artdeco-entity-lockup_caption',
             '.job-card-container__metadata-item',
             '.job-card-container__link .job-card-container__metadata-item',
             '[data-control-name="jobsearch_job_resultcard"] .job-card-container__metadata-item',

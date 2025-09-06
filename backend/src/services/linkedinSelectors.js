@@ -11,6 +11,7 @@ class LinkedInSelectors {
    */
   static getJobTitle(card) {
     const selectors = [
+      '.artdeco-entity-lockup_title',
       '.job-card-list__title',
       '.job-card-container__link .job-card-list__title',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-list__title',
@@ -37,6 +38,7 @@ class LinkedInSelectors {
    */
   static getCompanyName(card) {
     const selectors = [
+      '.artdeco-entity-lockup__subtitle',
       '.job-card-container__company-name',
       '.job-card-container__link .job-card-container__company-name',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-container__company-name',
@@ -63,6 +65,7 @@ class LinkedInSelectors {
    */
   static getLocation(card) {
     const selectors = [
+      '.artdeco-entity-lockup_caption',
       '.job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item',
       '[data-control-name="jobsearch_job_resultcard"] .job-card-container__metadata-item',
