@@ -267,8 +267,16 @@ class SessionService {
                   totalQuestions: data.totalQuestions || 0
                 }
               });
-            }            this.connectionPromise = null;
-            resolve();
+            }
+            
+            // Only resolve the connection promise if status is 'active'
+            // If status is 'waiting', we'll wait for the next status update
+            if (data.status === 'active') {
+              this.connectionPromise = null;
+              resolve();
+            } else if (data.status === 'waiting') {
+              console.log('⏳ [CONNECT] Session is waiting, not resolving connection promise yet');
+            }
           } else if (data.type === 'error') {
             console.error('❌ [CONNECT] Session error:', data.message);
             this.connectionPromise = null;

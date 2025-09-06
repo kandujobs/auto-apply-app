@@ -23,6 +23,8 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [showJobFetchPrompt, setShowJobFetchPrompt] = useState(false);
   // Checkpoint state persistence
   const CHECKPOINT_STORAGE_KEY = 'checkpoint_modal_state';
+  // Session state persistence
+  const SESSION_STORAGE_KEY = 'session_state';
   
   // Save checkpoint state to localStorage
   const saveCheckpointState = (isOpen: boolean, userId: string | null, data: any) => {
@@ -63,6 +65,44 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     return null;
   };
 
+  // Save session state to localStorage
+  const saveSessionState = (isActive: boolean, userId: string | null) => {
+    if (isActive && userId) {
+      const state = {
+        isActive,
+        userId,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(state));
+      console.log('[SessionManager] Session state saved to localStorage');
+    } else {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+      console.log('[SessionManager] Session state removed from localStorage');
+    }
+  };
+  
+  // Load session state from localStorage
+  const loadSessionState = () => {
+    try {
+      const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (stored) {
+        const state = JSON.parse(stored);
+        // Check if state is not too old (within 1 hour)
+        if (Date.now() - state.timestamp < 60 * 60 * 1000) {
+          console.log('[SessionManager] Session state restored from localStorage');
+          return state;
+        } else {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+          console.log('[SessionManager] Session state expired, removed from localStorage');
+        }
+      }
+    } catch (error) {
+      console.error('[SessionManager] Error loading session state:', error);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+    }
+    return null;
+  };
+
   // Restore checkpoint state on component mount
   useEffect(() => {
     const restoredState = loadCheckpointState();
@@ -76,6 +116,15 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         startCheckpointPolling();
         setShowJobFetchPrompt(true);
       }
+    }
+    
+    // Restore session state on component mount
+    const sessionState = loadSessionState();
+    if (sessionState) {
+      setSessionStatus({ isActive: true });
+      setCurrentUserId(sessionState.userId);
+      setShowJobFetchPrompt(true);
+      console.log('[SessionManager] Session state restored, showing job fetch prompt');
     }
   }, []);
 
@@ -164,6 +213,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         setSessionStatus({ isActive: true });
         onSessionStarted();
         
+        // Save session state and show job fetch prompt
+        saveSessionState(true, user.id);
+        setShowJobFetchPrompt(true);
+        
         // Start checkpoint polling
         
       } else {
@@ -188,6 +241,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       if (result.success) {
         console.log('[SessionManager] Session stopped successfully');
         setSessionStatus({ isActive: false });
+        
+        // Clear session state and hide job fetch prompt
+        saveSessionState(false, null);
+        setShowJobFetchPrompt(false);
         
         // Stop checkpoint polling
         stopCheckpointPolling();
