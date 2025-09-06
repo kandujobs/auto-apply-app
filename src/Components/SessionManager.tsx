@@ -104,6 +104,45 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     return null;
   };
 
+  // Verify session is still active on backend
+  const verifySessionWithBackend = async (userId: string) => {
+    try {
+      console.log('[SessionManager] Verifying session with backend for user:', userId);
+      const response = await fetch(`${getBackendUrl()}/api/session/status/${userId}`);
+      
+      if (response.ok) {
+        const status = await response.json();
+        console.log('[SessionManager] Backend session status:', status);
+        
+        if (status.isActive) {
+          // Session is still active on backend
+          setSessionStatus({ isActive: true });
+          setCurrentUserId(userId);
+          setShowJobFetchPrompt(true);
+          console.log('[SessionManager] Session verified as active, restoring state');
+        } else {
+          // Session is not active on backend, clear local state
+          console.log('[SessionManager] Session not active on backend, clearing local state');
+          saveSessionState(false, null);
+          setSessionStatus({ isActive: false });
+          setShowJobFetchPrompt(false);
+        }
+      } else {
+        // Backend error, clear local state
+        console.log('[SessionManager] Backend error verifying session, clearing local state');
+        saveSessionState(false, null);
+        setSessionStatus({ isActive: false });
+        setShowJobFetchPrompt(false);
+      }
+    } catch (error) {
+      console.error('[SessionManager] Error verifying session with backend:', error);
+      // Network error, clear local state to be safe
+      saveSessionState(false, null);
+      setSessionStatus({ isActive: false });
+      setShowJobFetchPrompt(false);
+    }
+  };
+
   // Restore checkpoint state on component mount
   useEffect(() => {
     const restoredState = loadCheckpointState();
@@ -122,10 +161,8 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     // Restore session state on component mount
     const sessionState = loadSessionState();
     if (sessionState) {
-      setSessionStatus({ isActive: true });
-      setCurrentUserId(sessionState.userId);
-      setShowJobFetchPrompt(true);
-      console.log('[SessionManager] Session state restored, showing job fetch prompt');
+      // Verify session is still active on backend before restoring state
+      verifySessionWithBackend(sessionState.userId);
     }
   }, []);
 
@@ -477,7 +514,21 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         )}        
         {error && (
           <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
+            <div className="flex justify-between items-center">
+              <span>{error}</span>
+              <button
+                onClick={() => {
+                  setError(null);
+                  // Clear session state to allow fresh start
+                  saveSessionState(false, null);
+                  setSessionStatus({ isActive: false });
+                  setShowJobFetchPrompt(false);
+                }}
+                className="ml-2 text-red-600 hover:text-red-800 text-sm underline"
+              >
+                Clear & Retry
+              </button>
+            </div>
           </div>
         )}
       </div>
