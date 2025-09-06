@@ -453,23 +453,53 @@ async function extractJobsFromPage(page, userId) {
           
           const card = cards[index];
           
+          // Debug: Log card structure
+          console.log(`[DEBUG] Card ${index} classes:`, card.className);
+          console.log(`[DEBUG] Card ${index} parent classes:`, card.parentElement?.className);
+          
           // For company and location, search in the data-control-name parent (like old-server.js)
-          const dataControlParent = card.closest('[data-control-name]');          
+          const dataControlParent = card.closest('[data-control-name]');
+          console.log(`[DEBUG] Data control parent found:`, !!dataControlParent);
+          if (dataControlParent) {
+            console.log(`[DEBUG] Data control parent classes:`, dataControlParent.className);
+          }
+          
           // Helper function to find element with multiple selectors
-          const findElement = (selectors, searchIn = card) => {
+          const findElement = (selectors, searchIn = card, fieldName = 'unknown') => {
+            console.log(`[DEBUG] Looking for ${fieldName} in:`, searchIn?.tagName, searchIn?.className);
             for (const selector of selectors) {
               const element = searchIn.querySelector(selector);
-              if (element && element.textContent.trim()) {
-                return element.textContent.trim();
+              if (element) {
+                const text = element.textContent?.trim();
+                console.log(`[DEBUG] Found ${fieldName} with selector "${selector}": "${text}"`);
+                if (text) {
+                  return text;
+                }
               }
             }
+            console.log(`[DEBUG] No ${fieldName} found with any selector`);
             return 'Not available';
           };
           
+          // Try multiple approaches for company and location
+          let company = findElement(companySelectors, dataControlParent || card, 'company');
+          let location = findElement(locationSelectors, dataControlParent || card, 'location');
+          
+          // Fallback: try searching in the card itself if data-control-parent didn't work
+          if (company === 'Not available') {
+            console.log(`[DEBUG] Trying fallback company search in card`);
+            company = findElement(companySelectors, card, 'company-fallback');
+          }
+          
+          if (location === 'Not available') {
+            console.log(`[DEBUG] Trying fallback location search in card`);
+            location = findElement(locationSelectors, card, 'location-fallback');
+          }
+          
           return {
-            title: findElement(titleSelectors),
-            company: findElement(companySelectors, dataControlParent || card),
-            location: findElement(locationSelectors, dataControlParent || card),
+            title: findElement(titleSelectors, card, 'title'),
+            company,
+            location,
             url: card.href
           };
         }, {
@@ -477,8 +507,7 @@ async function extractJobsFromPage(page, userId) {
           titleSelectors: LinkedInSelectors.getJobTitleSelectors(),
           companySelectors: LinkedInSelectors.getCompanyNameSelectors(),
           locationSelectors: LinkedInSelectors.getLocationSelectors()
-        });
-        
+        });        
         if (!basicJobInfo) {
           console.log(`Could not extract basic info for job ${i}`);
           continue;

@@ -75,6 +75,12 @@ class LinkedInSelectors {
       // Alternative artdeco selectors
       '.artdeco-entity-lockup_subtitle',
       
+      // Job details page selectors from old-server.js (might work on cards too)
+      '.job-details-jobs-unified-top-card__company-name',
+      '.jobs-unified-top-card__company-name',
+      '.job-details-jobs-unified-top-card__company-name-link',
+      '.jobs-unified-top-card__company-name-link',
+      
       // Legacy selectors
       '.job-card-container__company-name',
       '.job-card-container__link .job-card-container__company-name',
@@ -99,7 +105,6 @@ class LinkedInSelectors {
       'a[href*="/jobs/view/"] .job-company'
     ];
   }
-
   /**
    * Get company name from a job card element
    * @param {Element} card - The job card element
@@ -130,6 +135,19 @@ class LinkedInSelectors {
       // Alternative artdeco selectors
       '.artdeco-entity-lockup_caption',
       
+      // Job details page selectors from old-server.js (might work on cards too)
+      '.job-details-jobs-unified-top-card__bullet',
+      '.jobs-unified-top-card__bullet',
+      '.job-details-jobs-unified-top-card__location',
+      '.jobs-unified-top-card__location',
+      '.tvm_text.tvm_text--low-emphasis',
+      '.job-details-jobs-unified-top-card__tertiary-description-container .tvm_text',
+      '.jobs-unified-top-card__tertiary-description-container .tvm_text',
+      '[class*="tertiary-description"] .tvm_text',
+      '.tvm_text--low-emphasis',
+      '.job-details-jobs-unified-top-card__tertiary-description-container span',
+      '.jobs-unified-top-card__tertiary-description-container span',
+      
       // Legacy selectors
       '.job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item',
@@ -155,7 +173,6 @@ class LinkedInSelectors {
       'a[href*="/jobs/view/"] .metadata-item'
     ];
   }
-
   /**
    * Get location from a job card element
    * @param {Element} card - The job card element
