@@ -176,7 +176,9 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           }
         } catch (error) {
           console.error('[SessionManager] ❌ Error triggering job fetch:', error);
-        }        startCheckpointPolling();
+        }
+        
+        startCheckpointPolling();
       } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
