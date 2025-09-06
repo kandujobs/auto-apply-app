@@ -515,7 +515,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       } : undefined;
 
       // Trigger job fetching on backend
-      const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
+      const response = await fetch(getBackendEndpoint('/api/jobs/fetch-jobs'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -859,7 +859,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               } : undefined;
 
               // Trigger job fetching on backend
-              const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
+              const response = await fetch(getBackendEndpoint('/api/jobs/fetch-jobs'), {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

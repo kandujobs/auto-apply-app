@@ -85,7 +85,7 @@ export async function triggerJobFetch(): Promise<{ success: boolean; error?: str
     console.log('🔍 Triggering job fetch for user:', user.id);
 
     // Call the backend API to trigger job fetching
-    const response = await fetch(getBackendEndpoint('/api/fetch-jobs'), {
+    const response = await fetch(getBackendEndpoint('/api/jobs/fetch-jobs'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
