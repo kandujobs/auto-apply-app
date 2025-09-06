@@ -292,7 +292,7 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     
     // Build search URL
     const baseUrl = 'https://www.linkedin.com/jobs/search/';
-    const searchParams = new URLSearchParams({
+    const urlParams = new URLSearchParams({
       keywords: searchParams.keywords || 'software engineer',
       location: searchParams.location || 'United States',
       f_WT: '2', // Remote
@@ -302,7 +302,7 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
       pageNum: '0'
     });
     
-    const searchUrl = `${baseUrl}?${searchParams.toString()}`;
+    const searchUrl = `${baseUrl}?${urlParams.toString()}`;
     console.log(`🔍 Searching jobs at: ${searchUrl}`);
     
     // Navigate to job search page
