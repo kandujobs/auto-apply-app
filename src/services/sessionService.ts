@@ -379,6 +379,10 @@ class SessionService {
     this.onCheckpointPortalUpdate = callback;
   }
 
+  setSessionStatusCallback(callback: ((status: SessionStatus) => void) | null) {
+    this.onSessionStatusUpdate = callback;
+  }
+
   sendAnswer(answer: string): void {
     if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
       this.websocket.send(JSON.stringify({

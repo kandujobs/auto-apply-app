@@ -31,7 +31,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         userId,
         data,
         timestamp: Date.now()
-      // };
+      };
       localStorage.setItem(CHECKPOINT_STORAGE_KEY, JSON.stringify(state));
       console.log('[SessionManager] Checkpoint state saved to localStorage');
     } else {
@@ -50,11 +50,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         if (Date.now() - state.timestamp < 30 * 60 * 1000) {
           console.log('[SessionManager] Checkpoint state restored from localStorage');
           return state;
-        // } else {
+        } else {
           localStorage.removeItem(CHECKPOINT_STORAGE_KEY);
           console.log('[SessionManager] Checkpoint state expired, removed from localStorage');
-        // }
-      // }
+        }
+      }
     } catch (error) {
       console.error('[SessionManager] Error loading checkpoint state:', error);
       localStorage.removeItem(CHECKPOINT_STORAGE_KEY);
@@ -73,7 +73,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       // Start polling if modal should be open
       if (restoredState.isOpen) {
         startCheckpointPolling();
-      // }
+      }
     }
   }, []);
 
@@ -91,6 +91,13 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       console.log('[SessionManager] Application completed:', data);
     });
 
+    // Set up session status callback
+    sessionService.setSessionStatusCallback((status: SessionStatus) => {
+      console.log('[SessionManager] Session status update:', status);
+      setSessionStatus(status);
+      onSessionChange(status);
+    });
+
     // Set up checkpoint callback
     sessionService.setCheckpointPortalCallback((data: any) => {
       console.log('[SessionManager] Checkpoint data received:', data);
@@ -99,11 +106,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         console.log('[SessionManager] 🛡️ Checkpoint detected with screenshot');
         setCheckpointData(data);
         setIsCheckpointModalOpen(true);
-      // } else if (data.type === 'checkpoint_completed') {
+      } else if (data.type === 'checkpoint_completed') {
         console.log('[SessionManager] ✅ Checkpoint completed');
         setIsCheckpointModalOpen(false);
         setCheckpointData(null);
-      // }
+      }
     });
 
     // Cleanup on unmount
@@ -117,7 +124,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       if (checkpointPollingInterval) {
         clearInterval(checkpointPollingInterval);
         setCheckpointPollingInterval(null);
-      // }
+      }
       
       // Note: We don't clear localStorage here because the user might refresh the page
       // and we want to restore the checkpoint state. It will be cleared when the
@@ -134,14 +141,14 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       const { data: { user } } = await import('../supabaseClient').then(m => m.supabase.auth.getUser());
       if (!user) {
         setError('User not authenticated');
-        // return;
-      // }
+        return;
+      }
 
-      // Check payment access
+      // Check payment access (temporarily bypassed for consolidation)
       // const hasAccess = await paymentService.checkUserAccess(user.id);
       // if (!hasAccess) {
-        // onShowPaywall();
-        // return;
+      //   onShowPaywall();
+      //   return;
       // }
 
       console.log('[SessionManager] Starting session for user:', user.id);
@@ -157,10 +164,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         // Start checkpoint polling
         startCheckpointPolling();
-      // } else {
+      } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
-      // }
+      }
     } catch (error) {
       console.error('[SessionManager] Error starting session:', error);
       setError(error instanceof Error ? error.message : 'Failed to start session');
@@ -185,10 +192,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         // Clear checkpoint state when session ends
         saveCheckpointState(false, null, null);
-      // } else {
+      } else {
         console.error('[SessionManager] Failed to stop session:', result.error);
         setError(result.error || 'Failed to stop session');
-      // }
+      }
     } catch (error) {
       console.error('[SessionManager] Error stopping session:', error);
       setError(error instanceof Error ? error.message : 'Failed to stop session');
@@ -211,10 +218,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         console.log('[SessionManager] Debug session started successfully');
         setSessionStatus({ isActive: true });
         onSessionStarted();
-      // } else {
+      } else {
         console.error('[SessionManager] Failed to start debug session:', result.error);
         setError(result.error || 'Failed to start debug session');
-      // }
+      }
     } catch (error) {
       console.error('[SessionManager] Error starting debug session:', error);
       setError(error instanceof Error ? error.message : 'Failed to start debug session');
@@ -255,21 +262,21 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           setCurrentUserId(user.id);
           // Save state to localStorage
           saveCheckpointState(true, user.id, data);
-        // } else if (data.state === 'running' && isCheckpointModalOpen) {
+        } else if (data.state === 'running' && isCheckpointModalOpen) {
           console.log('[SessionManager] ✅ Checkpoint completed via polling');
           setIsCheckpointModalOpen(false);
           setCheckpointData(null);
           // Clear state from localStorage
           saveCheckpointState(false, null, null);
-        // } else if (data.state === 'failed') {
+        } else if (data.state === 'failed') {
           console.log('[SessionManager] ❌ Checkpoint failed:', data.message);
           setIsCheckpointModalOpen(false);
           setCheckpointData(null);
           setError(data.message || 'Checkpoint failed');
           // Clear state from localStorage
           saveCheckpointState(false, null, null);
-        // }
-      // }
+        }
+      }
     } catch (error) {
       console.error('[SessionManager] Error polling for checkpoint:', error);
     }
