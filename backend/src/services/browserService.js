@@ -290,11 +290,36 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     
     const page = session.browserPage;
     
-    // Build search URL
+    // Get user profile and search preferences from Supabase
+    console.log('📋 Fetching user search criteria from Supabase...');
+    sendProgressToSession(userId, '📋 Fetching your search preferences...');
+    
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('location, radius, latitude, longitude, salary_min, salary_max, desired_job_title')
+      .eq('id', userId)
+      .single();
+
+    if (profileError) {
+      console.log('⚠️ Error fetching user profile:', profileError.message);
+      console.log('⚠️ Using fallback search criteria');
+    }
+
+    // Use search filters if provided, otherwise fall back to profile data
+    const location = searchParams.location || profile?.location || 'New York, NY';
+    const radius = searchParams.radius || profile?.radius || 25;
+    const salaryMin = searchParams.salaryMin || profile?.salary_min || 0;
+    const salaryMax = searchParams.salaryMax || profile?.salary_max || 0;
+    const jobTitle = searchParams.keywords || profile?.desired_job_title || 'Software Engineer';
+
+    console.log(`🎯 User search criteria: "${jobTitle}" in "${location}" (${radius}mi radius)`);
+    sendProgressToSession(userId, `🎯 Searching for "${jobTitle}" jobs in ${location}`);
+    
+    // Build search URL with user's actual criteria
     const baseUrl = 'https://www.linkedin.com/jobs/search/';
     const urlParams = new URLSearchParams({
-      keywords: searchParams.keywords || 'software engineer',
-      location: searchParams.location || 'United States',
+      keywords: jobTitle,
+      location: location,
       f_WT: '2', // Remote
       f_E: '2', // Entry level
       f_JT: 'F', // Full-time
@@ -447,7 +472,10 @@ async function extractJobsFromPage(page, userId) {
           const description = descriptionElement ? descriptionElement.textContent.trim() : 'Not available';
           
           // Check for Easy Apply button
-          const easyApplyButton = document.querySelector('button[aria-label="Easy Apply"], button:has-text("Easy Apply")');
+          const easyApplyButton = document.querySelector('button[aria-label="Easy Apply"]') || 
+            Array.from(document.querySelectorAll('button')).find(btn => 
+              btn.textContent && btn.textContent.trim().includes('Easy Apply')
+            );
           const hasEasyApply = !!easyApplyButton;
           
           // Extract job ID from URL
