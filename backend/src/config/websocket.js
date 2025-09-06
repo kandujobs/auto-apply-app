@@ -26,13 +26,17 @@ function setupWebSocket(wss) {
           const { userId } = data;
           console.log(`🔐 Client connecting to session for user: ${userId}`);
           
+          // Set the userId on the WebSocket connection
+          ws.userId = userId;
+          console.log(`✅ WebSocket connection registered for user: ${userId}`);
+          
           // Check if session exists
           const session = sessionManager.getSession(userId);
           if (session) {
+            // Session exists, link it to the WebSocket
             session.websocket = ws;
             session.lastActivity = Date.now();
-            ws.userId = userId;
-            console.log(`✅ Client connected to session for user: ${userId}, ws.userId set to: ${ws.userId}`);
+            console.log(`✅ Client connected to existing session for user: ${userId}`);
             
             // Send session status to confirm connection
             ws.send(JSON.stringify({
@@ -46,10 +50,15 @@ function setupWebSocket(wss) {
             
             console.log(`✅ Session status sent to client for user: ${userId}`);
           } else {
-            console.log(`❌ Session not found for user: ${userId}`);
+            // Session doesn't exist yet, but WebSocket is registered
+            // The session will be created later and will link to this WebSocket
+            console.log(`⏳ Session not found yet for user: ${userId}, WebSocket registered for future session`);
+            
+            // Send a waiting status
             ws.send(JSON.stringify({
-              type: 'error',
-              message: 'Session not found'
+              type: 'session_status',
+              status: 'waiting',
+              message: 'Waiting for session to be created'
             }));
           }
         }

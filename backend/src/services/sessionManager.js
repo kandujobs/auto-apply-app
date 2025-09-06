@@ -196,8 +196,19 @@ async function startSessionWithBrowser(userId) {
       };
     }
     
-    // Create new session
-    const session = createSession(userId, null);
+    // Find any existing WebSocket connection for this user
+    const { connectedClients } = require('../config/websocket');
+    let existingWebSocket = null;
+    
+    connectedClients.forEach(client => {
+      if (client.userId === userId && client.readyState === 1) {
+        existingWebSocket = client;
+        console.log(`🔗 Found existing WebSocket connection for user: ${userId}`);
+      }
+    });
+    
+    // Create new session with existing WebSocket if found
+    const session = createSession(userId, existingWebSocket);
     
     // Initialize browser session
     try {
