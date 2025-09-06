@@ -20,7 +20,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [checkpointData, setCheckpointData] = useState<any>(null);
   const [checkpointPollingInterval, setCheckpointPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
+  const [showJobFetchPrompt, setShowJobFetchPrompt] = useState(false);
   // Checkpoint state persistence
   const CHECKPOINT_STORAGE_KEY = 'checkpoint_modal_state';
   
@@ -74,6 +74,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       // Start polling if modal should be open
       if (restoredState.isOpen) {
         startCheckpointPolling();
+        setShowJobFetchPrompt(true);
       }
     }
   }, []);
@@ -165,20 +166,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         // Start checkpoint polling
         
-        // Automatically fetch jobs when session is ready
-        console.log('[SessionManager] Session ready, triggering job fetch...');
-        try {
-          const jobFetchResult = await triggerJobFetch();
-          if (jobFetchResult.success) {
-            console.log('[SessionManager] ✅ Job fetch triggered successfully');
-          } else {
-            console.error('[SessionManager] ❌ Job fetch failed:', jobFetchResult.error);
-          }
-        } catch (error) {
-          console.error('[SessionManager] ❌ Error triggering job fetch:', error);
-        }
-        
-        startCheckpointPolling();
       } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
@@ -234,7 +221,29 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     // Clear state from localStorage
     saveCheckpointState(false, null, null);
   };
-
+  
+  const handleManualJobFetch = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('[SessionManager] Manually triggering job fetch...');
+      const jobFetchResult = await triggerJobFetch();
+      
+      if (jobFetchResult.success) {
+        console.log('[SessionManager] ✅ Job fetch triggered successfully');
+        setShowJobFetchPrompt(false);
+      } else {
+        console.error('[SessionManager] ❌ Job fetch failed:', jobFetchResult.error);
+        setError(jobFetchResult.error || 'Failed to fetch jobs');
+      }
+    } catch (error) {
+      console.error('[SessionManager] ❌ Error triggering job fetch:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch jobs');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // Checkpoint polling function
   const pollForCheckpoint = async () => {
     try {
@@ -348,6 +357,35 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           </div>
         </div>
         
+        {/* Session Success Message */}
+        {showJobFetchPrompt && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-green-800">
+                  Session Started Successfully!
+                </h3>
+                <div className="mt-2 text-sm text-green-700">
+                  <p>Your browser session is ready. Click below to fetch jobs from LinkedIn.</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={handleManualJobFetch}
+                    disabled={isLoading}
+                    className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {isLoading ? "Fetching Jobs..." : "Fetch Jobs from LinkedIn"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}        
         {error && (
           <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
             {error}
