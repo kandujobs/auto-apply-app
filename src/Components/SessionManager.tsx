@@ -422,27 +422,17 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       <h2 className="text-xl font-semibold mb-4">Session Management</h2>
       
       <div className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <div className="flex-1">
-            <p className="text-sm text-gray-600">Status: {sessionStatus.isActive ? 'Active' : 'Inactive'}</p>
-            {sessionStatus.session && (
-              <p className="text-sm text-gray-600">
-                Logged in: {sessionStatus.session.isLoggedIn ? 'Yes' : 'No'}
-              </p>
-            )}
-            {startupProgress && (
-              <div className="mt-2">
-                <p className="text-sm text-blue-600 font-medium">{startupProgress}</p>
-                {isLoading && startupProgress.includes('Connecting') && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    This may take up to 30 seconds - please wait while we set up your browser session
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="flex justify-center">
+        <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm text-gray-600">Status: {sessionStatus.isActive ? 'Active' : 'Inactive'}</p>
+              {sessionStatus.session && (
+                <p className="text-sm text-gray-600">
+                  Logged in: {sessionStatus.session.isLoggedIn ? 'Yes' : 'No'}
+                </p>
+              )}
+            </div>
+            
+            <div className="flex justify-center">
             {sessionStatus.isActive ? (
               <button
                 onClick={handleStopSession}
@@ -483,6 +473,18 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           </div>
         </div>
         
+        {/* Progress messages displayed below the button */}
+        {startupProgress && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm text-blue-600 font-medium">{startupProgress}</p>
+            {isLoading && startupProgress.includes('Connecting') && (
+              <p className="text-xs text-gray-500 mt-1">
+                This may take up to 30 seconds - please wait while we set up your browser session
+              </p>
+            )}
+          </div>
+        )}
+        
         {/* Session Success Message */}
         {showJobFetchPrompt && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
@@ -514,21 +516,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         )}        
         {error && (
           <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            <div className="flex justify-between items-center">
-              <span>{error}</span>
-              <button
-                onClick={() => {
-                  setError(null);
-                  // Clear session state to allow fresh start
-                  saveSessionState(false, null);
-                  setSessionStatus({ isActive: false });
-                  setShowJobFetchPrompt(false);
-                }}
-                className="ml-2 text-red-600 hover:text-red-800 text-sm underline"
-              >
-                Clear & Retry
-              </button>
-            </div>
+            {error}
           </div>
         )}
       </div>
