@@ -505,8 +505,7 @@ async function extractJobsFromPage(page, userId) {
         const jobInfo = {
           ...basicJobInfo,
           ...jobDetails,
-          id: jobDetails.jobId || `job_${i}_${Date.now()}`,
-          extracted_at: new Date().toISOString()
+          id: jobDetails.jobId || `job_${i}_${Date.now()}`
         };
         
         jobs.push(jobInfo);
@@ -523,8 +522,7 @@ async function extractJobsFromPage(page, userId) {
               location: jobInfo.location,
               description: jobInfo.description,
               job_url: jobInfo.url,
-              has_easy_apply: jobInfo.hasEasyApply,
-              extracted_at: jobInfo.extracted_at
+              has_easy_apply: jobInfo.hasEasyApply
             });
           
           if (error) {
