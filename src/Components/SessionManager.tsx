@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { paymentService } from '../services/paymentService';
+import { triggerJobFetch } from '../services/linkedinFetchedJobs';
 import { supabase } from '../supabaseClient';
 import { getBackendUrl } from '../utils/backendUrl';
 import CheckpointModal from './CheckpointModal';
@@ -163,7 +164,19 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         onSessionStarted();
         
         // Start checkpoint polling
-        startCheckpointPolling();
+        
+        // Automatically fetch jobs when session is ready
+        console.log('[SessionManager] Session ready, triggering job fetch...');
+        try {
+          const jobFetchResult = await triggerJobFetch();
+          if (jobFetchResult.success) {
+            console.log('[SessionManager] ✅ Job fetch triggered successfully');
+          } else {
+            console.error('[SessionManager] ❌ Job fetch failed:', jobFetchResult.error);
+          }
+        } catch (error) {
+          console.error('[SessionManager] ❌ Error triggering job fetch:', error);
+        }        startCheckpointPolling();
       } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');

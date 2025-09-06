@@ -23,6 +23,7 @@ class SessionService {
   private onApplicationCompleted: ((data: any) => void) | null = null;
   private onCheckpointPortalUpdate: ((data: any) => void) | null = null;
   private onSessionStatusUpdate: ((status: SessionStatus) => void) | null = null;
+  private onJobFetchCompleted: ((data: any) => void) | null = null;
   private lastProgressMessage: string | null = null;
   private lastProgressTime: number = 0;
   private connectionPromise: Promise<void> | null = null;
