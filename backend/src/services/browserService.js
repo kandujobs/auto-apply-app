@@ -3,6 +3,7 @@ const path = require('path');
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
 const { chromium } = require('playwright');
+const { setState, getState } = require('../checkpointStore');
 
 // Global variables to track application status
 let currentApplicationStatus = 'idle';
@@ -139,82 +140,62 @@ async function initializeBrowserSession(userId, credentials) {
     if (currentUrl.includes('/checkpoint/')) {
       console.log('🛡️ LinkedIn security checkpoint detected');
       
-      // Take a screenshot of the checkpoint page
-      console.log('📸 Taking screenshot of checkpoint page...');
-      const screenshotPath = `/tmp/checkpoint_${userId}_${Date.now()}.png`;
-      await page.screenshot({ path: screenshotPath, fullPage: true });
-      console.log('📸 Checkpoint screenshot saved:', screenshotPath);
+      // Set checkpoint state for polling
+      setState(userId, {
+        state: 'checkpoint_required',
+        sessionId: userId,
+        step: 'captcha_or_2fa',
+        checkpointUrl: currentUrl,
+        message: 'LinkedIn security checkpoint detected - please complete the verification'
+      });
       
-      // Convert screenshot to base64 for frontend display
-      const fs = require('fs');
-      const screenshotBuffer = fs.readFileSync(screenshotPath);
-      const screenshotBase64 = screenshotBuffer.toString('base64');
-      
-      // Clean up the temporary file
-      fs.unlinkSync(screenshotPath);
-      
-      // Store checkpoint data in session for polling
+      // Store the page reference in the session for action handling
       const { sessionManager } = require('./sessionManager');
       const session = sessionManager.getSession(userId);
       if (session) {
-        session.checkpointData = {
-          type: 'checkpoint_detected',
-          message: 'LinkedIn security checkpoint detected - please complete the verification',
-          checkpointUrl: currentUrl,
-          screenshot: `data:image/png;base64,${screenshotBase64}`,
-          userId: userId,
-          timestamp: Date.now()
+        session.browserPage = page;
+        
+        // Add resume function to session
+        session.resumeAfterCheckpoint = () => {
+          console.log('🔄 Resuming session after checkpoint completion');
+          setState(userId, { state: 'running' });
         };
-        console.log('📡 Checkpoint data stored in session for polling');
       }
       
-      // Try WebSocket notification as fallback
-      try {
-        broadcastToUser(userId, {
-          type: 'checkpoint_detected',
-          message: 'LinkedIn security checkpoint detected - please complete the verification',
-          checkpointUrl: currentUrl,
-          screenshot: `data:image/png;base64,${screenshotBase64}`,
-          userId: userId
-        });
-        console.log('📡 Checkpoint notification sent via WebSocket');
-      } catch (error) {
-        console.log('⚠️ WebSocket notification failed, using polling fallback:', error.message);
-      }
+      console.log('📡 Checkpoint state set for polling - waiting for user interaction...');
       
-      // Wait for user to complete checkpoint (polling approach)
-      console.log('⏳ Waiting for user to complete checkpoint...');
+      // Wait for checkpoint to be completed via user actions
       const startTime = Date.now();
-      const timeout = 5 * 60 * 1000; // 5 minutes timeout
+      const timeout = 15 * 60 * 1000; // 15 minutes timeout
       
-      while (Date.now() - startTime < timeout) {
-        await page.waitForTimeout(2000); // Check every 2 seconds
+      while (getState(userId).state === 'checkpoint_required') {
+        await page.waitForTimeout(1000); // Check every second
         
-        const currentUrl = page.url();
-        console.log(`📍 Current URL during checkpoint wait: ${currentUrl}`);
+        if (Date.now() - startTime > timeout) {
+          console.log('❌ Checkpoint timeout after 15 minutes');
+          setState(userId, { 
+            state: 'failed', 
+            message: 'Checkpoint timeout - please try again' 
+          });
+          throw new Error('LinkedIn security checkpoint timeout. Please try again.');
+        }
         
-        if (!currentUrl.includes('/checkpoint/')) {
-          console.log('✅ Checkpoint completed - user has moved past checkpoint page');
-          
-          // Notify frontend that checkpoint is completed
-          try {
-            broadcastToUser(userId, {
-              type: 'checkpoint_completed',
-              message: 'Security checkpoint completed successfully'
-            });
-          } catch (error) {
-            console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
-          }
+        // Check if URL changed (user completed checkpoint)
+        const currentUrlCheck = page.url();
+        if (!currentUrlCheck.includes('/checkpoint/')) {
+          console.log('✅ Checkpoint completed - URL changed');
+          setState(userId, { state: 'running' });
           break;
         }
       }
       
-      // Final check - if still on checkpoint page after timeout
-      const finalUrl = page.url();
-      if (finalUrl.includes('/checkpoint/')) {
-        console.log('❌ Checkpoint not completed within timeout');
-        throw new Error('LinkedIn security checkpoint was not completed within the time limit. Please try again.');
+      // Final verification
+      const finalState = getState(userId);
+      if (finalState.state === 'failed') {
+        throw new Error(finalState.message || 'Checkpoint failed');
       }
+      
+      console.log('✅ Checkpoint flow completed successfully');
     }
     
     // Verify we're logged in

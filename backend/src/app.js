@@ -7,6 +7,7 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const checkpointRoutes = require('./routes/checkpointRoutes');
 
 // Import middleware
 const { errorHandler } = require('./middlewares/errorHandler');
@@ -108,6 +109,7 @@ console.log('⚠️ Checkpoint portal disabled for headless mode');
 app.use('/api/session', sessionRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/checkpoint', checkpointRoutes);
 app.use('/api', healthRoutes);
 
 // Basic route

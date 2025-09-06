@@ -18,6 +18,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
   const [checkpointData, setCheckpointData] = useState<any>(null);
   const [checkpointPollingInterval, setCheckpointPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up session service callbacks
@@ -83,6 +84,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       }
 
       console.log('[SessionManager] Starting session for user:', user.id);
+      setCurrentUserId(user.id);
       
       // Start session
       const result = await sessionService.startSession();
@@ -174,18 +176,23 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const response = await fetch(`/api/session/checkpoint/${user.id}`);
+      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${user.id}/status`);
       if (response.ok) {
         const data = await response.json();
         
-        if (data.type === 'checkpoint_detected') {
+        if (data.state === 'checkpoint_required') {
           console.log('[SessionManager] 🛡️ Checkpoint detected via polling');
           setCheckpointData(data);
           setIsCheckpointModalOpen(true);
-        } else if (data.type === 'checkpoint_completed') {
+        } else if (data.state === 'running' && isCheckpointModalOpen) {
           console.log('[SessionManager] ✅ Checkpoint completed via polling');
           setIsCheckpointModalOpen(false);
           setCheckpointData(null);
+        } else if (data.state === 'failed') {
+          console.log('[SessionManager] ❌ Checkpoint failed:', data.message);
+          setIsCheckpointModalOpen(false);
+          setCheckpointData(null);
+          setError(data.message || 'Checkpoint failed');
         }
       }
     } catch (error) {
@@ -266,7 +273,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       <CheckpointModal
         isOpen={isCheckpointModalOpen}
         onClose={handleCheckpointModalClose}
-        checkpointData={checkpointData}
+        userId={currentUserId || ''}
         onCheckpointCompleted={handleCheckpointCompleted}
       />
     </div>

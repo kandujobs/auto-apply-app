@@ -1,63 +1,145 @@
 import React, { useState, useEffect } from 'react';
-import { FiX, FiRefreshCw, FiCheck } from 'react-icons/fi';
+import { FiX, FiRefreshCw, FiCheck, FiMousePointer } from 'react-icons/fi';
+import { getBackendEndpoint } from '../utils/backendUrl';
 
 interface CheckpointModalProps {
   isOpen: boolean;
   onClose: () => void;
-  checkpointData: {
-    message: string;
-    checkpointUrl: string;
-    screenshot: string;
-    userId: string;
-  } | null;
+  userId: string;
   onCheckpointCompleted: () => void;
 }
 
 export default function CheckpointModal({ 
   isOpen, 
   onClose, 
-  checkpointData, 
+  userId,
   onCheckpointCompleted 
 }: CheckpointModalProps) {
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [status, setStatus] = useState<'waiting' | 'completed' | 'error'>('waiting');
+  const [imgUrl, setImgUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
+
+  // Generate fresh image URL with timestamp to prevent caching
+  const refreshImage = () => {
+    const timestamp = Date.now();
+    setImgUrl(`${getBackendEndpoint()}/api/checkpoint/${userId}/frame.png?t=${timestamp}`);
+  };
 
   useEffect(() => {
-    if (isOpen && checkpointData) {
-      setStatus('waiting');
-      setIsCompleting(false);
+    if (isOpen && userId) {
+      refreshImage();
+      setIsLoading(false);
+      setError(null);
     }
-  }, [isOpen, checkpointData]);
+  }, [isOpen, userId]);
+
+  const sendAction = async (payload: any) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${userId}/action`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Action failed');
+      }
+      
+      // Refresh the image after action
+      setTimeout(refreshImage, 500);
+      
+    } catch (err) {
+      console.error('Error sending action:', err);
+      setError(err instanceof Error ? err.message : 'Action failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (isLoading) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    console.log(`Clicked at coordinates: (${x}, ${y})`);
+    sendAction({ type: 'click', x: Math.round(x), y: Math.round(y) });
+  };
+
+  const handleInputSubmit = () => {
+    if (!inputValue.trim() || isLoading) return;
+    
+    sendAction({ 
+      type: 'type', 
+      selector: 'input:focus', 
+      text: inputValue 
+    });
+    setInputValue('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleInputSubmit();
+    }
+  };
+
+  const handlePressKey = (key: string) => {
+    sendAction({ type: 'press', key });
+  };
 
   const handleCompleteCheckpoint = async () => {
-    setIsCompleting(true);
-    setStatus('waiting');
-    
-    // The backend will automatically detect when the user completes the checkpoint
-    // by monitoring the URL changes. We just need to wait for the completion signal.
-    console.log('User is completing checkpoint...');
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${userId}/complete`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to complete checkpoint');
+      }
+      
+      onCheckpointCompleted();
+      
+    } catch (err) {
+      console.error('Error completing checkpoint:', err);
+      setError(err instanceof Error ? err.message : 'Failed to complete checkpoint');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
-  if (!isOpen || !checkpointData) {
+  if (!isOpen || !userId) {
     return null;
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 grid place-items-center z-50 p-4">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-[500px] max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
               <FiRefreshCw className="w-4 h-4 text-yellow-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Security Checkpoint Required</h2>
-              <p className="text-sm text-gray-600">LinkedIn has requested additional verification</p>
+              <h2 className="text-lg font-semibold text-gray-900">LinkedIn Checkpoint</h2>
+              <p className="text-sm text-gray-600">Complete the verification below</p>
             </div>
           </div>
           <button
@@ -68,111 +150,134 @@ export default function CheckpointModal({
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
-          <div className="space-y-6">
-            {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-medium text-blue-900 mb-2">What you need to do:</h3>
-              <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                <li>Complete the LinkedIn security verification shown in the screenshot below</li>
-                <li>Follow any additional steps LinkedIn requires (phone verification, email confirmation, etc.)</li>
-                <li>Once completed, click "I've Completed the Checkpoint" below</li>
-                <li>Our system will automatically detect when you're done and continue</li>
-              </ol>
-            </div>
+        {/* Instructions */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p className="text-sm text-blue-800">
+            <strong>Tip:</strong> Click directly on the screenshot where you'd normally click on LinkedIn.
+            Use the input field below to type text, and the buttons for common actions.
+          </p>
+        </div>
 
-            {/* Screenshot */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="bg-gray-100 px-4 py-2 border-b">
-                <h4 className="font-medium text-gray-900">LinkedIn Checkpoint Page</h4>
-              </div>
-              <div className="bg-gray-50 p-4">
-                <img
-                  src={checkpointData.screenshot}
-                  alt="LinkedIn Security Checkpoint"
-                  className="w-full h-auto rounded border shadow-sm"
-                  style={{ maxHeight: '500px', objectFit: 'contain' }}
-                />
-              </div>
-            </div>
-
-            {/* Status */}
-            {status === 'waiting' && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <FiRefreshCw className="w-5 h-5 text-yellow-600 animate-spin" />
-                  <span className="text-yellow-800 font-medium">Waiting for you to complete the checkpoint...</span>
-                </div>
-                <p className="text-sm text-yellow-700 mt-1">
-                  Complete the verification steps shown above, then click the button below.
-                </p>
-              </div>
-            )}
-
-            {status === 'completed' && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <FiCheck className="w-5 h-5 text-green-600" />
-                  <span className="text-green-800 font-medium">Checkpoint completed successfully!</span>
-                </div>
-                <p className="text-sm text-green-700 mt-1">
-                  The session will continue automatically.
-                </p>
-              </div>
-            )}
-
-            {status === 'error' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <FiX className="w-5 h-5 text-red-600" />
-                  <span className="text-red-800 font-medium">Checkpoint completion failed</span>
-                </div>
-                <p className="text-sm text-red-700 mt-1">
-                  Please try again or contact support if the issue persists.
-                </p>
+        {/* Screenshot */}
+        <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
+          <div className="bg-gray-100 px-3 py-2 border-b flex items-center justify-between">
+            <h4 className="font-medium text-gray-900 text-sm">Live Screenshot</h4>
+            <button
+              onClick={refreshImage}
+              disabled={isLoading}
+              className="text-xs text-blue-600 hover:text-blue-800 disabled:opacity-50 flex items-center space-x-1"
+            >
+              <FiRefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
+            </button>
+          </div>
+          <div className="bg-gray-50 p-2">
+            {imgUrl ? (
+              <img
+                src={imgUrl}
+                alt="LinkedIn Checkpoint"
+                className="w-full rounded-lg cursor-crosshair border shadow-sm"
+                onClick={handleImageClick}
+                style={{ maxHeight: '400px', objectFit: 'contain' }}
+              />
+            ) : (
+              <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                <FiRefreshCw className="w-8 h-8 text-gray-400 animate-spin" />
               </div>
             )}
           </div>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
+        {/* Controls */}
+        <div className="space-y-3">
+          {/* Text Input */}
+          <div>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Type text to send to focused field..."
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isLoading}
+            />
+            <button
+              onClick={handleInputSubmit}
+              disabled={!inputValue.trim() || isLoading}
+              className="mt-2 w-full bg-blue-600 text-white text-sm py-2 px-3 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Send Text
+            </button>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => handlePressKey('Enter')}
+              disabled={isLoading}
+              className="border border-gray-300 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>⏎</span>
+              <span>Enter</span>
+            </button>
+            <button
+              onClick={() => handlePressKey('Tab')}
+              disabled={isLoading}
+              className="border border-gray-300 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>⇥</span>
+              <span>Tab</span>
+            </button>
+            <button
+              onClick={() => handlePressKey('Escape')}
+              disabled={isLoading}
+              className="border border-gray-300 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-1"
+            >
+              <span>⎋</span>
+              <span>Escape</span>
+            </button>
+            <button
+              onClick={() => sendAction({ type: 'wait' })}
+              disabled={isLoading}
+              className="border border-gray-300 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-1"
+            >
+              <FiRefreshCw className="w-3 h-3" />
+              <span>Wait</span>
+            </button>
+          </div>
+
+          {/* Complete Button */}
+          <button
+            onClick={handleCompleteCheckpoint}
+            disabled={isLoading}
+            className="w-full bg-green-600 text-white text-sm py-3 px-4 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+          >
+            {isLoading ? (
+              <>
+                <FiRefreshCw className="w-4 h-4 animate-spin" />
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <FiCheck className="w-4 h-4" />
+                <span>I've Completed the Checkpoint</span>
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t bg-gray-50">
-          <div className="flex space-x-3">
-            <button
-              onClick={handleRefresh}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Refresh Page
-            </button>
-          </div>
-          
-          <div className="flex space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Cancel Session
-            </button>
-            
-            <button
-              onClick={handleCompleteCheckpoint}
-              disabled={isCompleting || status === 'completed'}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
-            >
-              {isCompleting ? (
-                <>
-                  <FiRefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Completing...</span>
-                </>
-              ) : (
-                <>
-                  <FiCheck className="w-4 h-4" />
-                  <span>I've Completed the Checkpoint</span>
-                </>
-              )}
-            </button>
-          </div>
+        <div className="mt-4 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
+            Click the screenshot to interact with LinkedIn directly. The system will automatically detect when you're done.
+          </p>
         </div>
       </div>
     </div>
