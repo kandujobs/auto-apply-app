@@ -138,11 +138,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       }
 
       // Check payment access
-      const hasAccess = await paymentService.checkUserAccess(user.id);
-      if (!hasAccess) {
-        onShowPaywall();
-        return;
-      }
+      // const hasAccess = await paymentService.checkUserAccess(user.id);
+      // if (!hasAccess) {
+        // onShowPaywall();
+        // return;
+      // }
 
       console.log('[SessionManager] Starting session for user:', user.id);
       setCurrentUserId(user.id);
@@ -197,31 +197,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     }
   };
 
-  const handleDebugStartSession = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      console.log('[SessionManager] Starting debug session');
-      
-      // Start session with debug flag
-      const result = await sessionService.startSession();
-      
-      if (result.success) {
-        console.log('[SessionManager] Debug session started successfully');
-        setSessionStatus({ isActive: true });
-        onSessionStarted();
-      } else {
-        console.error('[SessionManager] Failed to start debug session:', result.error);
-        setError(result.error || 'Failed to start debug session');
-      }
-    } catch (error) {
-      console.error('[SessionManager] Error starting debug session:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start debug session');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleCheckpointModalClose = () => {
     setIsCheckpointModalOpen(false);
@@ -319,13 +294,6 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
               {isLoading ? 'Starting...' : 'Start Session'}
             </button>
             
-            <button
-              onClick={handleDebugStartSession}
-              disabled={isLoading || sessionStatus.isActive}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Starting...' : 'Debug Start'}
-            </button>
             
             <button
               onClick={handleStopSession}
