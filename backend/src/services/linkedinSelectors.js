@@ -1,15 +1,19 @@
 /**
  * LinkedIn CSS Selectors Utility
  * Centralized location for all LinkedIn selectors to make maintenance easier
+ * Based on working selectors from old-server.js
  */
 
 class LinkedInSelectors {
   /**
-   * Get job title selectors array
+   * Get job title selectors array (from job cards)
    * @returns {Array<string>} - Array of CSS selectors for job title
    */
   static getJobTitleSelectors() {
     return [
+      // Working selectors from old-server.js - THIS IS THE KEY!
+      'span[aria-hidden="true"] > strong',
+      
       // New artdeco selectors (most likely to work)
       '.artdeco-entity-lockup_title',
       '.artdeco-entity-lockup__title',
@@ -60,13 +64,15 @@ class LinkedInSelectors {
   }
 
   /**
-   * Get company name selectors array
+   * Get company name selectors array (from job cards)
    * @returns {Array<string>} - Array of CSS selectors for company name
    */
   static getCompanyNameSelectors() {
     return [
-      // New artdeco selectors (most likely to work)
+      // Working selectors from old-server.js
       '.artdeco-entity-lockup__subtitle',
+      
+      // Alternative artdeco selectors
       '.artdeco-entity-lockup_subtitle',
       
       // Legacy selectors
@@ -113,14 +119,16 @@ class LinkedInSelectors {
   }
 
   /**
-   * Get location selectors array
+   * Get location selectors array (from job cards)
    * @returns {Array<string>} - Array of CSS selectors for location
    */
   static getLocationSelectors() {
     return [
-      // New artdeco selectors (most likely to work)
-      '.artdeco-entity-lockup_caption',
+      // Working selectors from old-server.js
       '.artdeco-entity-lockup__caption',
+      
+      // Alternative artdeco selectors
+      '.artdeco-entity-lockup_caption',
       
       // Legacy selectors
       '.job-card-container__metadata-item',

@@ -453,10 +453,12 @@ async function extractJobsFromPage(page, userId) {
           
           const card = cards[index];
           
+          // For company and location, search in the data-control-name parent (like old-server.js)
+          const dataControlParent = card.closest('[data-control-name]');          
           // Helper function to find element with multiple selectors
-          const findElement = (selectors) => {
+          const findElement = (selectors, searchIn = card) => {
             for (const selector of selectors) {
-              const element = card.querySelector(selector);
+              const element = searchIn.querySelector(selector);
               if (element && element.textContent.trim()) {
                 return element.textContent.trim();
               }
@@ -466,8 +468,8 @@ async function extractJobsFromPage(page, userId) {
           
           return {
             title: findElement(titleSelectors),
-            company: findElement(companySelectors),
-            location: findElement(locationSelectors),
+            company: findElement(companySelectors, dataControlParent || card),
+            location: findElement(locationSelectors, dataControlParent || card),
             url: card.href
           };
         }, {
