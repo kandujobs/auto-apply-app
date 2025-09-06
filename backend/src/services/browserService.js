@@ -153,7 +153,22 @@ async function initializeBrowserSession(userId, credentials) {
       // Clean up the temporary file
       fs.unlinkSync(screenshotPath);
       
-      // Notify frontend about checkpoint with screenshot
+      // Store checkpoint data in session for polling
+      const { sessionManager } = require('./sessionManager');
+      const session = sessionManager.getSession(userId);
+      if (session) {
+        session.checkpointData = {
+          type: 'checkpoint_detected',
+          message: 'LinkedIn security checkpoint detected - please complete the verification',
+          checkpointUrl: currentUrl,
+          screenshot: `data:image/png;base64,${screenshotBase64}`,
+          userId: userId,
+          timestamp: Date.now()
+        };
+        console.log('📡 Checkpoint data stored in session for polling');
+      }
+      
+      // Try WebSocket notification as fallback
       try {
         broadcastToUser(userId, {
           type: 'checkpoint_detected',
@@ -162,9 +177,9 @@ async function initializeBrowserSession(userId, credentials) {
           screenshot: `data:image/png;base64,${screenshotBase64}`,
           userId: userId
         });
-        console.log('📡 Checkpoint notification sent to frontend');
+        console.log('📡 Checkpoint notification sent via WebSocket');
       } catch (error) {
-        console.log('⚠️ Could not notify frontend via WebSocket:', error.message);
+        console.log('⚠️ WebSocket notification failed, using polling fallback:', error.message);
       }
       
       // Wait for user to complete checkpoint (polling approach)

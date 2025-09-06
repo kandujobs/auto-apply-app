@@ -125,6 +125,40 @@ router.get('/status/:userId', async (req, res) => {
   }
 });
 
+// Get checkpoint data (for polling)
+router.get('/checkpoint/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const session = sessionManager.getSession(userId);
+    
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Return checkpoint data if it exists
+    if (session.checkpointData) {
+      const checkpointData = { ...session.checkpointData };
+      // Clear checkpoint data after sending (one-time use)
+      delete session.checkpointData;
+      return res.json(checkpointData);
+    }
+
+    // No checkpoint data available
+    res.json({ 
+      type: 'no_checkpoint',
+      message: 'No checkpoint data available'
+    });
+  } catch (error) {
+    console.error('Error getting checkpoint data:', error);
+    res.status(500).json({ error: 'Failed to get checkpoint data' });
+  }
+});
+
 // Update session status
 router.post('/status', async (req, res) => {
   try {

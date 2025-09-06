@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { paymentService } from '../services/paymentService';
+import { supabase } from '../supabaseClient';
+import { getBackendEndpoint } from '../utils/backendUrl';
 import CheckpointModal from './CheckpointModal';
 
 interface SessionManagerProps {
@@ -15,6 +17,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [error, setError] = useState<string | null>(null);
   const [isCheckpointModalOpen, setIsCheckpointModalOpen] = useState(false);
   const [checkpointData, setCheckpointData] = useState<any>(null);
+  const [checkpointPollingInterval, setCheckpointPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Set up session service callbacks
@@ -51,6 +54,12 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       sessionService.setQuestionCallback(null);
       sessionService.setApplicationCompletedCallback(null);
       sessionService.setCheckpointPortalCallback(null);
+      
+      // Clear checkpoint polling
+      if (checkpointPollingInterval) {
+        clearInterval(checkpointPollingInterval);
+        setCheckpointPollingInterval(null);
+      }
     };
   }, []);
 
@@ -82,6 +91,9 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         console.log('[SessionManager] Session started successfully');
         setSessionStatus({ isActive: true });
         onSessionStarted();
+        
+        // Start checkpoint polling
+        startCheckpointPolling();
       } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
@@ -104,6 +116,9 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       if (result.success) {
         console.log('[SessionManager] Session stopped successfully');
         setSessionStatus({ isActive: false });
+        
+        // Stop checkpoint polling
+        stopCheckpointPolling();
       } else {
         console.error('[SessionManager] Failed to stop session:', result.error);
         setError(result.error || 'Failed to stop session');
@@ -151,6 +166,51 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     console.log('[SessionManager] User completed checkpoint');
     setIsCheckpointModalOpen(false);
     setCheckpointData(null);
+  };
+
+  // Checkpoint polling function
+  const pollForCheckpoint = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const response = await fetch(`/api/session/checkpoint/${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.type === 'checkpoint_detected') {
+          console.log('[SessionManager] 🛡️ Checkpoint detected via polling');
+          setCheckpointData(data);
+          setIsCheckpointModalOpen(true);
+        } else if (data.type === 'checkpoint_completed') {
+          console.log('[SessionManager] ✅ Checkpoint completed via polling');
+          setIsCheckpointModalOpen(false);
+          setCheckpointData(null);
+        }
+      }
+    } catch (error) {
+      console.error('[SessionManager] Error polling for checkpoint:', error);
+    }
+  };
+
+  // Start checkpoint polling when session is active
+  const startCheckpointPolling = () => {
+    if (checkpointPollingInterval) {
+      clearInterval(checkpointPollingInterval);
+    }
+    
+    const interval = setInterval(pollForCheckpoint, 2000); // Poll every 2 seconds
+    setCheckpointPollingInterval(interval);
+    console.log('[SessionManager] Started checkpoint polling');
+  };
+
+  // Stop checkpoint polling
+  const stopCheckpointPolling = () => {
+    if (checkpointPollingInterval) {
+      clearInterval(checkpointPollingInterval);
+      setCheckpointPollingInterval(null);
+      console.log('[SessionManager] Stopped checkpoint polling');
+    }
   };
 
   return (
