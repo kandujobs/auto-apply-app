@@ -200,7 +200,9 @@ class SessionService {
 
       // Set up event handlers
       this.websocket.onopen = () => {
-        console.log('🔌 [CONNECT] WebSocket opened, sending session_connect message...');
+        console.log('🔌 [CONNECT] WebSocket opened successfully!');
+        console.log('🔌 [CONNECT] WebSocket readyState:', this.websocket?.readyState);
+        console.log('🔌 [CONNECT] Sending session_connect message...');
         
         if (!this.sessionId) {
           console.error('❌ [CONNECT] No session ID available');
@@ -216,11 +218,27 @@ class SessionService {
           };
           console.log('📤 [CONNECT] Sending message:', connectMessage);
           this.websocket!.send(JSON.stringify(connectMessage));
-          console.log('📤 [CONNECT] Session connect message sent');
+          console.log('📤 [CONNECT] Session connect message sent successfully');
         } catch (error) {
           console.error('❌ [CONNECT] Error sending session connect message:', error);
           this.connectionPromise = null;
           reject(error);
+        }
+      };
+
+      this.websocket.onerror = (error) => {
+        console.error('❌ [CONNECT] WebSocket error:', error);
+        console.error('❌ [CONNECT] WebSocket readyState:', this.websocket?.readyState);
+        this.connectionPromise = null;
+        reject(new Error('WebSocket connection error'));
+      };
+
+      this.websocket.onclose = (event) => {
+        console.log('🔌 [CONNECT] WebSocket closed:', event.code, event.reason);
+        console.log('🔌 [CONNECT] WebSocket wasClean:', event.wasClean);
+        if (!event.wasClean) {
+          this.connectionPromise = null;
+          reject(new Error(`WebSocket connection closed unexpectedly: ${event.code} ${event.reason}`));
         }
       };
 
