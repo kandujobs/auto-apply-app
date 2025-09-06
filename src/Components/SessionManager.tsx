@@ -21,6 +21,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
   const [checkpointPollingInterval, setCheckpointPollingInterval] = useState<NodeJS.Timeout | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showJobFetchPrompt, setShowJobFetchPrompt] = useState(false);
+  const [startupProgress, setStartupProgress] = useState<string>('');
   // Checkpoint state persistence
   const CHECKPOINT_STORAGE_KEY = 'checkpoint_modal_state';
   // Session state persistence
@@ -187,11 +188,13 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     try {
       setIsLoading(true);
       setError(null);
+      setStartupProgress('Initializing session...');
 
       // Get current user
       const { data: { user } } = await import('../supabaseClient').then(m => m.supabase.auth.getUser());
       if (!user) {
         setError('User not authenticated');
+        setStartupProgress('');
         return;
       }
 
@@ -204,12 +207,24 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
 
       console.log('[SessionManager] Starting session for user:', user.id);
       setCurrentUserId(user.id);
+      setStartupProgress('Connecting to backend...');
+      
+      // Add a progress update after a few seconds to show it's still working
+      const progressTimeout = setTimeout(() => {
+        if (isLoading) {
+          setStartupProgress('Setting up browser session...');
+        }
+      }, 5000);
       
       // Start session
       const result = await sessionService.startSession();
       
+      // Clear the progress timeout
+      clearTimeout(progressTimeout);
+      
       if (result.success) {
         console.log('[SessionManager] Session started successfully');
+        setStartupProgress('Session established successfully!');
         setSessionStatus({ isActive: true });
         onSessionStarted();
         
@@ -217,15 +232,22 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         saveSessionState(true, user.id);
         setShowJobFetchPrompt(true);
         
+        // Clear startup progress after a short delay
+        setTimeout(() => {
+          setStartupProgress('');
+        }, 2000);
+        
         // Start checkpoint polling
         
       } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
+        setStartupProgress('');
       }
     } catch (error) {
       console.error('[SessionManager] Error starting session:', error);
       setError(error instanceof Error ? error.message : 'Failed to start session');
+      setStartupProgress('');
     } finally {
       setIsLoading(false);
     }
@@ -370,6 +392,16 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
               <p className="text-sm text-gray-600">
                 Logged in: {sessionStatus.session.isLoggedIn ? 'Yes' : 'No'}
               </p>
+            )}
+            {startupProgress && (
+              <div className="mt-2">
+                <p className="text-sm text-blue-600 font-medium">{startupProgress}</p>
+                {isLoading && startupProgress.includes('Connecting') && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    This may take up to 30 seconds - please wait while we set up your browser session
+                  </p>
+                )}
+              </div>
             )}
           </div>
           
