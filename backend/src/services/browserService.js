@@ -149,6 +149,16 @@ async function initializeBrowserSession(userId, credentials) {
         message: 'LinkedIn security checkpoint detected - please complete the verification'
       });
       
+      // Broadcast checkpoint detection to frontend
+      broadcastToUser(userId, {
+        type: 'checkpoint_detected',
+        state: 'checkpoint_required',
+        sessionId: userId,
+        step: 'captcha_or_2fa',
+        checkpointUrl: currentUrl,
+        message: 'LinkedIn security checkpoint detected - please complete the verification'
+      });
+      
       // Store the page reference in the session for action handling
       const { sessionManager } = require('./sessionManager');
       const session = sessionManager.getSession(userId);
