@@ -442,46 +442,12 @@ async function extractJobsFromPage(page, userId) {
           break;
         }
         
-        // Extract basic job info from the card
-        const basicJobInfo = await page.evaluate((index) => {
+        // Extract basic job info from the card using LinkedInSelectors
+        const basicJobInfo = await page.evaluate((index, titleSelectors, companySelectors, locationSelectors) => {
           const cards = document.querySelectorAll('a.job-card-container__link');
           if (index >= cards.length) return null;
           
           const card = cards[index];
-          
-          // Try multiple selectors for each field as LinkedIn changes them frequently
-          const titleSelectors = [
-            '.artdeco-entity-lockup_title',
-            '.job-card-list__title',
-            '.job-card-container__link .job-card-list__title',
-            '[data-control-name="jobsearch_job_resultcard"] .job-card-list__title',
-            '.job-card-container__link h3',
-            '.job-card-container__link .job-card-list__title--new',
-            '.job-card-container__link .job-card-list__title--new-design',
-            '.job-card-container__link .job-card-list__title--new-design-v2'
-          ];
-          
-          const companySelectors = [
-            '.artdeco-entity-lockup__subtitle',
-            '.job-card-container__company-name',
-            '.job-card-container__link .job-card-container__company-name',
-            '[data-control-name="jobsearch_job_resultcard"] .job-card-container__company-name',
-            '.job-card-container__link .job-card-container__company-name--new',
-            '.job-card-container__link h4',
-            '.job-card-container__link .job-card-container__company-name--new-design',
-            '.job-card-container__link .job-card-container__company-name--new-design-v2'
-          ];
-          
-          const locationSelectors = [
-            '.artdeco-entity-lockup_caption',
-            '.job-card-container__metadata-item',
-            '.job-card-container__link .job-card-container__metadata-item',
-            '[data-control-name="jobsearch_job_resultcard"] .job-card-container__metadata-item',
-            '.job-card-container__link .job-card-container__metadata-item--new',
-            '.job-card-container__link .job-card-container__metadata-wrapper .job-card-container__metadata-item',
-            '.job-card-container__link .job-card-container__metadata-item--new-design',
-            '.job-card-container__link .job-card-container__metadata-item--new-design-v2'
-          ];
           
           // Helper function to find element with multiple selectors
           const findElement = (selectors) => {
@@ -500,7 +466,7 @@ async function extractJobsFromPage(page, userId) {
             location: findElement(locationSelectors),
             url: card.href
           };
-        }, i);
+        }, i, LinkedInSelectors.getJobTitleSelectors(), LinkedInSelectors.getCompanyNameSelectors(), LinkedInSelectors.getLocationSelectors());
         
         if (!basicJobInfo) {
           console.log(`Could not extract basic info for job ${i}`);

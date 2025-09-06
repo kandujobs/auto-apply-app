@@ -5,12 +5,11 @@
 
 class LinkedInSelectors {
   /**
-   * Get job title from a job card element
-   * @param {Element} card - The job card element
-   * @returns {string} - Job title or 'Not available'
+   * Get job title selectors array
+   * @returns {Array<string>} - Array of CSS selectors for job title
    */
-  static getJobTitle(card) {
-    const selectors = [
+  static getJobTitleSelectors() {
+    return [
       '.artdeco-entity-lockup_title',
       '.job-card-list__title',
       '.job-card-container__link .job-card-list__title',
@@ -20,6 +19,15 @@ class LinkedInSelectors {
       '.job-card-container__link .job-card-list__title--new-design',
       '.job-card-container__link .job-card-list__title--new-design-v2'
     ];
+  }
+
+  /**
+   * Get job title from a job card element
+   * @param {Element} card - The job card element
+   * @returns {string} - Job title or 'Not available'
+   */
+  static getJobTitle(card) {
+    const selectors = this.getJobTitleSelectors();
     
     for (const selector of selectors) {
       const element = card.querySelector(selector);
@@ -32,12 +40,11 @@ class LinkedInSelectors {
   }
 
   /**
-   * Get company name from a job card element
-   * @param {Element} card - The job card element
-   * @returns {string} - Company name or 'Not available'
+   * Get company name selectors array
+   * @returns {Array<string>} - Array of CSS selectors for company name
    */
-  static getCompanyName(card) {
-    const selectors = [
+  static getCompanyNameSelectors() {
+    return [
       '.artdeco-entity-lockup__subtitle',
       '.job-card-container__company-name',
       '.job-card-container__link .job-card-container__company-name',
@@ -47,6 +54,15 @@ class LinkedInSelectors {
       '.job-card-container__link .job-card-container__company-name--new-design',
       '.job-card-container__link .job-card-container__company-name--new-design-v2'
     ];
+  }
+
+  /**
+   * Get company name from a job card element
+   * @param {Element} card - The job card element
+   * @returns {string} - Company name or 'Not available'
+   */
+  static getCompanyName(card) {
+    const selectors = this.getCompanyNameSelectors();
     
     for (const selector of selectors) {
       const element = card.querySelector(selector);
@@ -59,12 +75,11 @@ class LinkedInSelectors {
   }
 
   /**
-   * Get location from a job card element
-   * @param {Element} card - The job card element
-   * @returns {string} - Location or 'Not available'
+   * Get location selectors array
+   * @returns {Array<string>} - Array of CSS selectors for location
    */
-  static getLocation(card) {
-    const selectors = [
+  static getLocationSelectors() {
+    return [
       '.artdeco-entity-lockup_caption',
       '.job-card-container__metadata-item',
       '.job-card-container__link .job-card-container__metadata-item',
@@ -74,6 +89,15 @@ class LinkedInSelectors {
       '.job-card-container__link .job-card-container__metadata-item--new-design',
       '.job-card-container__link .job-card-container__metadata-item--new-design-v2'
     ];
+  }
+
+  /**
+   * Get location from a job card element
+   * @param {Element} card - The job card element
+   * @returns {string} - Location or 'Not available'
+   */
+  static getLocation(card) {
+    const selectors = this.getLocationSelectors();
     
     for (const selector of selectors) {
       const element = card.querySelector(selector);
