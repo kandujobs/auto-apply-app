@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiX, FiRefreshCw, FiCheck, FiMousePointer } from 'react-icons/fi';
-import { getBackendEndpoint } from '../utils/backendUrl';
+import { getBackendUrl } from '../utils/backendUrl';
 
 interface CheckpointModalProps {
   isOpen: boolean;
@@ -23,7 +23,7 @@ export default function CheckpointModal({
   // Generate fresh image URL with timestamp to prevent caching
   const refreshImage = () => {
     const timestamp = Date.now();
-    setImgUrl(`${getBackendEndpoint()}/api/checkpoint/${userId}/frame.png?t=${timestamp}`);
+    setImgUrl(`${getBackendUrl()}/api/checkpoint/${userId}/frame.png?t=${timestamp}`);
   };
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function CheckpointModal({
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${userId}/action`, {
+      const response = await fetch(`${getBackendUrl()}/api/checkpoint/${userId}/action`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json' 
@@ -101,7 +101,7 @@ export default function CheckpointModal({
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${userId}/complete`, {
+      const response = await fetch(`${getBackendUrl()}/api/checkpoint/${userId}/complete`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json' 

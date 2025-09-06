@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sessionService, SessionStatus } from '../services/sessionService';
 import { paymentService } from '../services/paymentService';
 import { supabase } from '../supabaseClient';
-import { getBackendEndpoint } from '../utils/backendUrl';
+import { getBackendUrl } from '../utils/backendUrl';
 import CheckpointModal from './CheckpointModal';
 
 interface SessionManagerProps {
@@ -176,7 +176,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const response = await fetch(`${getBackendEndpoint()}/api/checkpoint/${user.id}/status`);
+      const response = await fetch(`${getBackendUrl()}/api/checkpoint/${user.id}/status`);
       if (response.ok) {
         const data = await response.json();
         
