@@ -432,7 +432,11 @@ async function extractJobsFromPage(page, userId) {
         await page.evaluate(() => document.title);
         
         console.log(`Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
-        sendProgressToSession(userId, `Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
+        
+        // Only send progress updates every 3 jobs to reduce WebSocket spam
+        if ((i + 1) % 3 === 0 || i === 0) {
+          sendProgressToSession(userId, `Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
+        }
         
         // Get current job cards (they might change as we navigate)
         const currentJobCards = await page.locator('a.job-card-container__link').all();
@@ -443,7 +447,7 @@ async function extractJobsFromPage(page, userId) {
         }
         
         // Extract basic job info from the card using LinkedInSelectors
-        const basicJobInfo = await page.evaluate((index, titleSelectors, companySelectors, locationSelectors) => {
+        const basicJobInfo = await page.evaluate(({ index, titleSelectors, companySelectors, locationSelectors }) => {
           const cards = document.querySelectorAll('a.job-card-container__link');
           if (index >= cards.length) return null;
           
@@ -466,7 +470,12 @@ async function extractJobsFromPage(page, userId) {
             location: findElement(locationSelectors),
             url: card.href
           };
-        }, i, LinkedInSelectors.getJobTitleSelectors(), LinkedInSelectors.getCompanyNameSelectors(), LinkedInSelectors.getLocationSelectors());
+        }, {
+          index: i,
+          titleSelectors: LinkedInSelectors.getJobTitleSelectors(),
+          companySelectors: LinkedInSelectors.getCompanyNameSelectors(),
+          locationSelectors: LinkedInSelectors.getLocationSelectors()
+        });
         
         if (!basicJobInfo) {
           console.log(`Could not extract basic info for job ${i}`);
@@ -622,11 +631,16 @@ async function startEasyApplyWorker(userId) {
       const output = data.toString();
       console.log(`[Worker ${userId}] ${output}`);
       
-      // Parse progress updates
+      // Parse progress updates (throttled to reduce spam)
       if (output.includes('Progress:')) {
         const progressMatch = output.match(/Progress: (.+)/);
         if (progressMatch) {
-          sendProgressToSession(userId, progressMatch[1]);
+          // Only send progress updates every 2 seconds to reduce WebSocket spam
+          const now = Date.now();
+          if (!workerProcess.lastProgressTime || now - workerProcess.lastProgressTime > 2000) {
+            sendProgressToSession(userId, progressMatch[1]);
+            workerProcess.lastProgressTime = now;
+          }
         }
       }
       
