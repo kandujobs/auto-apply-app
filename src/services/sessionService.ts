@@ -22,6 +22,7 @@ class SessionService {
   private onQuestionUpdate: ((question: any) => void) | null = null;
   private onApplicationCompleted: ((data: any) => void) | null = null;
   private onCheckpointPortalUpdate: ((data: any) => void) | null = null;
+  private onSessionStatusUpdate: ((status: SessionStatus) => void) | null = null;
   private lastProgressMessage: string | null = null;
   private lastProgressTime: number = 0;
   private connectionPromise: Promise<void> | null = null;
@@ -249,7 +250,23 @@ class SessionService {
 
           if (data.type === 'session_status') {
             console.log('✅ [CONNECT] Session status received:', data);
-            this.connectionPromise = null;
+            
+            // Call session status callback if set
+            if (this.onSessionStatusUpdate) {
+              this.onSessionStatusUpdate({
+                isActive: data.status === 'active',
+                sessionActive: data.status === 'active',
+                browserRunning: data.isBrowserRunning,
+                session: {
+                  userId: this.sessionId || '',
+                  isLoggedIn: data.isBrowserRunning,
+                  lastActivity: new Date().toISOString(),
+                  applicationProgress: data.applicationProgress || '',
+                  currentQuestionIndex: data.currentQuestion || 0,
+                  totalQuestions: data.totalQuestions || 0
+                }
+              });
+            }            this.connectionPromise = null;
             resolve();
           } else if (data.type === 'error') {
             console.error('❌ [CONNECT] Session error:', data.message);

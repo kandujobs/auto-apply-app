@@ -31,7 +31,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         userId,
         data,
         timestamp: Date.now()
-      };
+      // };
       localStorage.setItem(CHECKPOINT_STORAGE_KEY, JSON.stringify(state));
       console.log('[SessionManager] Checkpoint state saved to localStorage');
     } else {
@@ -50,11 +50,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         if (Date.now() - state.timestamp < 30 * 60 * 1000) {
           console.log('[SessionManager] Checkpoint state restored from localStorage');
           return state;
-        } else {
+        // } else {
           localStorage.removeItem(CHECKPOINT_STORAGE_KEY);
           console.log('[SessionManager] Checkpoint state expired, removed from localStorage');
-        }
-      }
+        // }
+      // }
     } catch (error) {
       console.error('[SessionManager] Error loading checkpoint state:', error);
       localStorage.removeItem(CHECKPOINT_STORAGE_KEY);
@@ -73,7 +73,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       // Start polling if modal should be open
       if (restoredState.isOpen) {
         startCheckpointPolling();
-      }
+      // }
     }
   }, []);
 
@@ -99,11 +99,11 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         console.log('[SessionManager] 🛡️ Checkpoint detected with screenshot');
         setCheckpointData(data);
         setIsCheckpointModalOpen(true);
-      } else if (data.type === 'checkpoint_completed') {
+      // } else if (data.type === 'checkpoint_completed') {
         console.log('[SessionManager] ✅ Checkpoint completed');
         setIsCheckpointModalOpen(false);
         setCheckpointData(null);
-      }
+      // }
     });
 
     // Cleanup on unmount
@@ -117,7 +117,7 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       if (checkpointPollingInterval) {
         clearInterval(checkpointPollingInterval);
         setCheckpointPollingInterval(null);
-      }
+      // }
       
       // Note: We don't clear localStorage here because the user might refresh the page
       // and we want to restore the checkpoint state. It will be cleared when the
@@ -134,8 +134,8 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       const { data: { user } } = await import('../supabaseClient').then(m => m.supabase.auth.getUser());
       if (!user) {
         setError('User not authenticated');
-        return;
-      }
+        // return;
+      // }
 
       // Check payment access
       // const hasAccess = await paymentService.checkUserAccess(user.id);
@@ -157,10 +157,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         // Start checkpoint polling
         startCheckpointPolling();
-      } else {
+      // } else {
         console.error('[SessionManager] Failed to start session:', result.error);
         setError(result.error || 'Failed to start session');
-      }
+      // }
     } catch (error) {
       console.error('[SessionManager] Error starting session:', error);
       setError(error instanceof Error ? error.message : 'Failed to start session');
@@ -185,10 +185,10 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
         
         // Clear checkpoint state when session ends
         saveCheckpointState(false, null, null);
-      } else {
+      // } else {
         console.error('[SessionManager] Failed to stop session:', result.error);
         setError(result.error || 'Failed to stop session');
-      }
+      // }
     } catch (error) {
       console.error('[SessionManager] Error stopping session:', error);
       setError(error instanceof Error ? error.message : 'Failed to stop session');
@@ -197,6 +197,31 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
     }
   };
 
+  const handleDebugStartSession = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log('[SessionManager] Starting debug session');
+      
+      // Start session with debug flag
+      const result = await sessionService.startSession();
+      
+      if (result.success) {
+        console.log('[SessionManager] Debug session started successfully');
+        setSessionStatus({ isActive: true });
+        onSessionStarted();
+      // } else {
+        console.error('[SessionManager] Failed to start debug session:', result.error);
+        setError(result.error || 'Failed to start debug session');
+      // }
+    } catch (error) {
+      console.error('[SessionManager] Error starting debug session:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start debug session');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCheckpointModalClose = () => {
     setIsCheckpointModalOpen(false);
@@ -230,21 +255,21 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
           setCurrentUserId(user.id);
           // Save state to localStorage
           saveCheckpointState(true, user.id, data);
-        } else if (data.state === 'running' && isCheckpointModalOpen) {
+        // } else if (data.state === 'running' && isCheckpointModalOpen) {
           console.log('[SessionManager] ✅ Checkpoint completed via polling');
           setIsCheckpointModalOpen(false);
           setCheckpointData(null);
           // Clear state from localStorage
           saveCheckpointState(false, null, null);
-        } else if (data.state === 'failed') {
+        // } else if (data.state === 'failed') {
           console.log('[SessionManager] ❌ Checkpoint failed:', data.message);
           setIsCheckpointModalOpen(false);
           setCheckpointData(null);
           setError(data.message || 'Checkpoint failed');
           // Clear state from localStorage
           saveCheckpointState(false, null, null);
-        }
-      }
+        // }
+      // }
     } catch (error) {
       console.error('[SessionManager] Error polling for checkpoint:', error);
     }
@@ -277,45 +302,37 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
-            <div className="space-y-1">
+            <p className="text-sm text-gray-600">Status: {sessionStatus.isActive ? 'Active' : 'Inactive'}</p>
+            {sessionStatus.session && (
               <p className="text-sm text-gray-600">
-                Status: <span className={`font-medium ${
-                  sessionStatus.isActive ? "text-green-600" : "text-gray-500"
-                }`}>
-                  {sessionStatus.isActive ? "Active" : "Inactive"}
-                </span>
+                Logged in: {sessionStatus.session.isLoggedIn ? 'Yes' : 'No'}
               </p>
-              {sessionStatus.session && (
-                <p className="text-sm text-gray-600">
-                  Browser: <span className={`font-medium ${
-                    sessionStatus.session.isLoggedIn ? "text-green-600" : "text-yellow-600"
-                  }`}>
-                    {sessionStatus.session.isLoggedIn ? "Ready for Applications" : "Connecting..."}
-                  </span>
-                </p>
-              )}
-              {sessionStatus.isActive && !sessionStatus.session && (
-                <p className="text-sm text-yellow-600">
-                  <span className="font-medium">Initializing browser session...</span>
-                </p>
-              )}
-            </div>
+            )}
           </div>
           
           <div className="flex space-x-2">
             <button
-              onClick={sessionStatus.isActive ? handleStopSession : handleStartSession}
-              disabled={isLoading}
-              className={`px-4 py-2 text-white rounded transition-colors ${
-                sessionStatus.isActive 
-                  ? "bg-red-600 hover:bg-red-700" 
-                  : "bg-blue-600 hover:bg-blue-700"
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              onClick={handleStartSession}
+              disabled={isLoading || sessionStatus.isActive}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading 
-                ? (sessionStatus.isActive ? "Stopping..." : "Starting...") 
-                : (sessionStatus.isActive ? "Stop Session" : "Start Session")
-              }
+              {isLoading ? 'Starting...' : 'Start Session'}
+            </button>
+            
+            <button
+              onClick={handleDebugStartSession}
+              disabled={isLoading || sessionStatus.isActive}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Starting...' : 'Debug Start'}
+            </button>
+            
+            <button
+              onClick={handleStopSession}
+              disabled={isLoading || !sessionStatus.isActive}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Stopping...' : 'Stop Session'}
             </button>
           </div>
         </div>

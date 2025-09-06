@@ -31,7 +31,13 @@ function setupWebSocket(wss) {
           console.log(`✅ WebSocket connection registered for user: ${userId}`);
           
           // Check if session exists
-          const session = sessionManager.getSession(userId);
+          let session;
+          try {
+            session = sessionManager.getSession(userId);
+          } catch (error) {
+            console.error("Error getting session:", error);
+            session = null;
+          }
           if (session) {
             // Session exists, link it to the WebSocket
             session.websocket = ws;
