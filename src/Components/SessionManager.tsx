@@ -277,30 +277,45 @@ export default function SessionManager({ onSessionChange, onSessionStarted, onSh
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
           <div className="flex-1">
-            <p className="text-sm text-gray-600">Status: {sessionStatus.isActive ? 'Active' : 'Inactive'}</p>
-            {sessionStatus.session && (
+            <div className="space-y-1">
               <p className="text-sm text-gray-600">
-                Logged in: {sessionStatus.session.isLoggedIn ? 'Yes' : 'No'}
+                Status: <span className={`font-medium ${
+                  sessionStatus.isActive ? "text-green-600" : "text-gray-500"
+                }`}>
+                  {sessionStatus.isActive ? "Active" : "Inactive"}
+                </span>
               </p>
-            )}
+              {sessionStatus.session && (
+                <p className="text-sm text-gray-600">
+                  Browser: <span className={`font-medium ${
+                    sessionStatus.session.isLoggedIn ? "text-green-600" : "text-yellow-600"
+                  }`}>
+                    {sessionStatus.session.isLoggedIn ? "Ready for Applications" : "Connecting..."}
+                  </span>
+                </p>
+              )}
+              {sessionStatus.isActive && !sessionStatus.session && (
+                <p className="text-sm text-yellow-600">
+                  <span className="font-medium">Initializing browser session...</span>
+                </p>
+              )}
+            </div>
           </div>
           
           <div className="flex space-x-2">
             <button
-              onClick={handleStartSession}
-              disabled={isLoading || sessionStatus.isActive}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={sessionStatus.isActive ? handleStopSession : handleStartSession}
+              disabled={isLoading}
+              className={`px-4 py-2 text-white rounded transition-colors ${
+                sessionStatus.isActive 
+                  ? "bg-red-600 hover:bg-red-700" 
+                  : "bg-blue-600 hover:bg-blue-700"
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {isLoading ? 'Starting...' : 'Start Session'}
-            </button>
-            
-            
-            <button
-              onClick={handleStopSession}
-              disabled={isLoading || !sessionStatus.isActive}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Stopping...' : 'Stop Session'}
+              {isLoading 
+                ? (sessionStatus.isActive ? "Stopping..." : "Starting...") 
+                : (sessionStatus.isActive ? "Stop Session" : "Start Session")
+              }
             </button>
           </div>
         </div>
