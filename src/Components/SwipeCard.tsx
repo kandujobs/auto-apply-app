@@ -15,36 +15,6 @@ declare global {
   }
 }
 
-// JobStatsBubble component that cycles through different statistics
-const JobStatsBubble: React.FC<{ totalJobs: number; remainingJobs: number; viewedJobs: number }> = ({ 
-  totalJobs, 
-  remainingJobs, 
-  viewedJobs 
-}) => {
-  const [currentStat, setCurrentStat] = useState(0);
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentStat(prev => (prev + 1) % 3);
-    }, 2000); // Change every 2 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
-  
-  const stats = [
-    { label: 'available', value: totalJobs },
-    { label: 'remaining', value: remainingJobs },
-    { label: 'viewed', value: viewedJobs }
-  ];
-  
-  const currentStatData = stats[currentStat];
-  
-  return (
-    <span className="transition-opacity duration-500">
-      {currentStatData.value} {currentStatData.label}
-    </span>
-  );
-};
 
 interface SwipeCardProps {
   jobs: Job[];
@@ -60,16 +30,13 @@ interface SwipeCardProps {
   onExpandSearch?: () => void; // New prop for expanding search
   isSessionActive?: boolean; // New prop for session status
 
-  totalJobs?: number;
-  remainingJobs?: number;
-  viewedJobs?: number;
   
   // Auto-apply limit props
   autoAppliesUsed?: number;
   autoApplyLimit?: number;
 }
 
-export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onApplyJob, onAnswerQuestion, savedJobs, onNextJob, userSkills = [], userInterests = [], onExpandSearch, isSessionActive = false, totalJobs = 0, remainingJobs = 0, viewedJobs = 0, autoAppliesUsed = 0, autoApplyLimit = 15 }: SwipeCardProps) {
+export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onApplyJob, onAnswerQuestion, savedJobs, onNextJob, userSkills = [], userInterests = [], onExpandSearch, isSessionActive = false, autoAppliesUsed = 0, autoApplyLimit = 15 }: SwipeCardProps) {
   console.log('[SwipeCard] Rendering with jobs:', jobs.length, 'currentIndex:', currentIndex);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -719,12 +686,6 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
             
             {/* Status in top right */}
             <div className="flex flex-col items-end space-y-2 flex-shrink-0">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-                <span className="text-sm text-gray-600">
-                  <JobStatsBubble totalJobs={totalJobs} remainingJobs={remainingJobs} viewedJobs={viewedJobs} />
-                </span>
-              </div>
             </div>
           </div>
           
