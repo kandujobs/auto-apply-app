@@ -317,7 +317,11 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
     console.log('[SwipeCard] This should ONLY be called when Apply button is clicked, NOT Pass button');
     
     // Check if session is active
-    if (!sessionService.isSessionActive()) {
+    const sessionActive = sessionService.isSessionActive();
+    console.log('[SwipeCard] Session active check:', sessionActive);
+    
+    if (!sessionActive) {
+      console.log('[SwipeCard] No active session found');
       setApplicationProgress('No active session. Please start a session first.');
       setIsApplying(false);
       return;
@@ -326,7 +330,10 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
     // Check if session is logged in
     try {
       const sessionStatus = await sessionService.getSessionStatus();
+      console.log('[SwipeCard] Session status:', sessionStatus);
+      
       if (!sessionStatus.session?.isLoggedIn) {
+        console.log('[SwipeCard] Session not logged in yet');
         setApplicationProgress('Session is still initializing. Please wait for login to complete.');
         setIsApplying(false);
         return;
@@ -353,6 +360,13 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       }
       
       // Start the application process with session
+      console.log('[SwipeCard] Making API call to /api/simple-apply with data:', { 
+        jobUrl: job.url,
+        jobTitle: job.title,
+        company: job.company,
+        userId: user.id
+      });
+      
       const response = await fetch(getBackendEndpoint('/api/simple-apply'), {
         method: 'POST',
         headers: {
@@ -366,8 +380,12 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
         }),
       });
       
+      console.log('[SwipeCard] API response status:', response.status);
+      console.log('[SwipeCard] API response ok:', response.ok);
+      
       if (response.ok) {
-        console.log('[SwipeCard] Application started successfully');
+        const responseData = await response.json();
+        console.log('[SwipeCard] Application started successfully:', responseData);
         setApplicationProgress('Application started - 1-2 mins');
         
         // Store the job as a right swipe in the database
