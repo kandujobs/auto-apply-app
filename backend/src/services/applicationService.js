@@ -50,10 +50,8 @@ class ApplicationService {
         // Send WebSocket message to notify frontend of completion
         broadcastToUser(userId, {
           type: 'application_completed',
-          data: {
-            status: 'completed',
-            message: 'Application completed successfully!'
-          }
+          status: 'completed',
+          message: 'Application completed successfully!'
         });
       } else {
         console.log(`❌ Job ${jobId} application failed`);
@@ -65,10 +63,8 @@ class ApplicationService {
         // Send WebSocket message to notify frontend of failure
         broadcastToUser(userId, {
           type: 'application_completed',
-          data: {
-            status: 'error',
-            message: 'Application failed - job may not be accepting applications'
-          }
+          status: 'error',
+          message: 'Application failed - job may not be accepting applications'
         });
       }
       
@@ -257,11 +253,10 @@ class ApplicationService {
    * @param {string} progress - Progress message
    */
   sendProgressToSession(userId, progress) {
-    // Use the existing broadcastToUser function
+    // Use the existing broadcastToUser function with correct format for sessionService
     broadcastToUser(userId, {
       type: 'progress',
-      message: progress,
-      timestamp: new Date().toISOString()
+      data: progress  // sessionService expects data.data, not data.message
     });
     
     // Also update session progress if available
