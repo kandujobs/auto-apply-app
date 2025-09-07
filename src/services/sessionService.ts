@@ -5,6 +5,11 @@ export interface SessionStatus {
   isActive: boolean;
   sessionActive?: boolean;
   browserRunning?: boolean;
+  isLoggedIn?: boolean;
+  applicationProgress?: string;
+  currentQuestion?: any;
+  totalQuestions?: number;
+  lastActivity?: string;
   session?: {
     userId: string;
     isLoggedIn: boolean;
