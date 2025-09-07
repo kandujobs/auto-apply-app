@@ -530,8 +530,9 @@ async function handleAdditionalQuestions(page) {
             console.log(`📝 Processing question ${questionIndex + 1}/${foundQuestions.length}: "${currentQuestion.text}"`);
             console.log(`🔍 Debug: Current question type: "${currentQuestion.type}"`);
             
-                      // Try to get user ID for answer lookup
-          const currentUserId = await getUserIdFromCredentials(userId);
+            // Try to get user ID for answer lookup
+            console.log(`🔍 Debug: userId parameter value:`, userId);
+            const currentUserId = await getUserIdFromCredentials(userId);
           
           // Check for previous answers to this question
           let suggestedAnswer = null;
