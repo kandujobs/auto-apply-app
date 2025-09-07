@@ -271,7 +271,7 @@ class ApplicationService {
   }
 
   /**
-   * Store application in database
+   * Store application in database - updates job_swipes table for LinkedIn jobs
    * @param {string} userId - User ID
    * @param {string} jobUrl - Job URL
    * @param {string} jobTitle - Job title
@@ -281,24 +281,47 @@ class ApplicationService {
    */
   async storeApplication(userId, jobUrl, jobTitle, company, status, errorMessage = null) {
     try {
+      // Extract job ID from URL for LinkedIn jobs
+      let jobId = 'unknown';
+      if (jobUrl.includes('linkedin.com/jobs/view/')) {
+        const match = jobUrl.match(/\/jobs\/view\/(\d+)/);
+        if (match) {
+          jobId = match[1];
+        }
+      } else if (jobUrl.includes('currentJobId=')) {
+        const match = jobUrl.match(/currentJobId=(\d+)/);
+        if (match) {
+          jobId = match[1];
+        }
+      }
+
+      // Update the job_swipes table with application results
+      const updateData = {
+        application_processed: true,
+        application_processed_at: new Date().toISOString()
+      };
+
+      if (status === 'applied') {
+        updateData.application_success = true;
+        updateData.application_error = null;
+      } else {
+        updateData.application_success = false;
+        updateData.application_error = errorMessage || 'Application failed';
+      }
+
       const { error } = await supabase
-        .from('job_applications')
-        .insert({
-          user_id: userId,
-          job_url: jobUrl,
-          job_title: jobTitle || 'Unknown',
-          company: company || 'Unknown',
-          status: status,
-          error_message: errorMessage,
-          created_at: new Date().toISOString()
-        });
+        .from('job_swipes')
+        .update(updateData)
+        .eq('user_id', userId)
+        .eq('job_id', jobId)
+        .eq('swipe_direction', 'right'); // Only update right swipes (applied jobs)
 
       if (error) {
-        console.error('Error storing job application:', error);
+        console.error('Error updating job application in job_swipes:', error);
         throw new Error('Failed to store job application');
       }
 
-      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company}`);
+      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company} (jobId: ${jobId})`);
     } catch (error) {
       console.error('Error in storeApplication:', error);
       throw error;
