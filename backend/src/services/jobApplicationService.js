@@ -1,16 +1,9 @@
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
 
-// Try to import fillEasyApplyForm, but make it optional for deployment
-let fillEasyApplyForm = null;
-try {
-  const testSimpleClick = require('../../auto-apply/test-simple-click.js');
-  fillEasyApplyForm = testSimpleClick.fillEasyApplyForm;
-  console.log('✅ Successfully imported fillEasyApplyForm from test-simple-click.js');
-} catch (error) {
-  console.warn('⚠️ Could not import fillEasyApplyForm from test-simple-click.js:', error.message);
-  console.log('⚠️ Form filling will use fallback implementation');
-}
+// Import the proven form filling logic
+const { fillEasyApplyForm } = require('./test-simple-click.js');
+console.log('✅ Successfully imported fillEasyApplyForm from test-simple-click.js');
 
 class JobApplicationService {
   constructor() {
@@ -336,20 +329,13 @@ class JobApplicationService {
               step: 'fill_form'
             });
             
-            // Use the proven form filling logic from test-simple-click.js or fallback
+            // Use the proven form filling logic from test-simple-click.js
             try {
-              let formResult = false;
-              
-              if (fillEasyApplyForm) {
-                console.log('📝 Using proven form filling logic from test-simple-click.js');
-                formResult = await fillEasyApplyForm(page);
-              } else {
-                console.log('📝 Using fallback form filling logic');
-                formResult = await this.fillEasyApplyFormFallback(page);
-              }
+              console.log('📝 Using proven form filling logic from test-simple-click.js');
+              const formResult = await fillEasyApplyForm(page);
               
               if (formResult === true) {
-                console.log('✅ Easy Apply form filled successfully');
+                console.log('✅ Easy Apply form filled successfully using proven logic');
                 broadcastToUser(userId, {
                   type: 'application_progress',
                   message: '✅ Application completed successfully!',
@@ -527,161 +513,6 @@ class JobApplicationService {
     };
   }
 
-  /**
-   * Fallback form filling method when test-simple-click.js is not available
-   * @param {Object} page - Playwright page object
-   * @returns {Promise<boolean>} Success status
-   */
-  async fillEasyApplyFormFallback(page) {
-    try {
-      console.log('📝 Using fallback form filling logic...');
-      
-      // Wait for form to be fully loaded
-      await page.waitForTimeout(2000);
-      
-      // Look for phone number field and fill it if empty
-      console.log('📱 Looking for phone number field...');
-      const phoneSelectors = [
-        'input[id*="phoneNumber-nationalNumber"]',
-        'input[class*="artdeco-text-input--input"]',
-        'input[aria-describedby*="phoneNumber-nationalNumber-error"]',
-        'input[id*="phoneNumber"]',
-        'input[class*="artdeco-text-input"]',
-        'input[name="phoneNumber"]',
-        'input[aria-label*="phone"]',
-        'input[placeholder*="phone"]',
-        'input[type="tel"]',
-        'input[name="mobilePhoneNumber"]',
-        'input[name="phone"]'
-      ];
-      
-      let phoneFilled = false;
-      for (const selector of phoneSelectors) {
-        try {
-          const phoneField = await page.locator(selector).first();
-          if (await phoneField.isVisible()) {
-            const currentValue = await phoneField.inputValue();
-            const placeholder = await phoneField.getAttribute('placeholder') || '';
-            const ariaLabel = await phoneField.getAttribute('aria-label') || '';
-            const name = await phoneField.getAttribute('name') || '';
-            
-            // Check if this looks like a phone number field
-            const isPhoneField = placeholder.toLowerCase().includes('phone') || 
-                                ariaLabel.toLowerCase().includes('phone') || 
-                                name.toLowerCase().includes('phone') ||
-                                (currentValue === '' && placeholder === '' && ariaLabel === '' && name === '');
-            
-            if (isPhoneField && (!currentValue || currentValue.trim() === '')) {
-              console.log(`📱 Filling phone number field: ${selector}`);
-              
-              // Clear the field first
-              await phoneField.click();
-              await page.waitForTimeout(500);
-              await phoneField.clear();
-              await page.waitForTimeout(300);
-              
-              // Fill with a sample American phone number
-              const samplePhone = '555-123-4567';
-              await phoneField.fill(samplePhone);
-              await page.waitForTimeout(1000);
-              
-              // Verify the value was set
-              const newValue = await phoneField.inputValue();
-              console.log(`📱 Phone number filled: "${newValue}"`);
-              
-              if (newValue === samplePhone) {
-                console.log('✅ Phone number filled successfully');
-                phoneFilled = true;
-                break;
-              }
-            } else if (currentValue && currentValue.trim() !== '') {
-              console.log(`📱 Field already has value: ${currentValue}`);
-              phoneFilled = true;
-              break;
-            }
-          }
-        } catch (error) {
-          // Continue to next selector
-        }
-      }
-      
-      if (!phoneFilled) {
-        console.log('⚠️ Could not fill phone number field - may not be required for this application');
-      }
-      
-      // Look for and click the Next/Review/Submit button
-      console.log('➡️ Looking for Next/Review/Submit button...');
-      const nextButtonSelectors = [
-        'button:has-text("Next")',
-        'button:has-text("Review")',
-        'button:has-text("Submit")',
-        'button[aria-label*="Next"]',
-        'button[aria-label*="Review"]',
-        'button[aria-label*="Submit"]',
-        'button[data-control-name="continue_unify"]',
-        '.jobs-easy-apply-content__footer button:last-child',
-        'button[type="submit"]'
-      ];
-      
-      let nextButton = null;
-      for (const selector of nextButtonSelectors) {
-        try {
-          const button = await page.locator(selector).first();
-          if (await button.isVisible() && !(await button.isDisabled())) {
-            nextButton = button;
-            console.log(`✅ Found Next/Review/Submit button with selector: ${selector}`);
-            break;
-          }
-        } catch (error) {
-          // Continue to next selector
-        }
-      }
-      
-      if (nextButton) {
-        console.log('🖱 Clicking Next/Review/Submit button...');
-        await nextButton.click();
-        await page.waitForTimeout(3000);
-        console.log('✅ Next/Review/Submit button clicked');
-        
-        // Check if we moved to the next step or completed
-        const currentUrl = page.url();
-        console.log(`📍 Current URL after button click: ${currentUrl}`);
-        
-        // If we're still on the same page, try to find and click submit again
-        if (currentUrl.includes('/jobs/view/')) {
-          // Look for final submit button
-          const submitSelectors = [
-            'button:has-text("Submit")',
-            'button[aria-label*="Submit"]',
-            'button[type="submit"]'
-          ];
-          
-          for (const selector of submitSelectors) {
-            try {
-              const submitButton = await page.locator(selector).first();
-              if (await submitButton.isVisible() && !(await submitButton.isDisabled())) {
-                console.log(`🖱 Clicking final submit button: ${selector}`);
-                await submitButton.click();
-                await page.waitForTimeout(2000);
-                break;
-              }
-            } catch (error) {
-              // Continue to next selector
-            }
-          }
-        }
-        
-        return true;
-      } else {
-        console.log('❌ Next/Review/Submit button not found');
-        return false;
-      }
-      
-    } catch (error) {
-      console.log(`❌ Error in fallback form filling: ${error}`);
-      return false;
-    }
-  }
 }
 
 // Create singleton instance
