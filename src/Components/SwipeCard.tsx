@@ -256,23 +256,65 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       return;
     }
     
-    // Simple storage - no complex queue system
     try {
-        const dataToInsert = {
-          user_id: userId,
-          job_id: job.id,
-          job_title: job.title,
-          company: job.company,
-          swipe_direction: direction,
-          swiped_at: new Date().toISOString(),
-        };
-        
-        const { error } = await supabase.from('job_swipes').upsert([dataToInsert], { onConflict: 'user_id,job_id' });
-        
-        if (error) {
-          console.error('[SwipeCard] Failed to store swipe:', error);
+      // First, ensure the job exists in linkedin_fetched_jobs table
+      let jobUuid = null;
+      
+      // Check if job already exists in linkedin_fetched_jobs
+      const { data: existingJob, error: checkError } = await supabase
+        .from('linkedin_fetched_jobs')
+        .select('id')
+        .eq('job_url', job.url)
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('[SwipeCard] Error checking existing job:', checkError);
+      }
+
+      if (existingJob) {
+        jobUuid = existingJob.id;
+        console.log('[SwipeCard] Found existing job UUID:', jobUuid);
       } else {
-        console.log('[SwipeCard] Successfully stored swipe');
+        // Insert job into linkedin_fetched_jobs if it doesn't exist
+        const { data: newJob, error: insertError } = await supabase
+          .from('linkedin_fetched_jobs')
+          .insert({
+            job_title: job.title || 'Job Application',
+            company_name: job.company || 'Company',
+            job_url: job.url,
+            user_id: userId,
+            easy_apply: true,
+            is_active: true
+          })
+          .select('id')
+          .single();
+
+        if (insertError) {
+          console.error('[SwipeCard] Error inserting job into linkedin_fetched_jobs:', insertError);
+          return;
+        }
+
+        jobUuid = newJob.id;
+        console.log('[SwipeCard] Created new job UUID:', jobUuid);
+      }
+
+      // Now store the swipe using the UUID
+      const dataToInsert = {
+        user_id: userId,
+        job_id: jobUuid, // Use UUID instead of LinkedIn job ID
+        job_title: job.title,
+        company: job.company,
+        swipe_direction: direction,
+        swiped_at: new Date().toISOString(),
+      };
+      
+      const { error } = await supabase.from('job_swipes').upsert([dataToInsert], { onConflict: 'user_id,job_id' });
+      
+      if (error) {
+        console.error('[SwipeCard] Failed to store swipe:', error);
+      } else {
+        console.log('[SwipeCard] Successfully stored swipe with UUID:', jobUuid);
       }
     } catch (error) {
       console.error('[SwipeCard] Exception storing swipe:', error);

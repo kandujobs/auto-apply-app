@@ -302,7 +302,49 @@ class ApplicationService {
 
       console.log(`✅ Using LinkedIn job ID: ${linkedinJobId} for application storage`);
 
-      // Update the job_swipes table with application results
+      // First, ensure the job exists in linkedin_fetched_jobs table
+      let jobUuid = null;
+      
+      // Check if job already exists in linkedin_fetched_jobs
+      const { data: existingJob, error: checkError } = await supabase
+        .from('linkedin_fetched_jobs')
+        .select('id')
+        .eq('job_url', jobUrl)
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error checking existing job:', checkError);
+      }
+
+      if (existingJob) {
+        jobUuid = existingJob.id;
+        console.log(`✅ Found existing job UUID: ${jobUuid}`);
+      } else {
+        // Insert job into linkedin_fetched_jobs if it doesn't exist
+        const { data: newJob, error: insertError } = await supabase
+          .from('linkedin_fetched_jobs')
+          .insert({
+            job_title: jobTitle || 'Job Application',
+            company_name: company || 'Company',
+            job_url: jobUrl,
+            user_id: userId,
+            easy_apply: true,
+            is_active: true
+          })
+          .select('id')
+          .single();
+
+        if (insertError) {
+          console.error('Error inserting job into linkedin_fetched_jobs:', insertError);
+          throw new Error('Failed to store job in database');
+        }
+
+        jobUuid = newJob.id;
+        console.log(`✅ Created new job UUID: ${jobUuid}`);
+      }
+
+      // Now update the job_swipes table with application results using the UUID
       const updateData = {
         application_processed: true,
         application_processed_at: new Date().toISOString()
@@ -320,7 +362,7 @@ class ApplicationService {
         .from('job_swipes')
         .update(updateData)
         .eq('user_id', userId)
-        .eq('job_id', linkedinJobId)
+        .eq('job_id', jobUuid) // Use UUID instead of LinkedIn job ID
         .eq('swipe_direction', 'right'); // Only update right swipes (applied jobs)
 
       if (error) {
@@ -328,7 +370,7 @@ class ApplicationService {
         throw new Error('Failed to store job application');
       }
 
-      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company} (jobId: ${linkedinJobId})`);
+      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company} (UUID: ${jobUuid})`);
     } catch (error) {
       console.error('Error in storeApplication:', error);
       // Don't throw error to avoid breaking the application flow

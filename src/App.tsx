@@ -153,6 +153,51 @@ function App() {
   const savedRef = useRef<HTMLDivElement>(null);
   const appliedRef = useRef<HTMLDivElement>(null);
 
+  // Helper function to ensure job exists in linkedin_fetched_jobs and get UUID
+  const ensureJobExistsAndGetUuid = async (job: Job, userId: string): Promise<string | null> => {
+    try {
+      // Check if job already exists in linkedin_fetched_jobs
+      const { data: existingJob, error: checkError } = await supabase
+        .from('linkedin_fetched_jobs')
+        .select('id')
+        .eq('job_url', job.url)
+        .eq('user_id', userId)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('[App] Error checking existing job:', checkError);
+      }
+
+      if (existingJob) {
+        return existingJob.id;
+      } else {
+        // Insert job into linkedin_fetched_jobs if it doesn't exist
+        const { data: newJob, error: insertError } = await supabase
+          .from('linkedin_fetched_jobs')
+          .insert({
+            job_title: job.title || 'Job Application',
+            company_name: job.company || 'Company',
+            job_url: job.url,
+            user_id: userId,
+            easy_apply: true,
+            is_active: true
+          })
+          .select('id')
+          .single();
+
+        if (insertError) {
+          console.error('[App] Error inserting job into linkedin_fetched_jobs:', insertError);
+          return null;
+        }
+
+        return newJob.id;
+      }
+    } catch (error) {
+      console.error('[App] Exception in ensureJobExistsAndGetUuid:', error);
+      return null;
+    }
+  };
+
   // Define applyJob and saveJob functions early to avoid hoisting issues
   async function applyJob(job: Job) {
     const { data: userData } = await supabase.auth.getUser();
@@ -168,11 +213,18 @@ function App() {
       return;
     }
     
-    // Store job application in job_swipes table
+    // Ensure job exists in linkedin_fetched_jobs and get UUID
+    const jobUuid = await ensureJobExistsAndGetUuid(job, userId);
+    if (!jobUuid) {
+      console.error('[App] Failed to get job UUID, skipping application storage');
+      return;
+    }
+    
+    // Store job application in job_swipes table using UUID
     const { error } = await supabase.from('job_swipes').upsert([
       {
         user_id: userId,
-        job_id: job.id,
+        job_id: jobUuid, // Use UUID instead of LinkedIn job ID
         job_title: job.title,
         company: job.company,
         swipe_direction: 'right',
@@ -266,11 +318,18 @@ function App() {
     const userId = userData?.user?.id;
     if (!userId) return;
     
-    // Store job save in job_swipes table
+    // Ensure job exists in linkedin_fetched_jobs and get UUID
+    const jobUuid = await ensureJobExistsAndGetUuid(job, userId);
+    if (!jobUuid) {
+      console.error('[App] Failed to get job UUID, skipping save storage');
+      return;
+    }
+    
+    // Store job save in job_swipes table using UUID
     const { error } = await supabase.from('job_swipes').upsert([
       {
         user_id: userId,
-        job_id: job.id,
+        job_id: jobUuid, // Use UUID instead of LinkedIn job ID
         job_title: job.title,
         company: job.company,
         swipe_direction: 'saved',
