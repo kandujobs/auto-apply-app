@@ -111,11 +111,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   const [locationInput, setLocationInput] = useState(userLocation);
   const [radiusInput, setRadiusInput] = useState(userRadius.toString());
   const [savingLocation, setSavingLocation] = useState(false);
-  const [paginationState, setPaginationState] = useState({
-    totalJobs: 0,
-    remainingJobs: 0,
-    viewedJobs: 0
-  });
 
   const [networkModalVisible, setNetworkModalVisible] = useState(false);
   const [isAutoFetching, setIsAutoFetching] = useState(false);
@@ -761,8 +756,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
       
-      const state = await getJobPaginationState(userData.user.id);
-      setPaginationState(state);
+      // Pagination state no longer needed
     } catch (error) {
       console.error('Error updating pagination state:', error);
     }
@@ -1034,9 +1028,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
               onExpandSearch={goToFilters}
               isSessionActive={isSessionActive}
 
-              totalJobs={paginationState.totalJobs}
-              remainingJobs={paginationState.remainingJobs}
-              viewedJobs={paginationState.viewedJobs}
               
               autoAppliesUsed={autoAppliesUsed}
               autoApplyLimit={applicationLimit}
