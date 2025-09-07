@@ -3,7 +3,6 @@ const { createClient } = require('@supabase/supabase-js');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const WebSocket = require('ws');
 
 // File-based communication for user answers
 const ANSWER_FILE = path.join(__dirname, 'user_answer.json');
@@ -539,71 +538,31 @@ async function handleAdditionalQuestions(page) {
             }
           }
           
-          // Send this question to the user interface via WebSocket
+          // Send this question to the user interface via existing WebSocket infrastructure
           console.log(`📤 Sending question ${questionIndex + 1} to user interface...`);
           
           try {
-            const ws = new WebSocket('ws://localhost:3002');
+            // Use the existing broadcastToUser function instead of creating a new WebSocket
+            const { broadcastToUser } = require('../config/websocket');
             
-            ws.on('open', () => {
-              console.log('🔌 Connected to WebSocket server for question', questionIndex + 1);
-              
-              const questionMessage = {
-                type: 'question',
-                data: {
-                  text: currentQuestion.text,
-                  type: currentQuestion.type,
-                  options: currentQuestion.options,
-                  suggestedAnswer: suggestedAnswer // Include suggested answer if available
-                }
-              };
-              
-              ws.send(JSON.stringify(questionMessage));
-              console.log(`📤 Question ${questionIndex + 1} sent to user interface`);
-              if (suggestedAnswer) {
-                console.log(`💡 Suggested answer: "${suggestedAnswer}"`);
+            const questionMessage = {
+              type: 'question',
+              data: {
+                text: currentQuestion.text,
+                type: currentQuestion.type,
+                options: currentQuestion.options,
+                suggestedAnswer: suggestedAnswer // Include suggested answer if available
               }
-            });
+            };
             
-            ws.on('message', (data) => {
-              try {
-                const message = JSON.parse(data.toString());
-                if (message.type === 'answer') {
-                  console.log(`🔌 Received answer for question ${questionIndex + 1}: ${message.answer}`);
-                  
-                  // Save the answer to database for future use
-                  if (userId) {
-                    saveUserAnswer(userId, currentQuestion.text, currentQuestion.type, message.answer, 'job-id', 'job-title', 'company-name');
-                  }
-                  
-                  // Write answer to file for the script to read
-                  const answerData = {
-                    question: currentQuestion.text,
-                    answer: message.answer,
-                    timestamp: new Date().toISOString()
-                  };
-                  
-                  fs.writeFileSync(ANSWER_FILE, JSON.stringify(answerData, null, 2));
-                  console.log('📤 Answer written to file:', answerData);
-                  
-                  // Close WebSocket connection
-                  ws.close();
-                }
-              } catch (error) {
-                console.log('Error parsing WebSocket message:', error);
-              }
-            });
-            
-            ws.on('error', (error) => {
-              console.log('WebSocket error:', error);
-            });
-            
-            ws.on('close', () => {
-              console.log('WebSocket connection closed');
-            });
+            broadcastToUser(userId, questionMessage);
+            console.log(`📤 Question ${questionIndex + 1} sent to user interface via broadcastToUser`);
+            if (suggestedAnswer) {
+              console.log(`💡 Suggested answer: "${suggestedAnswer}"`);
+            }
             
           } catch (error) {
-            console.log('Failed to connect to WebSocket server:', error);
+            console.log('Failed to send question via broadcastToUser:', error);
           }
           
           // Wait for user answer for this specific question
