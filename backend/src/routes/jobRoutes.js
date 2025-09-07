@@ -3,8 +3,7 @@ const router = express.Router();
 const { sessionManager } = require('../services/sessionManager');
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
-// Temporarily commented out to debug session starting issue
-// const { jobApplicationService } = require('../services/jobApplicationService');
+const { applicationService } = require('../services/applicationService');
 
 // Job search endpoint
 router.post('/job-search', async (req, res) => {
@@ -403,39 +402,65 @@ router.post('/start-job-fetcher', async (req, res) => {
   }
 });
 
-// Simple apply to job - REVERTED to original working version
+// Simple apply to job - UPDATED with real LinkedIn automation
 router.post('/simple-apply', async (req, res) => {
   try {
     const { userId, jobUrl, jobTitle, company } = req.body;
     
     if (!userId || !jobUrl) {
-      return res.status(400).json({ error: 'User ID and Job URL are required' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'User ID and Job URL are required' 
+      });
     }
 
     console.log("Simple apply request:", { userId, jobUrl, jobTitle, company });
-    // Store application
-    const { error } = await supabase
-      .from('job_applications')
-      .insert({
-        job_url: jobUrl,
-        job_title: jobTitle || 'Unknown',
-        company: company || 'Unknown',
-        status: 'applied',
-        created_at: new Date().toISOString()
+    
+    // Check if user has an active session
+    if (!sessionManager.isSessionActive(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'No active session found. Please start a session first.'
       });
-
-    if (error) {
-      console.error('Error storing job application:', error);
-      return res.status(500).json({ error: 'Failed to store job application' });
     }
 
-    res.json({ 
-      message: 'Job application submitted successfully',
-      jobId: 'stored'
+    // Check daily application limit
+    try {
+      await applicationService.checkDailyLimit(userId);
+    } catch (limitError) {
+      return res.status(429).json({
+        success: false,
+        error: limitError.message
+      });
+    }
+
+    // Process job URL
+    const processedJobUrl = applicationService.processJobUrl(jobUrl);
+    
+    // Start the application process asynchronously
+    applicationService.processJobWithExistingSession(userId, 'simple-apply-job', processedJobUrl, jobTitle, company)
+      .then(() => {
+        console.log('✅ Job application completed successfully');
+      })
+      .catch((error) => {
+        console.error('❌ Job application failed:', error);
+      });
+    
+    // Return immediately to show the modal
+    res.json({
+      success: true,
+      message: 'Job application started successfully - check progress in the modal',
+      jobUrl: processedJobUrl,
+      jobTitle,
+      company
     });
+
   } catch (error) {
     console.error('Error submitting job application:', error);
-    res.status(500).json({ error: 'Failed to submit job application' });
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'Failed to submit job application' 
+    });
   }
 });
 
