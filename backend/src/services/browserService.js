@@ -435,7 +435,7 @@ async function extractJobsFromPage(page, userId) {
         
         // Only send progress updates every 3 jobs to reduce WebSocket spam
         if ((i + 1) % 3 === 0 || i === 0) {
-          sendProgressToSession(userId, `Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
+        // sendProgressToSession(userId, `Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
         }
         
         // Get current job cards (they might change as we navigate)
@@ -669,7 +669,7 @@ async function startEasyApplyWorker(userId) {
           // Only send progress updates every 2 seconds to reduce WebSocket spam
           const now = Date.now();
           if (!workerProcess.lastProgressTime || now - workerProcess.lastProgressTime > 2000) {
-            sendProgressToSession(userId, progressMatch[1]);
+            // sendProgressToSession(userId, progressMatch[1]);
             workerProcess.lastProgressTime = now;
           }
         }
