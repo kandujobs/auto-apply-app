@@ -281,43 +281,22 @@ class ApplicationService {
    */
   async storeApplication(userId, jobUrl, jobTitle, company, status, errorMessage = null) {
     try {
-      // Extract LinkedIn job ID from URL
-      let linkedinJobId = null;
-      if (jobUrl.includes('linkedin.com/jobs/view/')) {
-        const match = jobUrl.match(/\/jobs\/view\/(\d+)/);
-        if (match) {
-          linkedinJobId = match[1];
-        }
-      } else if (jobUrl.includes('currentJobId=')) {
-        const match = jobUrl.match(/currentJobId=(\d+)/);
-        if (match) {
-          linkedinJobId = match[1];
-        }
-      }
+      // Find the existing job_swipes record by looking up the linkedin_fetched_jobs record with matching URL
+      const { data: fetchedJob, error: fetchError } = await supabase
+        .from('linkedin_fetched_jobs')
+        .select('id')
+        .eq('job_url', jobUrl)
+        .eq('user_id', userId)
+        .single();
 
-      // Find the UUID job_id from linkedin_fetched_jobs table
-      let jobId = null;
-      if (linkedinJobId) {
-        const { data: fetchedJob, error: fetchError } = await supabase
-          .from('linkedin_fetched_jobs')
-          .select('id')
-          .eq('linkedin_job_id', linkedinJobId)
-          .eq('user_id', userId)
-          .single();
-
-        if (fetchError) {
-          console.error('Error finding LinkedIn job in database:', fetchError);
-          // If we can't find the job, we can't update the swipe record
-          console.log(`⚠️ LinkedIn job ${linkedinJobId} not found in database, skipping application storage`);
-          return;
-        }
-        
-        jobId = fetchedJob.id;
-        console.log(`✅ Found job UUID: ${jobId} for LinkedIn job ID: ${linkedinJobId}`);
-      } else {
-        console.log('⚠️ Could not extract LinkedIn job ID from URL, skipping application storage');
+      if (fetchError) {
+        console.error('Error finding LinkedIn job in database:', fetchError);
+        console.log(`⚠️ LinkedIn job with URL ${jobUrl} not found in database, skipping application storage`);
         return;
       }
+      
+      const jobId = fetchedJob.id;
+      console.log(`✅ Found job UUID: ${jobId} for URL: ${jobUrl}`);
 
       // Update the job_swipes table with application results
       const updateData = {
