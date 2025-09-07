@@ -18,10 +18,24 @@ const supabaseKey = process.env.SUPABASE_KEY;
 let supabase = null;
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey);
+  console.log('✅ Supabase client initialized in test-simple-click.js');
 } else if (require.main === module) {
   // Only exit if this file is run directly, not when imported
   console.error('❌ Missing required environment variables: SUPABASE_URL and SUPABASE_KEY');
   process.exit(1);
+} else {
+  // When imported as module, try to get Supabase from the main database config
+  try {
+    const { supabase: mainSupabase } = require('../config/database');
+    if (mainSupabase) {
+      supabase = mainSupabase;
+      console.log('✅ Using main Supabase client in test-simple-click.js');
+    } else {
+      console.error('❌ No Supabase client available in test-simple-click.js');
+    }
+  } catch (error) {
+    console.error('❌ Error importing main Supabase client:', error);
+  }
 }
 
 // Import the secure decryption function
@@ -184,6 +198,12 @@ async function getUserIdFromCredentials() {
     const sessionUserId = process.env.SESSION_USER_ID;
     if (sessionUserId) {
       return sessionUserId;
+    }
+    
+    // Check if Supabase client is available
+    if (!supabase) {
+      console.error('❌ Supabase client is not available in getUserIdFromCredentials');
+      return null;
     }
     
     // Get first available user
