@@ -281,22 +281,26 @@ class ApplicationService {
    */
   async storeApplication(userId, jobUrl, jobTitle, company, status, errorMessage = null) {
     try {
-      // Find the existing job_swipes record by looking up the linkedin_fetched_jobs record with matching URL
-      const { data: fetchedJob, error: fetchError } = await supabase
-        .from('linkedin_fetched_jobs')
-        .select('id')
-        .eq('job_url', jobUrl)
-        .eq('user_id', userId)
-        .single();
+      // Extract LinkedIn job ID from URL
+      let linkedinJobId = null;
+      if (jobUrl.includes('linkedin.com/jobs/view/')) {
+        const match = jobUrl.match(/\/jobs\/view\/(\d+)/);
+        if (match) {
+          linkedinJobId = match[1];
+        }
+      } else if (jobUrl.includes('currentJobId=')) {
+        const match = jobUrl.match(/currentJobId=(\d+)/);
+        if (match) {
+          linkedinJobId = match[1];
+        }
+      }
 
-      if (fetchError) {
-        console.error('Error finding LinkedIn job in database:', fetchError);
-        console.log(`⚠️ LinkedIn job with URL ${jobUrl} not found in database, skipping application storage`);
+      if (!linkedinJobId) {
+        console.log('⚠️ Could not extract LinkedIn job ID from URL, skipping application storage');
         return;
       }
-      
-      const jobId = fetchedJob.id;
-      console.log(`✅ Found job UUID: ${jobId} for URL: ${jobUrl}`);
+
+      console.log(`✅ Using LinkedIn job ID: ${linkedinJobId} for application storage`);
 
       // Update the job_swipes table with application results
       const updateData = {
@@ -316,7 +320,7 @@ class ApplicationService {
         .from('job_swipes')
         .update(updateData)
         .eq('user_id', userId)
-        .eq('job_id', jobId)
+        .eq('job_id', linkedinJobId)
         .eq('swipe_direction', 'right'); // Only update right swipes (applied jobs)
 
       if (error) {
@@ -324,10 +328,11 @@ class ApplicationService {
         throw new Error('Failed to store job application');
       }
 
-      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company} (jobId: ${jobId})`);
+      console.log(`✅ Application stored: ${status} for ${jobTitle} at ${company} (jobId: ${linkedinJobId})`);
     } catch (error) {
       console.error('Error in storeApplication:', error);
-      throw error;
+      // Don't throw error to avoid breaking the application flow
+      console.log('⚠️ Application storage failed, but continuing with application process');
     }
   }
 
