@@ -335,7 +335,7 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       const sessionStatus = await sessionService.getSessionStatus();
       console.log('[SwipeCard] Session status:', sessionStatus);
       
-      if (!sessionStatus.session?.isLoggedIn) {
+      if (!sessionStatus.isLoggedIn) {
         console.log('[SwipeCard] Session not logged in yet');
         setApplicationProgress('Session is still initializing. Please wait for login to complete.');
         setIsApplying(false);
