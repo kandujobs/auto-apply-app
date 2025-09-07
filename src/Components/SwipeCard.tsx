@@ -315,10 +315,13 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
   async function handleApplyJob(job: Job) {
     console.log('[SwipeCard] handleApplyJob called for job:', { id: job.id, title: job.title, company: job.company });
     console.log('[SwipeCard] This should ONLY be called when Apply button is clicked, NOT Pass button');
+    console.log('[SwipeCard] DEBUG: Starting handleApplyJob function');
     
-    // Check if session is active
-    const sessionActive = sessionService.isSessionActive();
-    console.log('[SwipeCard] Session active check:', sessionActive);
+    try {
+      // Check if session is active
+      console.log('[SwipeCard] DEBUG: About to check session active');
+      const sessionActive = sessionService.isSessionActive();
+      console.log('[SwipeCard] Session active check:', sessionActive);
     
     if (!sessionActive) {
       console.log('[SwipeCard] No active session found');
@@ -410,6 +413,12 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
     } catch (error) {
       console.error('[SwipeCard] Error starting application:', error);
       setApplicationProgress('Error starting application');
+      setIsApplying(false);
+    }
+    } catch (error) {
+      console.error('[SwipeCard] CRITICAL ERROR in handleApplyJob:', error);
+      console.error('[SwipeCard] Error stack:', error.stack);
+      setApplicationProgress('Critical error in application process');
       setIsApplying(false);
     }
   }
