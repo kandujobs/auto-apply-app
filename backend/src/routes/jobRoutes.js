@@ -3,6 +3,7 @@ const router = express.Router();
 const { sessionManager } = require('../services/sessionManager');
 const { supabase } = require('../config/database');
 const { broadcastToUser } = require('../config/websocket');
+const { jobApplicationService } = require('../services/jobApplicationService');
 
 // Job search endpoint
 router.post('/job-search', async (req, res) => {
@@ -401,43 +402,49 @@ router.post('/start-job-fetcher', async (req, res) => {
   }
 });
 
-// Simple apply to job
+// Simple apply to job - UPDATED with comprehensive application service
 router.post('/simple-apply', async (req, res) => {
   try {
     const { userId, jobUrl, jobTitle, company } = req.body;
     
     if (!userId || !jobUrl) {
-      return res.status(400).json({ error: 'User ID and Job URL are required' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'User ID and Job URL are required' 
+      });
     }
 
     console.log("Simple apply request:", { userId, jobUrl, jobTitle, company });
-    // Store application
-    const { error } = await supabase
-      .from('job_applications')
-      .insert({
-        job_url: jobUrl,
-        job_title: jobTitle || 'Unknown',
-        company: company || 'Unknown',
-        status: 'applied',
-        created_at: new Date().toISOString()
+    
+    // Check if another application is already in progress
+    if (jobApplicationService.isApplicationInProgress(userId)) {
+      return res.status(429).json({
+        success: false,
+        error: 'Another application is already in progress. Please wait for it to complete.'
       });
-
-    if (error) {
-      console.error('Error storing job application:', error);
-      return res.status(500).json({ error: 'Failed to store job application' });
     }
-
+    
+    // Use the comprehensive job application service
+    const result = await jobApplicationService.applyToJob(userId, jobUrl, jobTitle, company);
+    
     res.json({ 
-      message: 'Job application submitted successfully',
-      jobId
+      success: true,
+      message: result.message,
+      status: result.status,
+      jobUrl: result.jobUrl,
+      jobTitle: result.jobTitle,
+      company: result.company
     });
   } catch (error) {
     console.error('Error submitting job application:', error);
-    res.status(500).json({ error: 'Failed to submit job application' });
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'Failed to submit job application' 
+    });
   }
 });
 
-// Get application status
+// Get application status - UPDATED with job application service
 router.get('/application-status', (req, res) => {
   try {
     const { userId } = req.query;
@@ -447,11 +454,13 @@ router.get('/application-status', (req, res) => {
     }
 
     const session = sessionManager.getSession(userId);
+    const applicationStatus = jobApplicationService.getApplicationStatus(userId);
     
     if (!session) {
       return res.json({ 
         status: 'no_session',
-        message: 'No active session found'
+        message: 'No active session found',
+        applicationStatus: applicationStatus
       });
     }
 
@@ -460,7 +469,8 @@ router.get('/application-status', (req, res) => {
       isBrowserRunning: session.isBrowserRunning,
       applicationProgress: session.applicationProgress,
       currentQuestion: session.currentQuestion,
-      totalQuestions: session.totalQuestions
+      totalQuestions: session.totalQuestions,
+      applicationStatus: applicationStatus
     });
   } catch (error) {
     console.error('Error getting application status:', error);
