@@ -404,19 +404,20 @@ router.post('/start-job-fetcher', async (req, res) => {
 // Simple apply to job
 router.post('/simple-apply', async (req, res) => {
   try {
-    const { userId, jobId, resumeId } = req.body;
+    const { userId, jobUrl, jobTitle, company } = req.body;
     
-    if (!userId || !jobId) {
-      return res.status(400).json({ error: 'User ID and Job ID are required' });
+    if (!userId || !jobUrl) {
+      return res.status(400).json({ error: 'User ID and Job URL are required' });
     }
 
+    console.log("Simple apply request:", { userId, jobUrl, jobTitle, company });
     // Store application
     const { error } = await supabase
       .from('job_applications')
       .insert({
-        user_id: userId,
-        job_id: jobId,
-        resume_id: resumeId,
+        job_url: jobUrl,
+        job_title: jobTitle || 'Unknown',
+        company: company || 'Unknown',
         status: 'applied',
         created_at: new Date().toISOString()
       });
