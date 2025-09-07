@@ -215,6 +215,7 @@ class ApplicationService {
             
             // Use the proven form filling logic from test-simple-click.js
             try {
+              console.log(`🔍 Debug: session.userId value:`, session.userId);
               const formResult = await fillEasyApplyForm(page, session.userId);
               if (formResult === true) {
                 console.log('✅ Easy Apply form filled successfully using proven logic');
