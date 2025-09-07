@@ -363,14 +363,14 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
       }
       
       // Start the application process with session
-      console.log('[SwipeCard] Making API call to /api/simple-apply with data:', { 
+      console.log('[SwipeCard] Making API call to /api/jobs/simple-apply with data:', { 
         jobUrl: job.url,
         jobTitle: job.title,
         company: job.company,
         userId: user.id
       });
       
-      const response = await fetch(getBackendEndpoint('/api/simple-apply'), {
+      const response = await fetch(getBackendEndpoint('/api/jobs/simple-apply'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

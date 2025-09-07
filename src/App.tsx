@@ -1557,7 +1557,7 @@ function App() {
               
               // Simple apply function that uses the proven test-simple-click.js logic
               try {
-                const response = await fetch(getBackendEndpoint('/api/simple-apply'), {
+                const response = await fetch(getBackendEndpoint('/api/jobs/simple-apply'), {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
