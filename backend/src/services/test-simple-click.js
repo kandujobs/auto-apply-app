@@ -227,32 +227,8 @@ async function getUserIdFromCredentials() {
 // Helper function to get user answer for a specific question
 async function getUserAnswerForQuestion(userId, questionText) {
   try {
-    if (!supabase) {
-      console.log('❌ Supabase client not available - this function requires database access');
-      return null;
-    }
-    
-    console.log(`🔍 Looking for previous answer to: "${questionText}"`);
-    
-    const { data, error } = await supabase
-      .from('user_answers')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('question_text', questionText)
-      .order('created_at', { ascending: false })
-      .limit(1);
-    
-    if (error) {
-      console.log('❌ Error fetching user answer:', error);
-      return null;
-    }
-    
-    if (data && data.length > 0) {
-      console.log(`✅ Found previous answer: "${data[0].answer}"`);
-      return data[0].answer;
-    }
-    
-    console.log('❌ No previous answer found');
+    // Skip database check for now - just ask the question
+    console.log(`⏭️ Skipping previous answer check for: "${questionText}"`);
     return null;
   } catch (error) {
     console.log('❌ Error in getUserAnswerForQuestion:', error);
@@ -263,51 +239,8 @@ async function getUserAnswerForQuestion(userId, questionText) {
 // Helper function to find similar question answers
 async function findSimilarQuestionAnswer(userId, questionText) {
   try {
-    if (!supabase) {
-      console.log('❌ Supabase client not available - this function requires database access');
-      return null;
-    }
-    
-    console.log(`🔍 Looking for similar questions to: "${questionText}"`);
-    
-    // Get all user answers for this user
-    const { data, error } = await supabase
-      .from('user_answers')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.log('❌ Error fetching user answers:', error);
-      return null;
-    }
-    
-    if (!data || data.length === 0) {
-      console.log('❌ No user answers found');
-      return null;
-    }
-    
-    // Simple similarity check - look for keywords
-    const questionLower = questionText.toLowerCase();
-    const keywords = [
-      'authorized', 'sponsorship', 'visa', 'citizenship', 'relocate',
-      'salary', 'experience', 'years', 'start date', 'remote'
-    ];
-    
-    for (const answer of data) {
-      const answerQuestionLower = answer.question_text.toLowerCase();
-      
-      // Check if both questions contain similar keywords
-      for (const keyword of keywords) {
-        if (questionLower.includes(keyword) && answerQuestionLower.includes(keyword)) {
-          console.log(`✅ Found similar question: "${answer.question_text}"`);
-          console.log(`✅ Using answer: "${answer.answer}"`);
-          return answer.answer;
-        }
-      }
-    }
-    
-    console.log('❌ No similar questions found');
+    // Skip similar question check for now - just ask the question
+    console.log(`⏭️ Skipping similar question check for: "${questionText}"`);
     return null;
   } catch (error) {
     console.log('❌ Error in findSimilarQuestionAnswer:', error);
@@ -318,33 +251,9 @@ async function findSimilarQuestionAnswer(userId, questionText) {
 // Helper function to save user answer
 async function saveUserAnswer(userId, questionText, questionType, answer, jobId, jobTitle, companyName) {
   try {
-    if (!supabase) {
-      console.log('❌ Supabase client not available - this function requires database access');
-      return false;
-    }
-    
-    console.log(`💾 Saving answer: "${answer}" for question: "${questionText}"`);
-    
-    const { data, error } = await supabase
-      .from('user_answers')
-      .insert({
-        user_id: userId,
-        question_text: questionText,
-        question_type: questionType,
-        answer: answer,
-        job_id: jobId,
-        job_title: jobTitle,
-        company_name: companyName,
-        created_at: new Date().toISOString()
-      });
-    
-    if (error) {
-      console.log('❌ Error saving user answer:', error);
-      return false;
-    }
-    
-    console.log('✅ Answer saved successfully');
-    return true;
+    // Skip saving to database for now - just log the answer
+    console.log(`⏭️ Skipping answer save: "${answer}" for question: "${questionText}"`);
+    return true; // Return true to continue the process
   } catch (error) {
     console.log('❌ Error in saveUserAnswer:', error);
     return false;
