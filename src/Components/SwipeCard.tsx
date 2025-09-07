@@ -417,7 +417,9 @@ export default function SwipeCard({ jobs, currentIndex, onSwipe, onSaveJob, onAp
     }
     } catch (error) {
       console.error('[SwipeCard] CRITICAL ERROR in handleApplyJob:', error);
-      console.error('[SwipeCard] Error stack:', error.stack);
+      if (error instanceof Error) {
+        console.error('[SwipeCard] Error stack:', error.stack);
+      }
       setApplicationProgress('Critical error in application process');
       setIsApplying(false);
     }
