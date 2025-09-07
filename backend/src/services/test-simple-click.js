@@ -192,8 +192,14 @@ async function getUserResume() {
 }
 
 // Helper function to get user ID from credentials
-async function getUserIdFromCredentials() {
+async function getUserIdFromCredentials(passedUserId = null) {
   try {
+    // Use passed userId first if available
+    if (passedUserId) {
+      console.log('✅ Using passed userId:', passedUserId);
+      return passedUserId;
+    }
+    
     const sessionUserId = process.env.SESSION_USER_ID;
     if (sessionUserId) {
       return sessionUserId;
@@ -260,7 +266,7 @@ async function saveUserAnswer(userId, questionText, questionType, answer, jobId,
 }
 
 // Helper function to fill out the Easy Apply form
-async function fillEasyApplyForm(page) {
+async function fillEasyApplyForm(page, userId = null) {
   console.log('📝 Filling out Easy Apply form...');
   
   try {
@@ -525,16 +531,16 @@ async function handleAdditionalQuestions(page) {
             console.log(`🔍 Debug: Current question type: "${currentQuestion.type}"`);
             
                       // Try to get user ID for answer lookup
-          const userId = await getUserIdFromCredentials();
+          const currentUserId = await getUserIdFromCredentials(userId);
           
           // Check for previous answers to this question
           let suggestedAnswer = null;
-          if (userId) {
-            suggestedAnswer = await getUserAnswerForQuestion(userId, currentQuestion.text);
+          if (currentUserId) {
+            suggestedAnswer = await getUserAnswerForQuestion(currentUserId, currentQuestion.text);
             
             // If no exact match, try to find similar questions
             if (!suggestedAnswer) {
-              suggestedAnswer = await findSimilarQuestionAnswer(userId, currentQuestion.text);
+              suggestedAnswer = await findSimilarQuestionAnswer(currentUserId, currentQuestion.text);
             }
           }
           
@@ -555,7 +561,7 @@ async function handleAdditionalQuestions(page) {
               }
             };
             
-            broadcastToUser(userId, questionMessage);
+            broadcastToUser(currentUserId, questionMessage);
             console.log(`📤 Question ${questionIndex + 1} sent to user interface via broadcastToUser`);
             if (suggestedAnswer) {
               console.log(`💡 Suggested answer: "${suggestedAnswer}"`);
