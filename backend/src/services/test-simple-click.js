@@ -11,15 +11,18 @@ const ANSWER_FILE = path.join(__dirname, 'user_answer.json');
 // Global delay function to avoid redundancy
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-// Initialize Supabase client with environment variables
+// Initialize Supabase client with environment variables (only if running as standalone)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
+let supabase = null;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+} else if (require.main === module) {
+  // Only exit if this file is run directly, not when imported
   console.error('❌ Missing required environment variables: SUPABASE_URL and SUPABASE_KEY');
   process.exit(1);
 }
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Import the secure decryption function
 const { decrypt } = require('../utils/encryption');
@@ -37,6 +40,11 @@ async function decryptPassword(encryptedPassword) {
 // Helper function to get user credentials from Supabase
 async function getUserCredentials() {
   try {
+    if (!supabase) {
+      console.log('❌ Supabase client not available - this function requires database access');
+      return null;
+    }
+    
     console.log('🔐 Fetching user credentials from Supabase...');
     
     // Check if we're in session mode and have a specific user ID
@@ -102,6 +110,11 @@ async function getUserCredentials() {
 // Helper function to get user resume from Supabase storage
 async function getUserResume() {
   try {
+    if (!supabase) {
+      console.log('❌ Supabase client not available - this function requires database access');
+      return null;
+    }
+    
     console.log('📄 Fetching user resume from Supabase storage...');
     
     // Get the session user ID or first available user
@@ -194,6 +207,11 @@ async function getUserIdFromCredentials() {
 // Helper function to get user answer for a specific question
 async function getUserAnswerForQuestion(userId, questionText) {
   try {
+    if (!supabase) {
+      console.log('❌ Supabase client not available - this function requires database access');
+      return null;
+    }
+    
     console.log(`🔍 Looking for previous answer to: "${questionText}"`);
     
     const { data, error } = await supabase
@@ -225,6 +243,11 @@ async function getUserAnswerForQuestion(userId, questionText) {
 // Helper function to find similar question answers
 async function findSimilarQuestionAnswer(userId, questionText) {
   try {
+    if (!supabase) {
+      console.log('❌ Supabase client not available - this function requires database access');
+      return null;
+    }
+    
     console.log(`🔍 Looking for similar questions to: "${questionText}"`);
     
     // Get all user answers for this user
@@ -275,6 +298,11 @@ async function findSimilarQuestionAnswer(userId, questionText) {
 // Helper function to save user answer
 async function saveUserAnswer(userId, questionText, questionType, answer, jobId, jobTitle, companyName) {
   try {
+    if (!supabase) {
+      console.log('❌ Supabase client not available - this function requires database access');
+      return false;
+    }
+    
     console.log(`💾 Saving answer: "${answer}" for question: "${questionText}"`);
     
     const { data, error } = await supabase
