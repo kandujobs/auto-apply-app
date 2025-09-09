@@ -411,7 +411,7 @@ async function fillEasyApplyForm(page, userId = null) {
       console.log('✅ Next/Review/Submit button clicked');
       
       // Check if we moved to the next step or if there are additional questions
-      const result = await handleAdditionalQuestions(page);
+      const result = await handleAdditionalQuestions(page, userId);
       return result; // Return the result from handleAdditionalQuestions
       
     } else {
@@ -426,7 +426,7 @@ async function fillEasyApplyForm(page, userId = null) {
 }
 
 // Helper function to handle additional questions or steps
-async function handleAdditionalQuestions(page) {
+async function handleAdditionalQuestions(page, userId) {
   console.log('❓ Checking for additional questions...');
   
   try {
@@ -824,7 +824,7 @@ async function handleAdditionalQuestions(page) {
         console.log('✅ Next/Review/Submit button clicked, checking for questions on next screen...');
         
         // Recursively check for questions on the next screen
-        return await handleAdditionalQuestions(page);
+        return await handleAdditionalQuestions(page, userId);
       } else {
         console.log('❌ No Next/Review/Submit button found, application may be complete');
       }
