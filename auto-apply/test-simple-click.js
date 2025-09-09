@@ -304,7 +304,7 @@ async function saveUserAnswer(userId, questionText, questionType, answer, jobId,
 }
 
 // Helper function to fill out the Easy Apply form
-async function fillEasyApplyForm(page) {
+async function fillEasyApplyForm(page, userId) {
   console.log('📝 Filling out Easy Apply form...');
   
   try {
@@ -449,7 +449,7 @@ async function fillEasyApplyForm(page) {
       console.log('✅ Next/Review/Submit button clicked');
       
       // Check if we moved to the next step or if there are additional questions
-      const result = await handleAdditionalQuestions(page);
+      const result = await handleAdditionalQuestions(page, userId);
       return result; // Return the result from handleAdditionalQuestions
       
     } else {
@@ -464,7 +464,7 @@ async function fillEasyApplyForm(page) {
 }
 
 // Helper function to handle additional questions or steps
-async function handleAdditionalQuestions(page) {
+async function handleAdditionalQuestions(page, userId) {
   console.log('❓ Checking for additional questions...');
   
   try {
@@ -568,8 +568,7 @@ async function handleAdditionalQuestions(page) {
             console.log(`📝 Processing question ${questionIndex + 1}/${foundQuestions.length}: "${currentQuestion.text}"`);
             console.log(`🔍 Debug: Current question type: "${currentQuestion.type}"`);
             
-                      // Try to get user ID for answer lookup
-          const userId = await getUserIdFromCredentials();
+            // Use the userId parameter passed to the function
           
           // Check for previous answers to this question
           let suggestedAnswer = null;
