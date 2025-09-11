@@ -121,8 +121,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
   // Live countdown for next reward
   const [nextRewardCountdown, setNextRewardCountdown] = useState(getTimeUntilMidnight());
 
-  useEffect(() => {
-    async function fetchAndUpdateStreak() {
+  const fetchAndUpdateStreak = async () => {
       setLoading(true);
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
@@ -190,9 +189,11 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       }
       setStreak(newStreak);
       localStorage.setItem('aa_streak', String(newStreak));
-      // Check if reward claimed today
-      const lastClaimed = lastRewardClaimed ? new Date(lastRewardClaimed) : null;
-      const claimed = lastClaimed && lastClaimed.getFullYear() === new Date().getFullYear() && lastClaimed.getMonth() === new Date().getMonth() && lastClaimed.getDate() === new Date().getDate();
+      // Check if reward claimed today - use reward_bonus_claimed > 0 as the indicator
+      const claimed = trackingRecord && trackingRecord.reward_bonus_claimed > 0;
+      console.log('fetchAndUpdateStreak - trackingRecord:', trackingRecord);
+      console.log('fetchAndUpdateStreak - claimed:', claimed);
+      console.log('fetchAndUpdateStreak - reward_bonus_claimed:', trackingRecord?.reward_bonus_claimed);
       setClaimedToday(!!claimed);
       localStorage.setItem('aa_claimedToday', String(!!claimed));
       
@@ -205,7 +206,9 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       }
       
       setLoading(false);
-    }
+    };
+
+  useEffect(() => {
     fetchAndUpdateStreak();
   }, []);
 
@@ -284,7 +287,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
     // Check if reward was already claimed today
     const { data: existingRecord, error: checkError } = await supabase
       .from('user_daily_tracking')
-      .select('last_reward_claimed_date, reward_bonus_claimed')
+      .select('reward_bonus_claimed')
       .eq('user_id', userId)
       .eq('date', today)
       .single();
@@ -296,7 +299,9 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
     }
     
     // If reward was already claimed today, don't allow another claim
-    if (existingRecord && existingRecord.last_reward_claimed_date === today) {
+    console.log('handleClaimReward - existingRecord:', existingRecord);
+    console.log('handleClaimReward - reward_bonus_claimed:', existingRecord?.reward_bonus_claimed);
+    if (existingRecord && existingRecord.reward_bonus_claimed > 0) {
       console.log('Reward already claimed today, preventing duplicate claim');
       setClaiming(false);
       return;
@@ -324,6 +329,11 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
     setShowRewardPopup(true);
     setBonusLimit(todayReward.amount);
     setTimeout(() => setShowSuccess(false), 2000);
+    
+    // Refresh the data to ensure consistency
+    setTimeout(async () => {
+      await fetchAndUpdateStreak();
+    }, 100);
     // Optionally reset usage if new day
     const todayStr = new Date().toISOString().slice(0, 10);
     if (userData && userData.user) {
