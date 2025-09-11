@@ -281,6 +281,27 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
     const userId = userData.user.id;
     const today = new Date().toISOString().slice(0, 10);
     
+    // Check if reward was already claimed today
+    const { data: existingRecord, error: checkError } = await supabase
+      .from('user_daily_tracking')
+      .select('last_reward_claimed_date, reward_bonus_claimed')
+      .eq('user_id', userId)
+      .eq('date', today)
+      .single();
+    
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking existing reward claim:', checkError);
+      setClaiming(false);
+      return;
+    }
+    
+    // If reward was already claimed today, don't allow another claim
+    if (existingRecord && existingRecord.last_reward_claimed_date === today) {
+      console.log('Reward already claimed today, preventing duplicate claim');
+      setClaiming(false);
+      return;
+    }
+    
     // Update today's tracking record with reward claim
     const { error: upsertError } = await supabase
       .from('user_daily_tracking')
@@ -506,9 +527,9 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
             <button
               className="mt-4 bg-gradient-to-r from-[#984DE0] to-[#7300FF] text-white font-bold px-6 py-2 rounded-full shadow hover:scale-105 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={handleClaimReward}
-              disabled={claiming}
+              disabled={claiming || claimedToday}
             >
-              {claiming ? 'Claiming...' : 'Claim Reward'}
+              {claiming ? 'Claiming...' : claimedToday ? 'Already Claimed' : 'Claim Reward'}
             </button>
           )}
           {showSuccess && (
