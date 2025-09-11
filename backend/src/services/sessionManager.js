@@ -210,9 +210,6 @@ async function startSessionWithBrowser(userId) {
     // Create new session with existing WebSocket if found
     const session = createSession(userId, existingWebSocket);
     
-    // Send immediate feedback to user that session is starting
-    browserService.sendProgressToSession(userId, '🚀 Starting browser session...');
-    
     // Initialize browser session
     try {
       const initResult = await browserService.initializeBrowserSession(userId, {
@@ -230,9 +227,6 @@ async function startSessionWithBrowser(userId) {
         session.lastActivity = Date.now();
         
         console.log(`✅ Session started successfully for user: ${userId}`);
-        
-        // Send final progress update
-        browserService.sendProgressToSession(userId, '✅ Session ready - browser is logged in and ready for applications');
     
         return {
           success: true,
@@ -246,9 +240,6 @@ async function startSessionWithBrowser(userId) {
       }
     } catch (error) {
       console.error(`❌ Failed to start session for user ${userId}:`, error);
-      
-      // Send error feedback to user
-      browserService.sendProgressToSession(userId, '❌ Failed to start session - please try again');
       
       // Clean up any partial session
       try {

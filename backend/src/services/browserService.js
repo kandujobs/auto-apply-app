@@ -115,27 +115,22 @@ async function initializeBrowserSession(userId, credentials) {
     
     // Navigate to LinkedIn login
     console.log('🌐 Navigating to LinkedIn login...');
-    sendProgressToSession(userId, '🌐 Navigating to LinkedIn login...');
     await page.goto('https://www.linkedin.com/login', { waitUntil: 'domcontentloaded', timeout: 60000 });
     
     // Wait for login form
-    sendProgressToSession(userId, '⏳ Loading login form...');
     await page.waitForSelector('#username', { timeout: 10000 });
     await page.waitForSelector('#password', { timeout: 10000 });
     
     // Fill in credentials
     console.log('📝 Filling in login credentials...');
-    sendProgressToSession(userId, '📝 Filling in login credentials...');
     await page.fill('#username', email);
     await page.fill('#password', password);
     
     // Click sign in button
     console.log('🔐 Clicking sign in button...');
-    sendProgressToSession(userId, '🔐 Signing in...');
     await page.click('button[type="submit"]');
     
-    // Wait for navigation with progress update
-    sendProgressToSession(userId, '⏳ Verifying login...');
+    // Wait for navigation
     await page.waitForTimeout(3000); // Reduced from 5000ms
     
     // Check if login was successful
@@ -253,11 +248,9 @@ async function initializeBrowserSession(userId, credentials) {
     // Check if we're already on the feed page to avoid redundant navigation
     if (loginUrl.includes('/feed')) {
       console.log('✅ Already on LinkedIn feed - no need to navigate');
-      sendProgressToSession(userId, '✅ Already on LinkedIn feed - ready to go!');
     } else {
       // Only navigate if we're not already on the feed
       console.log('🌐 Navigating to LinkedIn feed...');
-      sendProgressToSession(userId, '🌐 Navigating to LinkedIn feed...');
       await page.goto('https://www.linkedin.com/feed', { waitUntil: 'domcontentloaded', timeout: 60000 });
       console.log('✅ Successfully navigated to LinkedIn feed');
     }
