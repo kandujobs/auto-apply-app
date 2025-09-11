@@ -92,32 +92,24 @@ class JobApplicationService {
    */
   async checkDailyLimit(userId) {
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('auto_applies_used_today, auto_apply_usage_date, login_streak, last_reward_claimed_date')
-        .eq('id', userId)
+      const today = new Date().toISOString().slice(0, 10);
+      
+      // Get today's tracking record
+      const { data: trackingRecord, error: trackingError } = await supabase
+        .from('user_daily_tracking')
+        .select('auto_applies_used_today, login_streak, last_reward_claimed_date, reward_bonus_claimed')
+        .eq('user_id', userId)
+        .eq('date', today)
         .single();
       
-      if (profileError) {
-        console.error('Error fetching user profile:', profileError);
+      if (trackingError && trackingError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching daily tracking record:', trackingError);
         throw new Error('Failed to check application limit');
       }
 
-      const today = new Date().toISOString().slice(0, 10);
-      const currentUsage = profile?.auto_applies_used_today || 0;
-      const usageDate = profile?.auto_apply_usage_date;
-      
-      // Reset usage if it's a new day
-      if (usageDate !== today) {
-        await supabase
-          .from('profiles')
-          .update({ auto_applies_used_today: 0, auto_apply_usage_date: today })
-          .eq('id', userId);
-      }
-      
-      // Calculate daily reward bonus
-      const loginStreak = profile?.login_streak || 0;
-      const lastRewardClaimed = profile?.last_reward_claimed_date;
+      const currentUsage = trackingRecord?.auto_applies_used_today || 0;
+      const loginStreak = trackingRecord?.login_streak || 0;
+      const lastRewardClaimed = trackingRecord?.last_reward_claimed_date;
       let rewardBonus = 0;
       
       // Check if reward was claimed today
@@ -458,34 +450,64 @@ class JobApplicationService {
    */
   async updateDailyApplicationCount(userId) {
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('auto_applies_used_today, auto_apply_usage_date')
-        .eq('id', userId)
+      const today = new Date().toISOString().slice(0, 10);
+      
+      // Get or create today's tracking record
+      const { data: existingRecord, error: fetchError } = await supabase
+        .from('user_daily_tracking')
+        .select('auto_applies_used_today')
+        .eq('user_id', userId)
+        .eq('date', today)
         .single();
       
-      if (!profileError && profile) {
-        const today = new Date().toISOString().slice(0, 10);
-        const currentUsage = profile.auto_applies_used_today || 0;
-        const newUsage = currentUsage + 1;
-        
-        await supabase
-          .from('profiles')
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('❌ Error fetching daily tracking record:', fetchError);
+        return;
+      }
+      
+      const currentUsage = existingRecord?.auto_applies_used_today || 0;
+      const newUsage = currentUsage + 1;
+      
+      if (existingRecord) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('user_daily_tracking')
           .update({ 
             auto_applies_used_today: newUsage,
             auto_apply_usage_date: today
           })
-          .eq('id', userId);
+          .eq('user_id', userId)
+          .eq('date', today);
         
-        console.log(`✅ Updated daily application count for user ${userId}: ${newUsage}`);
+        if (updateError) {
+          console.error('❌ Error updating daily tracking record:', updateError);
+          return;
+        }
+      } else {
+        // Create new record for today
+        const { error: insertError } = await supabase
+          .from('user_daily_tracking')
+          .insert({
+            user_id: userId,
+            date: today,
+            auto_applies_used_today: newUsage,
+            auto_apply_usage_date: today
+          });
         
-        // Send WebSocket update
-        broadcastToUser(userId, {
-          type: 'application_count_updated',
-          message: `Daily application count updated: ${newUsage}`,
-          applicationsToday: newUsage
-        });
+        if (insertError) {
+          console.error('❌ Error creating daily tracking record:', insertError);
+          return;
+        }
       }
+      
+      console.log(`✅ Updated daily application count for user ${userId}: ${newUsage}`);
+      
+      // Send WebSocket update
+      broadcastToUser(userId, {
+        type: 'application_count_updated',
+        message: `Daily application count updated: ${newUsage}`,
+        applicationsToday: newUsage
+      });
     } catch (error) {
       console.error('❌ Error updating daily application count:', error);
     }

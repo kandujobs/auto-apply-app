@@ -130,51 +130,69 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
         return;
       }
       const userId = userData.user.id;
-      // Fetch streak, last login, and last reward claimed
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('login_streak, last_login_date, last_reward_claimed_date')
-        .eq('id', userId)
+      // Fetch today's tracking record
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: trackingRecord, error } = await supabase
+        .from('user_daily_tracking')
+        .select('login_streak, last_reward_claimed_date')
+        .eq('user_id', userId)
+        .eq('date', today)
         .single();
-      if (error || !profile) {
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching daily tracking record:', error);
         setLoading(false);
         return;
       }
-      const today = new Date();
-      const lastLogin = profile.last_login_date ? new Date(profile.last_login_date) : null;
-      let newStreak = profile.login_streak || 0;
+      
+      const currentStreak = trackingRecord?.login_streak || 0;
+      const lastRewardClaimed = trackingRecord?.last_reward_claimed_date;
+      let newStreak = currentStreak;
       let needsUpdate = false;
-      if (!lastLogin || isNaN(lastLogin.getTime())) {
-        // First login ever
-        newStreak = 1;
-        needsUpdate = true;
-      } else {
-        // Check if today is a new day
-        const last = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate());
-        const now = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const diffDays = Math.floor((now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
-        if (diffDays === 1) {
-          // Consecutive day
-          newStreak = newStreak + 1;
-          needsUpdate = true;
-        } else if (diffDays > 1) {
-          // Missed a day, reset streak to day 1
+      
+      // If no tracking record exists for today, this is a new day
+      if (!trackingRecord) {
+        // Check if we have a record for yesterday to determine streak
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().slice(0, 10);
+        
+        const { data: yesterdayRecord } = await supabase
+          .from('user_daily_tracking')
+          .select('login_streak')
+          .eq('user_id', userId)
+          .eq('date', yesterdayStr)
+          .single();
+        
+        if (yesterdayRecord) {
+          // Consecutive day - increment streak
+          newStreak = (yesterdayRecord.login_streak || 0) + 1;
+        } else {
+          // First login or missed days - start streak at 1
           newStreak = 1;
-          needsUpdate = true;
         }
-        // If diffDays === 0, already logged in today, do nothing
+        needsUpdate = true;
       }
+      
       if (needsUpdate) {
-        await supabase
-          .from('profiles')
-          .update({ login_streak: newStreak, last_login_date: today.toISOString().slice(0, 10) })
-          .eq('id', userId);
+        // Create or update today's tracking record
+        const { error: upsertError } = await supabase
+          .from('user_daily_tracking')
+          .upsert({
+            user_id: userId,
+            date: today,
+            login_streak: newStreak
+          }, { onConflict: 'user_id,date' });
+        
+        if (upsertError) {
+          console.error('Error updating daily tracking record:', upsertError);
+        }
       }
       setStreak(newStreak);
       localStorage.setItem('aa_streak', String(newStreak));
       // Check if reward claimed today
-      const lastClaimed = profile.last_reward_claimed_date ? new Date(profile.last_reward_claimed_date) : null;
-      const claimed = lastClaimed && lastClaimed.getFullYear() === today.getFullYear() && lastClaimed.getMonth() === today.getMonth() && lastClaimed.getDate() === today.getDate();
+      const lastClaimed = lastRewardClaimed ? new Date(lastRewardClaimed) : null;
+      const claimed = lastClaimed && lastClaimed.getFullYear() === new Date().getFullYear() && lastClaimed.getMonth() === new Date().getMonth() && lastClaimed.getDate() === new Date().getDate();
       setClaimedToday(!!claimed);
       localStorage.setItem('aa_claimedToday', String(!!claimed));
       setLoading(false);
@@ -206,25 +224,32 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
       const userId = userData.user.id;
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('auto_applies_used_today, auto_apply_usage_date')
-        .eq('id', userId)
-        .single();
-      if (error || !profile) return;
       const today = new Date().toISOString().slice(0, 10);
-      if (profile.auto_apply_usage_date !== today) {
-        // Reset usage for new day
-        await supabase.from('profiles').update({ auto_applies_used_today: 0, auto_apply_usage_date: today }).eq('id', userId);
+      
+      // Get today's tracking record
+      const { data: trackingRecord, error } = await supabase
+        .from('user_daily_tracking')
+        .select('auto_applies_used_today, auto_apply_usage_date')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching daily tracking record:', error);
+        return;
+      }
+      
+      if (trackingRecord) {
+        setAutoAppliesUsed(trackingRecord.auto_applies_used_today || 0);
+        setUsageDate(trackingRecord.auto_apply_usage_date || today);
+        localStorage.setItem('aa_used', String(trackingRecord.auto_applies_used_today || 0));
+        localStorage.setItem('aa_usageDate', trackingRecord.auto_apply_usage_date || today);
+      } else {
+        // No record for today, reset to 0
         setAutoAppliesUsed(0);
         setUsageDate(today);
         localStorage.setItem('aa_used', '0');
         localStorage.setItem('aa_usageDate', today);
-      } else {
-        setAutoAppliesUsed(profile.auto_applies_used_today || 0);
-        setUsageDate(profile.auto_apply_usage_date);
-        localStorage.setItem('aa_used', String(profile.auto_applies_used_today || 0));
-        localStorage.setItem('aa_usageDate', profile.auto_apply_usage_date);
       }
     }
     fetchUsage();
@@ -246,10 +271,22 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
     }
     const userId = userData.user.id;
     const today = new Date().toISOString().slice(0, 10);
-    await supabase
-      .from('profiles')
-      .update({ last_reward_claimed_date: today })
-      .eq('id', userId);
+    
+    // Update today's tracking record with reward claim
+    const { error: upsertError } = await supabase
+      .from('user_daily_tracking')
+      .upsert({
+        user_id: userId,
+        date: today,
+        last_reward_claimed_date: today,
+        reward_bonus_claimed: todayReward.amount
+      }, { onConflict: 'user_id,date' });
+    
+    if (upsertError) {
+      console.error('Error claiming reward:', upsertError);
+      setClaiming(false);
+      return;
+    }
     setClaimedToday(true);
     setClaiming(false);
     setShowSuccess(true);

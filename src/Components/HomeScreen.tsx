@@ -296,30 +296,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
       const userId = userData.user.id;
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('auto_applies_used_today, auto_apply_usage_date, login_streak, last_reward_claimed_date')
-        .eq('id', userId)
-        .single();
-      if (error || !profile) return;
       const today = new Date().toISOString().slice(0, 10);
-      if (profile.auto_apply_usage_date !== today) {
-        // Reset usage for new day
-        await supabase.from('profiles').update({ auto_applies_used_today: 0, auto_apply_usage_date: today }).eq('id', userId);
-        setAutoAppliesUsed(0);
-        setUsageDate(today);
-        localStorage.setItem('aa_used', '0');
-        localStorage.setItem('aa_usageDate', today);
-        setApplicationLimit(15); // Reset to base limit for new day
-      } else {
-        setAutoAppliesUsed(profile.auto_applies_used_today || 0);
-        setUsageDate(profile.auto_apply_usage_date);
-        localStorage.setItem('aa_used', String(profile.auto_applies_used_today || 0));
-        localStorage.setItem('aa_usageDate', profile.auto_apply_usage_date);
+      
+      // Get today's tracking record
+      const { data: trackingRecord, error } = await supabase
+        .from('user_daily_tracking')
+        .select('auto_applies_used_today, auto_apply_usage_date, login_streak, last_reward_claimed_date, reward_bonus_claimed')
+        .eq('user_id', userId)
+        .eq('date', today)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
+        console.error('Error fetching daily tracking record:', error);
+        return;
+      }
+      
+      if (trackingRecord) {
+        setAutoAppliesUsed(trackingRecord.auto_applies_used_today || 0);
+        setUsageDate(trackingRecord.auto_apply_usage_date || today);
+        localStorage.setItem('aa_used', String(trackingRecord.auto_applies_used_today || 0));
+        localStorage.setItem('aa_usageDate', trackingRecord.auto_apply_usage_date || today);
         
         // Calculate daily reward bonus
-        const loginStreak = profile.login_streak || 0;
-        const lastRewardClaimed = profile.last_reward_claimed_date;
+        const loginStreak = trackingRecord.login_streak || 0;
+        const lastRewardClaimed = trackingRecord.last_reward_claimed_date;
         let rewardBonus = 0;
         
         // Check if reward was claimed today
@@ -332,6 +332,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         
         // Update application limit with reward bonus
         setApplicationLimit(15 + rewardBonus);
+      } else {
+        // No record for today, reset to base values
+        setAutoAppliesUsed(0);
+        setUsageDate(today);
+        localStorage.setItem('aa_used', '0');
+        localStorage.setItem('aa_usageDate', today);
+        setApplicationLimit(15); // Reset to base limit for new day
       }
     }
     fetchUsage();
