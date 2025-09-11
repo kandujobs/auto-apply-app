@@ -325,16 +325,16 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
 
     console.log(`🎯 User search criteria: "${jobTitle}" in "${location}" (${radius}mi radius)`);
     
-    // Build search URL with user's actual criteria
+    // Build search URL with user's actual criteria (proper LinkedIn format)
     const baseUrl = 'https://www.linkedin.com/jobs/search/';
     const urlParams = new URLSearchParams({
-      keywords: jobTitle,
-      location: location,
-      f_WT: '2', // Remote
+      distance: radius.toString(), // Use radius from Supabase
+      f_AL: 'true', // All Filters enabled
       f_E: '2', // Entry level
       f_JT: 'F', // Full-time
-      position: '1',
-      pageNum: '0'
+      f_WT: '2', // Remote
+      keywords: jobTitle,
+      location: location
     });
     
     const searchUrl = `${baseUrl}?${urlParams.toString()}`;
