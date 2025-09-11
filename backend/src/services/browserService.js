@@ -431,68 +431,53 @@ async function extractJobsFromPage(page, userId) {
           break;
         }
         
-        // Extract basic job info from the card using LinkedInSelectors
-        const basicJobInfo = await page.evaluate(({ index, titleSelectors, companySelectors, locationSelectors }) => {
+        // Extract basic job info from the card using proven approach from old-server.js
+        const basicJobInfo = await page.evaluate(({ index }) => {
           const cards = document.querySelectorAll('a.job-card-container__link');
           if (index >= cards.length) return null;
           
           const card = cards[index];
           
-          // Debug: Log card structure
-          console.log(`[DEBUG] Card ${index} classes:`, card.className);
-          console.log(`[DEBUG] Card ${index} parent classes:`, card.parentElement?.className);
+          // Use the proven selectors from old-server.js
+          const title = card.querySelector('span[aria-hidden="true"] > strong')?.textContent?.trim() || '';
           
-          // For company and location, search in the data-control-name parent (like old-server.js)
-          const dataControlParent = card.closest('[data-control-name]');
-          console.log(`[DEBUG] Data control parent found:`, !!dataControlParent);
-          if (dataControlParent) {
-            console.log(`[DEBUG] Data control parent classes:`, dataControlParent.className);
+          // Try multiple approaches for company
+          let company = card.closest('[data-control-name]')?.querySelector('.artdeco-entity-lockup__subtitle')?.textContent?.trim() || '';
+          if (!company) {
+            // Fallback selectors
+            company = card.closest('[data-control-name]')?.querySelector('.artdeco-entity-lockup_subtitle')?.textContent?.trim() || '';
+          }
+          if (!company) {
+            company = card.querySelector('.artdeco-entity-lockup__subtitle')?.textContent?.trim() || '';
+          }
+          if (!company) {
+            company = card.querySelector('.job-card-container__company-name')?.textContent?.trim() || '';
           }
           
-          // Helper function to find element with multiple selectors
-          const findElement = (selectors, searchIn = card, fieldName = 'unknown') => {
-            console.log(`[DEBUG] Looking for ${fieldName} in:`, searchIn?.tagName, searchIn?.className);
-            for (const selector of selectors) {
-              const element = searchIn.querySelector(selector);
-              if (element) {
-                const text = element.textContent?.trim();
-                console.log(`[DEBUG] Found ${fieldName} with selector "${selector}": "${text}"`);
-                if (text) {
-                  return text;
-                }
-              }
-            }
-            console.log(`[DEBUG] No ${fieldName} found with any selector`);
-            return 'Not available';
-          };
-          
-          // Try multiple approaches for company and location
-          let company = findElement(companySelectors, dataControlParent || card, 'company');
-          let location = findElement(locationSelectors, dataControlParent || card, 'location');
-          
-          // Fallback: try searching in the card itself if data-control-parent didn't work
-          if (company === 'Not available') {
-            console.log(`[DEBUG] Trying fallback company search in card`);
-            company = findElement(companySelectors, card, 'company-fallback');
+          // Try multiple approaches for location
+          let location = card.closest('[data-control-name]')?.querySelector('.artdeco-entity-lockup__caption')?.textContent?.trim() || '';
+          if (!location) {
+            // Fallback selectors
+            location = card.closest('[data-control-name]')?.querySelector('.artdeco-entity-lockup_caption')?.textContent?.trim() || '';
+          }
+          if (!location) {
+            location = card.querySelector('.artdeco-entity-lockup__caption')?.textContent?.trim() || '';
+          }
+          if (!location) {
+            location = card.querySelector('.job-card-container__metadata-item')?.textContent?.trim() || '';
           }
           
-          if (location === 'Not available') {
-            console.log(`[DEBUG] Trying fallback location search in card`);
-            location = findElement(locationSelectors, card, 'location-fallback');
-          }
+          const jobUrl = card.getAttribute('href') || '';
+          
+          console.log(`🔍 Basic job info for card ${index}:`, { title, company, location, jobUrl });
           
           return {
-            title: findElement(titleSelectors, card, 'title'),
-            company,
-            location,
-            url: card.href
+            title: title || 'Not available',
+            company: company || 'Not available', 
+            location: location || 'Not available',
+            url: jobUrl
           };
-        }, {
-          index: i,
-          titleSelectors: LinkedInSelectors.getJobTitleSelectors(),
-          companySelectors: LinkedInSelectors.getCompanyNameSelectors(),
-          locationSelectors: LinkedInSelectors.getLocationSelectors()
-        });        
+        }, { index: i });        
         if (!basicJobInfo) {
           console.log(`Could not extract basic info for job ${i}`);
           continue;
