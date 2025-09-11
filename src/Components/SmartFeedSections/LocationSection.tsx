@@ -58,7 +58,48 @@ const LocationSection: React.FC<LocationSectionProps> = ({ location, radius, lat
 
   // Update local state if props change
   useEffect(() => {
-    setPosition({ lat: latitude || DEFAULT_POSITION.lat, lng: longitude || DEFAULT_POSITION.lng });
+    // If we have coordinates, use them; otherwise try to geocode the location string
+    if (latitude && longitude) {
+      setPosition({ lat: latitude, lng: longitude });
+    } else if (location) {
+      // Try to get coordinates from the location string
+      const geocodeLocation = async () => {
+        try {
+          // First try to get from our predefined coordinates
+          const { NY_CITY_COORDS } = await import('../../data/sampleJobs');
+          const coordinates = NY_CITY_COORDS[location];
+          if (coordinates) {
+            setPosition({ lat: coordinates.lat, lng: coordinates.lng });
+            return;
+          }
+          
+          // If not found in predefined list, try to geocode using Nominatim
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`);
+          const data = await res.json();
+          if (data && data.length > 0) {
+            const { lat, lon } = data[0];
+            setPosition({ lat: parseFloat(lat), lng: parseFloat(lon) });
+            // Also save these coordinates to the database
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData.user) {
+              await supabase
+                .from('profiles')
+                .update({ latitude: parseFloat(lat), longitude: parseFloat(lon) })
+                .eq('id', userData.user.id);
+            }
+          } else {
+            // Fallback to default position
+            setPosition(DEFAULT_POSITION);
+          }
+        } catch (error) {
+          console.error('[LocationSection] Error geocoding location:', error);
+          setPosition(DEFAULT_POSITION);
+        }
+      };
+      geocodeLocation();
+    } else {
+      setPosition(DEFAULT_POSITION);
+    }
     setLocalRadius(radius || DEFAULT_RADIUS);
     setCity(location || '');
   }, [latitude, longitude, radius, location]);

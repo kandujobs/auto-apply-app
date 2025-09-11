@@ -472,6 +472,10 @@ function App() {
     setUserLocation(info.location);
     setUserRadius(info.radius);
     
+    // Get coordinates for the selected location
+    const { NY_CITY_COORDS } = await import('./data/sampleJobs');
+    const coordinates = NY_CITY_COORDS[info.location] || { lat: 40.7128, lng: -74.0060 }; // Default to NYC if not found
+    
     // Save basic info to profiles table
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
@@ -484,13 +488,15 @@ function App() {
             id: userId,
             name: info.name,
             location: info.location,
-            radius: info.radius
+            radius: info.radius,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng
           }, { onConflict: 'id' });
         
         if (error) {
           console.error('[handleBasicInfoContinue] Error saving basic info:', error);
         } else {
-          console.log('[handleBasicInfoContinue] Basic info saved successfully');
+          console.log('[handleBasicInfoContinue] Basic info saved successfully with coordinates:', coordinates);
         }
       } catch (error) {
         console.error('[handleBasicInfoContinue] Error saving data:', error);
