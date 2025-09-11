@@ -217,6 +217,157 @@ class LinkedInSelectors {
   }
 
   /**
+   * Get salary selectors array (from job details page)
+   * @returns {Array<string>} - Array of CSS selectors for salary information
+   */
+  static getSalarySelectors() {
+    return [
+      // Working selectors from old-server.js
+      '.job-details-jobs-unified-top-card__salary-info',
+      '.jobs-unified-top-card__salary-info',
+      '.job-details-jobs-unified-top-card__salary',
+      '.jobs-unified-top-card__salary',
+      '.job-details-jobs-unified-top-card__metadata',
+      '.jobs-unified-top-card__metadata',
+      
+      // Alternative selectors
+      '.salary-info',
+      '.job-salary',
+      '.compensation',
+      '.pay-range',
+      '.salary-range',
+      '[data-test-id="salary"]',
+      '.job-details-salary',
+      '.jobs-salary',
+      
+      // Text-based selectors
+      'span:contains("$")',
+      'div:contains("salary")',
+      'div:contains("compensation")',
+      'div:contains("pay")'
+    ];
+  }
+
+  /**
+   * Get salary from job details page
+   * @param {Document} document - The document object
+   * @returns {string} - Salary information or 'Not available'
+   */
+  static getSalary(document) {
+    const selectors = this.getSalarySelectors();
+    
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (element && element.textContent.trim()) {
+        const salaryText = element.textContent.trim();
+        // Check if it looks like a salary (contains $ or numbers)
+        if (salaryText.includes('$') || /\d/.test(salaryText)) {
+          return salaryText;
+        }
+      }
+    }
+    
+    // If no dedicated salary element found, try to extract from description
+    return this.extractSalaryFromDescription(document);
+  }
+
+  /**
+   * Extract salary from job description text
+   * @param {Document} document - The document object
+   * @returns {string} - Extracted salary or 'Not available'
+   */
+  static extractSalaryFromDescription(document) {
+    const descriptionSelectors = [
+      '.jobs-description__content',
+      '.job-details-jobs-unified-top-card__job-description__content',
+      '.jobs-unified-top-card__job-description__content',
+      '.jobs-description-content__text'
+    ];
+    
+    let description = '';
+    for (const selector of descriptionSelectors) {
+      const element = document.querySelector(selector);
+      if (element && element.textContent.trim()) {
+        description = element.textContent.trim();
+        break;
+      }
+    }
+    
+    if (!description) return 'Not available';
+    
+    // Common salary patterns from old-server.js
+    const salaryPatterns = [
+      /\$[\d,]+(?:\s*-\s*\$[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+      /\$[\d,]+(?:\s+to\s+\$[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+      /\$[\d,]+-[\d,]+(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+      /(?:USD|US\$|CAD|EUR|GBP)\s*[\d,]+(?:\s*-\s*[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+      /(?:salary|compensation|pay)\s*(?:range|of)?\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+      /(?:annual|yearly)\s*(?:salary|compensation)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+      /(?:hourly|per\s+hour)\s*(?:rate|pay)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+      /(?:base\s+)?salary\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+      /compensation\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+      /(?:benefits|package)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi
+    ];
+    
+    // Look for salary patterns in the text
+    for (const pattern of salaryPatterns) {
+      const matches = description.match(pattern);
+      if (matches && matches.length > 0) {
+        let salary = matches[0].trim();
+        salary = salary.replace(/^(salary|compensation|pay|annual|yearly|hourly|per\s+hour|base|benefits|package)\s*(?:range|of)?\s*:\s*/gi, '');
+        if (/^\d/.test(salary) && !salary.startsWith('$')) {
+          salary = '$' + salary;
+        }
+        return salary;
+      }
+    }
+    
+    // Look for specific salary keywords and extract nearby numbers
+    const salaryKeywords = ['salary', 'compensation', 'pay', 'earnings', 'income', 'wage', 'rate', 'package'];
+    const lines = description.split('\n');
+    for (const line of lines) {
+      const lowerLine = line.toLowerCase();
+      for (const keyword of salaryKeywords) {
+        if (lowerLine.includes(keyword)) {
+          const dollarMatches = line.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?/g);
+          if (dollarMatches && dollarMatches.length > 0) {
+            return dollarMatches[0].trim();
+          }
+        }
+      }
+    }
+    
+    return 'Not available';
+  }
+
+  /**
+   * Format salary with proper units
+   * @param {string} salary - Raw salary string
+   * @returns {string} - Formatted salary string
+   */
+  static formatSalary(salary) {
+    if (!salary || salary === 'Not available') return '';
+    
+    // Remove any existing units
+    let cleanSalary = salary.replace(/\/(hour|hr|year|yr|month|mo|week|wk|day)/gi, '');
+    
+    // Extract the number
+    const numberMatch = cleanSalary.match(/[\d,]+/);
+    if (!numberMatch) return salary;
+    
+    const number = parseInt(numberMatch[0].replace(/,/g, ''));
+    
+    // Add appropriate unit based on number size
+    if (number < 100) {
+      return `$${number}/hour`;
+    } else if (number < 10000) {
+      return `$${number}/month`;
+    } else {
+      return `$${number}/year`;
+    }
+  }
+
+  /**
    * Get Easy Apply button from the job details page
    * @param {Document} document - The document object
    * @returns {Element|null} - Easy Apply button element or null

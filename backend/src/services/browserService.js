@@ -531,6 +531,79 @@ async function extractJobsFromPage(page, userId) {
             }
           }
           
+          // Extract salary information
+          const salarySelectors = [
+            '.job-details-jobs-unified-top-card__salary-info',
+            '.jobs-unified-top-card__salary-info',
+            '.job-details-jobs-unified-top-card__salary',
+            '.jobs-unified-top-card__salary',
+            '.job-details-jobs-unified-top-card__metadata',
+            '.jobs-unified-top-card__metadata'
+          ];
+          
+          let salary = 'Not available';
+          for (const selector of salarySelectors) {
+            const element = document.querySelector(selector);
+            if (element && element.textContent.trim()) {
+              const salaryText = element.textContent.trim();
+              // Check if it looks like a salary (contains $ or numbers)
+              if (salaryText.includes('$') || /\d/.test(salaryText)) {
+                salary = salaryText;
+                break;
+              }
+            }
+          }
+          
+          // If no dedicated salary element found, try to extract from description
+          if (salary === 'Not available' && description !== 'Not available') {
+            // Common salary patterns
+            const salaryPatterns = [
+              /\$[\d,]+(?:\s*-\s*\$[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+              /\$[\d,]+(?:\s+to\s+\$[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+              /\$[\d,]+-[\d,]+(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+              /(?:USD|US\$|CAD|EUR|GBP)\s*[\d,]+(?:\s*-\s*[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+              /(?:salary|compensation|pay)\s*(?:range|of)?\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?(?:\s*\/\s*(?:hour|hr|year|yr|month|mo|week|wk|day))?/gi,
+              /(?:annual|yearly)\s*(?:salary|compensation)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+              /(?:hourly|per\s+hour)\s*(?:rate|pay)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+              /(?:base\s+)?salary\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+              /compensation\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi,
+              /(?:benefits|package)\s*:\s*\$?[\d,]+(?:\s*-\s*\$?[\d,]+)?/gi
+            ];
+            
+            // Look for salary patterns in the text
+            for (const pattern of salaryPatterns) {
+              const matches = description.match(pattern);
+              if (matches && matches.length > 0) {
+                let extractedSalary = matches[0].trim();
+                extractedSalary = extractedSalary.replace(/^(salary|compensation|pay|annual|yearly|hourly|per\s+hour|base|benefits|package)\s*(?:range|of)?\s*:\s*/gi, '');
+                if (/^\d/.test(extractedSalary) && !extractedSalary.startsWith('$')) {
+                  extractedSalary = '$' + extractedSalary;
+                }
+                salary = extractedSalary;
+                break;
+              }
+            }
+            
+            // Look for specific salary keywords and extract nearby numbers
+            if (salary === 'Not available') {
+              const salaryKeywords = ['salary', 'compensation', 'pay', 'earnings', 'income', 'wage', 'rate', 'package'];
+              const lines = description.split('\n');
+              for (const line of lines) {
+                const lowerLine = line.toLowerCase();
+                for (const keyword of salaryKeywords) {
+                  if (lowerLine.includes(keyword)) {
+                    const dollarMatches = line.match(/\$[\d,]+(?:\s*-\s*\$[\d,]+)?/g);
+                    if (dollarMatches && dollarMatches.length > 0) {
+                      salary = dollarMatches[0].trim();
+                      break;
+                    }
+                  }
+                }
+                if (salary !== 'Not available') break;
+              }
+            }
+          }
+          
           // Check for Easy Apply button
           const easyApplyButton = document.querySelector('button[aria-label="Easy Apply"]') || 
             Array.from(document.querySelectorAll('button')).find(btn => 
@@ -545,6 +618,7 @@ async function extractJobsFromPage(page, userId) {
           
           return {
             description,
+            salary,
             hasEasyApply,
             jobId,
             url: window.location.href
@@ -571,7 +645,8 @@ async function extractJobsFromPage(page, userId) {
               location: jobInfo.location,
               description: jobInfo.description,
               job_url: jobInfo.url,
-              easy_apply: jobInfo.hasEasyApply
+              easy_apply: jobInfo.hasEasyApply,
+              salary: jobInfo.salary
             });
           
           if (error) {
