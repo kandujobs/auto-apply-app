@@ -134,7 +134,7 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       const today = new Date().toISOString().slice(0, 10);
       const { data: trackingRecord, error } = await supabase
         .from('user_daily_tracking')
-        .select('login_streak, last_reward_claimed_date')
+        .select('login_streak, last_reward_claimed_date, reward_bonus_claimed')
         .eq('user_id', userId)
         .eq('date', today)
         .single();
@@ -195,6 +195,15 @@ const AutoApplyScreen: React.FC<AutoApplyScreenProps> = ({
       const claimed = lastClaimed && lastClaimed.getFullYear() === new Date().getFullYear() && lastClaimed.getMonth() === new Date().getMonth() && lastClaimed.getDate() === new Date().getDate();
       setClaimedToday(!!claimed);
       localStorage.setItem('aa_claimedToday', String(!!claimed));
+      
+      // Load reward bonus from database if reward was claimed today
+      if (claimed && trackingRecord?.reward_bonus_claimed) {
+        setBonusLimit(trackingRecord.reward_bonus_claimed);
+        console.log('Loaded reward bonus from database:', trackingRecord.reward_bonus_claimed);
+      } else {
+        setBonusLimit(0);
+      }
+      
       setLoading(false);
     }
     fetchAndUpdateStreak();

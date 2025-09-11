@@ -317,18 +317,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
         localStorage.setItem('aa_used', String(trackingRecord.auto_applies_used_today || 0));
         localStorage.setItem('aa_usageDate', trackingRecord.auto_apply_usage_date || today);
         
-        // Calculate daily reward bonus
-        const loginStreak = trackingRecord.login_streak || 0;
-        const lastRewardClaimed = trackingRecord.last_reward_claimed_date;
-        let rewardBonus = 0;
-        
-        // Check if reward was claimed today
-        if (lastRewardClaimed === today && loginStreak > 0) {
-          // 7-day reward cycle with specific amounts
-          const rewards = [2, 2, 3, 4, 5, 5, 10]; // Day 1-7 rewards
-          const rewardIndex = ((loginStreak - 1) % 7 + 7) % 7;
-          rewardBonus = rewards[rewardIndex];
-        }
+        // Use the actual reward bonus claimed from database
+        const rewardBonus = trackingRecord.reward_bonus_claimed || 0;
         
         // Update application limit with reward bonus
         setApplicationLimit(15 + rewardBonus);
