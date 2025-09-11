@@ -297,15 +297,13 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
       throw new Error('Browser session has been closed. Please start a new session first.');
     }
     
-    // Use the existing session browser to fetch jobs with progress tracking
+    // Use the existing session browser to fetch jobs
     console.log('🔄 Starting job fetch with session browser...');
-    sendProgressToSession(userId, '🔄 Starting job fetch...');
     
     const page = session.browserPage;
     
     // Get user profile and search preferences from Supabase
     console.log('📋 Fetching user search criteria from Supabase...');
-    sendProgressToSession(userId, '📋 Fetching your search preferences...');
     
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
@@ -326,7 +324,6 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     const jobTitle = searchParams.keywords || profile?.desired_job_title || 'Software Engineer';
 
     console.log(`🎯 User search criteria: "${jobTitle}" in "${location}" (${radius}mi radius)`);
-    sendProgressToSession(userId, `🎯 Searching for "${jobTitle}" jobs in ${location}`);
     
     // Build search URL with user's actual criteria
     const baseUrl = 'https://www.linkedin.com/jobs/search/';
@@ -353,12 +350,10 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     
     // Extract jobs from the page
     console.log('🔍 Extracting jobs from page...');
-    sendProgressToSession(userId, '🔍 Extracting jobs from page...');
     
     const jobs = await extractJobsFromPage(page, userId);
     
     console.log(`✅ Successfully extracted ${jobs.length} jobs`);
-    sendProgressToSession(userId, `✅ Successfully extracted ${jobs.length} jobs`);
     
     return {
       success: true,
@@ -372,14 +367,7 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     // Check if the error is due to a closed browser
     if (error.message.includes('Target page, context or browser has been closed') ||
         error.message.includes('Browser page has been closed')) {
-      sendProgressToSession(userId, '❌ Browser session was closed. Please start a new session.');
-      
-      // Send WebSocket message to notify frontend of browser closure
-      broadcastToUser(userId, {
-        type: 'browser_closed',
-        message: 'Browser session was closed. Please start a new session.'
-      });
-      
+      console.log('❌ Browser session was closed. Please start a new session.');
       throw new Error('Browser session was closed. Please start a new session to fetch jobs.');
     }
     
@@ -417,13 +405,11 @@ async function extractJobsFromPage(page, userId) {
     }
     
     console.log(`Found ${jobCards.length} job cards`);
-    sendProgressToSession(userId, `Found ${jobCards.length} job cards`);
     
     // Verify we have job cards
     const finalJobCount = await page.locator('a.job-card-container__link').count();
     if (finalJobCount === 0) {
       console.log('No job cards found on page');
-      sendProgressToSession(userId, 'No job cards found on page');
       return jobs;
     }
     
@@ -435,10 +421,7 @@ async function extractJobsFromPage(page, userId) {
         
         console.log(`Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
         
-        // Only send progress updates every 3 jobs to reduce WebSocket spam
-        if ((i + 1) % 3 === 0 || i === 0) {
-        // sendProgressToSession(userId, `Extracting job ${i + 1}/${Math.min(jobCards.length, 15)}`);
-        }
+        // Process job extraction
         
         // Get current job cards (they might change as we navigate)
         const currentJobCards = await page.locator('a.job-card-container__link').all();
@@ -611,7 +594,6 @@ async function extractJobsFromPage(page, userId) {
       const nextButton = await page.$('button[aria-label="Next"]');
       if (nextButton) {
         console.log('Next page available, but stopping here for now');
-        sendProgressToSession(userId, 'Next page available, but stopping here for now');
       }
     } catch (error) {
       console.log('No next page available');

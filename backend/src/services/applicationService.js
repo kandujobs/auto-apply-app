@@ -20,57 +20,33 @@ class ApplicationService {
     try {
       console.log(`🔄 Processing job ${jobId} with existing session for user: ${userId}`);
       
-      // Send initial progress
-      this.sendProgressToSession(userId, '🚀 Starting job application...');
-      
       // Get the session from sessionManager
       const { sessionManager } = require('./sessionManager');
       const session = sessionManager.getSession(userId);
       if (!session) {
-        this.sendProgressToSession(userId, '❌ Session not found');
         throw new Error('Session not found');
       }
-      
-      // Send progress update
-      this.sendProgressToSession(userId, '📄 Navigating to job page...');
       
       // Apply to job using existing browser
       const result = await this.applyToJobWithBrowser(session, jobId, jobUrl, jobTitle, company);
       
       if (result === true) {
         console.log(`✅ Job ${jobId} application completed successfully`);
-        this.sendProgressToSession(userId, '✅ Application completed successfully!');
         
         // Store successful application
         await this.storeApplication(userId, jobUrl, jobTitle, company, 'applied');
         
         // Increment daily application limit
         await this.updateDailyApplicationCount(userId);
-        
-        // Send WebSocket message to notify frontend of completion
-        broadcastToUser(userId, {
-          type: 'application_completed',
-          status: 'completed',
-          message: 'Application completed successfully!'
-        });
       } else {
         console.log(`❌ Job ${jobId} application failed`);
-        this.sendProgressToSession(userId, '❌ Application failed - job may not be accepting applications');
         
         // Store failed application
         await this.storeApplication(userId, jobUrl, jobTitle, company, 'failed', 'Application failed');
-        
-        // Send WebSocket message to notify frontend of failure
-        broadcastToUser(userId, {
-          type: 'application_completed',
-          status: 'error',
-          message: 'Application failed - job may not be accepting applications'
-        });
       }
       
     } catch (error) {
       console.error(`❌ Error in processJobWithExistingSession for job ${jobId}:`, error);
-      this.sendProgressToSession(userId, `❌ Application error: ${error.message}`);
       
       // Store error application
       await this.storeApplication(userId, jobUrl, jobTitle, company, 'error', error.message);
@@ -143,7 +119,6 @@ class ApplicationService {
       
       if (jobClosed) {
         console.log('❌ Job is no longer accepting applications');
-        this.sendProgressToSession(session.userId, '❌ Job is no longer accepting applications');
         return false;
       }
       
@@ -211,7 +186,6 @@ class ApplicationService {
           
           if (modalFound) {
             console.log('📝 Filling out Easy Apply form using proven test-simple-click.js logic...');
-            this.sendProgressToSession(session.userId, '📝 Filling out Easy Apply form...');
             
             // Use the proven form filling logic from test-simple-click.js
             try {
@@ -463,8 +437,7 @@ class ApplicationService {
 
       console.log(`📊 Applications today: ${currentUsage}/${totalDailyLimit} (base: ${this.BASE_DAILY_LIMIT}, bonus: ${rewardBonus})`);
 
-      // Send progress update
-      this.sendProgressToSession(userId, `📊 Daily limit check passed: ${currentUsage}/${totalDailyLimit} applications today`);
+      // Daily limit check passed
 
     } catch (error) {
       console.error('Error in checkDailyLimit:', error);
