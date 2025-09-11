@@ -351,9 +351,29 @@ async function fetchJobsWithSessionBrowser(userId, searchParams = {}) {
     // Extract jobs from the page
     console.log('🔍 Extracting jobs from page...');
     
+    // Send progress message to frontend
+    if (session && session.websocket && session.websocket.readyState === WebSocket.OPEN) {
+      session.websocket.send(JSON.stringify({
+        type: 'progress',
+        data: '🔍 Extracting jobs from LinkedIn...'
+      }));
+    }
+    
     const jobs = await extractJobsFromPage(page, userId);
     
     console.log(`✅ Successfully extracted ${jobs.length} jobs`);
+    
+    // Send WebSocket message to notify frontend of completion
+    if (session && session.websocket && session.websocket.readyState === WebSocket.OPEN) {
+      session.websocket.send(JSON.stringify({
+        type: 'job_fetch_completed',
+        data: {
+          jobsCount: jobs.length,
+          message: `Successfully fetched ${jobs.length} jobs from LinkedIn`
+        }
+      }));
+      console.log('📤 Sent job_fetch_completed WebSocket message');
+    }
     
     return {
       success: true,

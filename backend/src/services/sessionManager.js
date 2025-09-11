@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const WebSocket = require('ws');
 const { browserService } = require('./browserService');
 const { decrypt } = require('../utils/encryption');
 const { supabase } = require('../config/database');
@@ -227,6 +228,19 @@ async function startSessionWithBrowser(userId) {
         session.lastActivity = Date.now();
         
         console.log(`✅ Session started successfully for user: ${userId}`);
+        
+        // Send session status message to frontend
+        if (session.websocket && session.websocket.readyState === WebSocket.OPEN) {
+          session.websocket.send(JSON.stringify({
+            type: 'session_status',
+            status: 'active',
+            isBrowserRunning: true,
+            applicationProgress: 'Session started successfully',
+            currentQuestion: 0,
+            totalQuestions: 0
+          }));
+          console.log('📤 Sent session_status WebSocket message');
+        }
     
         return {
           success: true,
