@@ -994,14 +994,23 @@ function App() {
         // Handle OAuth callback with tokens
         handleOAuthCallback(accessToken, refreshToken);
       } else {
-        // Check for Supabase hosted auth callback
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // User is already authenticated via hosted auth
-          handleHostedAuthCallback(session);
-        } else {
-          // Normal auth check
-          checkAuth();
+        try {
+          // Check for Supabase hosted auth callback
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            // User is already authenticated via hosted auth
+            handleHostedAuthCallback(session);
+          } else {
+            // Normal auth check
+            checkAuth();
+          }
+        } catch (err) {
+          // e.g. Failed to fetch (wrong/inactive Supabase URL) — clear session and show login
+          console.warn('[Auth] Session check failed, clearing session:', err);
+          await supabase.auth.signOut();
+          setShowOnboarding(true);
+          setShowSignIn(false);
+          setCheckingAuth(false);
         }
       }
     };
@@ -1173,9 +1182,19 @@ function App() {
   async function checkAuth() {
     setCheckingAuth(true);
     console.log('[checkAuth] Starting auth check');
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    let userData: { user: any } | null = null;
+    let userError: any = null;
+    try {
+      const result = await supabase.auth.getUser();
+      userData = result.data;
+      userError = result.error;
+    } catch (err) {
+      console.warn('[checkAuth] getUser failed (e.g. wrong Supabase URL), clearing session:', err);
+      await supabase.auth.signOut();
+      userError = err;
+    }
     console.log('[checkAuth] userData:', userData, 'userError:', userError);
-    if (userError || !userData.user) {
+    if (userError || !userData?.user) {
       console.log('[checkAuth] No user found, showing onboarding');
       setShowOnboarding(true);
       setShowSignIn(false);

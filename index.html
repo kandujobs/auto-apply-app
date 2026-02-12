@@ -10,6 +10,15 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Clear old Supabase project session so we don't try to refresh against inactive URL
+      try {
+        var oldRef = 'xipjxcktpzanmhfrkbrm';
+        Object.keys(localStorage).forEach(function(k) {
+          if (k.indexOf(oldRef) !== -1) localStorage.removeItem(k);
+        });
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -3,16 +3,11 @@ const { createServer } = require('http');
 const WebSocket = require('ws');
 const { setupWebSocket } = require('./config/websocket');
 
-// Load environment variables
-try {
-  require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
-} catch (error) {
-  console.log('No .env file found, using environment variables');
-}
-
-// Set Supabase environment variables for imported modules
-process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://xipjxcktpzanmhfrkbrm.supabase.co';
-process.env.SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcGp4Y2t0cHphbm1oZnJrYnJtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTExODA0MywiZXhwIjoyMDY2Njk0MDQzfQ.Dm73I66zlS1RXYcde6QHdTQt32ARu00K9pXeFuIruJE';
+// Load environment variables (.env then .env.local so .env.local overrides)
+const path = require('path');
+const root = path.join(__dirname, '..');
+require('dotenv').config({ path: path.join(root, '.env') });
+require('dotenv').config({ path: path.join(root, '.env.local') });
 
 const PORT = process.env.PORT || 3001;
 

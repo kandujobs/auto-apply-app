@@ -248,8 +248,9 @@ export const parseResume = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
 
+    const baseUrl = import.meta.env.VITE_SUPABASE_URL || '';
     const response = await fetch(
-      'https://xipjxcktpzanmhfrkbrm.supabase.co/functions/v1/parse-resume',
+      `${baseUrl}/functions/v1/parse-resume`,
       {
         method: 'POST',
         body: formData
